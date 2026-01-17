@@ -1,43 +1,46 @@
-# Math with Malik
+# Malik's Learning Lab
 
 ## Overview
-Math with Malik is an interactive web application designed for schoolchildren in grades 3-10 to take math quizzes and participate in Olympiad contests. The platform features a teacher-focused management system that allows educators to create custom quizzes and monitor student performance.
+Malik's Learning Lab is a comprehensive educational platform designed to empower teachers and engage students. It goes beyond simple quizzes to offer a full suite of learning tools, including an AI-assisted lesson builder, interactive quizzes, and detailed performance tracking. The platform connects educators with students through a simple access code system, suitable for grades 3-10 across various subjects.
 
 ## Features
 
 ### For Teachers
-- **Account Creation**: Teachers can sign up and log in to access the dashboard
-- **Quiz Management**: Create custom multiple-choice quizzes with one correct answer out of four options
-- **Grade Level Assignment**: Assign quizzes to specific grade levels (3-10)
-- **Access Control**: Generate unique quiz codes for student access
-- **Performance Tracking**: View student results and analyze performance data
-- **AI Question Generator**: Generate math questions automatically based on grade level and topic
+- **Comprehensive Dashboard**: A central hub to manage all educational content.
+- **AI-Powered Lesson Builder**: 
+  - Create rich, interactive lessons with text, videos, and images.
+  - **AI Content Generation**: Seamlessly generate educational text content for your lessons using integrated AI tools.
+- **Advanced Quiz Management**:
+  - Create custom multiple-choice quizzes.
+  - **AI Prompt Generator**: Construct structured prompts to use with external AI tools (like ChatGPT or Claude) to potentially generate high-quality quiz questions tailored to specific grades and topics.
+- **Classroom Management**:
+  - Assign content to specific grade levels.
+  - Generate unique 6-digit access codes for lessons and quizzes.
+- **Analytics & Tracking**: Monitor student progress with detailed performance reports and leaderboards.
 
 ### For Students
-- **No Sign-up Required**: Students can access quizzes by simply entering the provided code
-- **Interactive Quiz Experience**: 
-  - One question displayed at a time
-  - Live countdown timer
-  - Automatic grading upon submission
-  - Final score display
-- **Leaderboard**: View top student scores sorted by score and completion time
+- **Simple Access**: Join sessions instantly using a 6-digit code—no account registration required.
+- **Interactive Learning**:
+  - Engage with multimedia lessons (video, text, diagrams).
+  - Take timed quizzes with instant feedback.
+- **Gamification**: Earn points, see live scores, and compete on the leaderboard.
 
 ## Technology Stack
-- **Frontend**: React, TypeScript, Tailwind CSS
-- **UI Components**: shadcn/ui
-- **State Management**: Local storage (currently)
-- **Responsive Design**: Mobile and desktop friendly interface
+- **Frontend**: React, TypeScript, Vite
+- **Styling**: Tailwind CSS, Shadcn/ui
+- **State Management**: Local React State & Context
+- **Deployment**: Vercel (recommended) / Static Hosting
 
 ## Getting Started
 
 ### Prerequisites
-- Node.js and npm installed
+- Node.js (v18+) and npm installed
 
 ### Installation
 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/math-with-malik.git
-cd math-with-malik
+git clone https://github.com/Raheeq-lab/Maliks-learning-lab.git
+cd Maliks-learning-lab
 ```
 
 2. Install dependencies
@@ -50,26 +53,27 @@ npm install
 npm run dev
 ```
 
-4. Open your browser and navigate to `http://localhost:8085`
+4. Open your browser and navigate to `http://localhost:8080` (or the port shown in your terminal)
 
 ## Usage
 
 ### Teacher Flow
-1. Sign up as a teacher
-2. Create a quiz by selecting grade level and adding questions
-3. Share the generated access code with students
+1. **Sign Up/Login**: Access the Teacher Dashboard.
+2. **Create Content**:
+   - Go to **Lessons** to build a new topic using the AI Writer.
+   - Go to **Quizzes** to create assessments. Use the Prompt Generator tab to help craft questions.
+3. **Deploy**: Share the generated **Access Code** with your class.
 
 ### Student Flow
-1. Enter the quiz code provided by the teacher
-2. Complete the quiz by answering all questions within the time limit
-3. View your score and position on the leaderboard
+1. **Join**: Enter the Access Code on the home page.
+2. **Learn**: Read through the interactive lesson materials.
+3. **Test**: Complete the associated quiz and check the leaderboard.
 
 ## Future Enhancements
-- Firebase integration for authentication and data storage
-- Enhanced analytics for teacher dashboard
-- Additional question types beyond multiple choice
-- Custom timer settings per question
-- Ability to save and resume quizzes
+- Backend integration (Supabase/Firebase) for persistent user accounts.
+- Real-time multiplayer quiz modes.
+- Exportable student reports (PDF/CSV).
+- Dark/Light mode toggle.
 
 ## Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
