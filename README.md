@@ -12,7 +12,7 @@ Malik's Learning Lab is a comprehensive educational platform designed to empower
   - **AI Content Generation**: Seamlessly generate educational text content for your lessons using integrated AI tools.
 - **Advanced Quiz Management**:
   - Create custom multiple-choice quizzes.
-  - **AI Prompt Generator**: Construct structured prompts to use with external AI tools (like ChatGPT or Claude) to potentially generate high-quality quiz questions tailored to specific grades and topics.
+  - **AI Prompt Generator**: Generates structured prompts that you can copy to use with external AI tools (like ChatGPT). It creates the *prompt* for you, rather than generating the questions directly.
 - **Classroom Management**:
   - Assign content to specific grade levels.
   - Generate unique 6-digit access codes for lessons and quizzes.
