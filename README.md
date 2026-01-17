@@ -1,18 +1,16 @@
 # Malik's Learning Lab
 
 ## Overview
-Malik's Learning Lab is a comprehensive educational platform designed to empower teachers and engage students. It goes beyond simple quizzes to offer a full suite of learning tools, including an AI-assisted lesson builder, interactive quizzes, and detailed performance tracking. The platform connects educators with students through a simple access code system, suitable for grades 3-10 across various subjects.
+Malik's Learning Lab is a comprehensive educational platform designed to empower teachers and engage students. It goes beyond simple quizzes to offer a full suite of learning tools, including an interactive lesson builder, customizable quizzes, and detailed performance tracking. The platform connects educators with students through a simple access code system, suitable for grades 3-10 across various subjects.
 
 ## Features
 
 ### For Teachers
 - **Comprehensive Dashboard**: A central hub to manage all educational content.
-- **AI-Powered Lesson Builder**: 
-  - Create rich, interactive lessons with text, videos, and images.
-  - **AI Content Generation**: Seamlessly generate educational text content for your lessons using integrated AI tools.
+- **Interactive Lesson Builder**: Create rich lessons with text, videos, and images.
 - **Advanced Quiz Management**:
   - Create custom multiple-choice quizzes.
-  - **AI Prompt Generator**: Generates structured prompts that you can copy to use with external AI tools (like ChatGPT). It creates the *prompt* for you, rather than generating the questions directly.
+  - **AI Prompt Generator**: Generates structured prompts that you can copy to use with external AI tools (like ChatGPT, Gemini, or Claude). It helps you craft the perfect prompt to generate high-quality educational content.
 - **Classroom Management**:
   - Assign content to specific grade levels.
   - Generate unique 6-digit access codes for lessons and quizzes.
@@ -60,8 +58,8 @@ npm run dev
 ### Teacher Flow
 1. **Sign Up/Login**: Access the Teacher Dashboard.
 2. **Create Content**:
-   - Go to **Lessons** to build a new topic using the AI Writer.
-   - Go to **Quizzes** to create assessments. Use the Prompt Generator tab to help craft questions.
+   - Go to **Lessons** to build a new topic.
+   - Go to **Quizzes** to create assessments. Use the **Prompt Generator** tab to help craft questions for external AI tools.
 3. **Deploy**: Share the generated **Access Code** with your class.
 
 ### Student Flow
