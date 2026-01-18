@@ -272,13 +272,6 @@ const QuizForm: React.FC<QuizFormProps> = ({ grades, onSave, onCancel, subject =
               </div>
 
               <div>
-                <SubjectSelector
-                  selectedSubject={selectedSubject}
-                  onChange={(subject) => setSelectedSubject(subject as "math" | "english" | "ict")}
-                />
-              </div>
-
-              <div>
                 <Label htmlFor="timeLimit">Time Limit (seconds per question)</Label>
                 <Input
                   id="timeLimit"
