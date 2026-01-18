@@ -12,3 +12,5 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+Sitemap: https://maliks-learning-lab.vercel.app/sitemap.xml
