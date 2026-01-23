@@ -1,8 +1,14 @@
 
 -- SQL Schema for Malik's Learning Lab
+-- This script will drop existing tables to ensure correct data types
+
+DROP TABLE IF EXISTS results;
+DROP TABLE IF EXISTS quizzes;
+DROP TABLE IF EXISTS lessons;
+DROP TABLE IF EXISTS teachers;
 
 -- 1. Quizzes Table
-CREATE TABLE IF NOT EXISTS quizzes (
+CREATE TABLE quizzes (
   id TEXT PRIMARY KEY,
   title TEXT NOT NULL,
   description TEXT,
@@ -16,7 +22,7 @@ CREATE TABLE IF NOT EXISTS quizzes (
 );
 
 -- 2. Lessons Table
-CREATE TABLE IF NOT EXISTS lessons (
+CREATE TABLE lessons (
   id TEXT PRIMARY KEY,
   title TEXT NOT NULL,
   description TEXT,
@@ -32,7 +38,7 @@ CREATE TABLE IF NOT EXISTS lessons (
 );
 
 -- 3. Results Table
-CREATE TABLE IF NOT EXISTS results (
+CREATE TABLE results (
   id TEXT PRIMARY KEY,
   studentName TEXT NOT NULL,
   quizId TEXT NOT NULL REFERENCES quizzes(id) ON DELETE CASCADE,
@@ -44,19 +50,17 @@ CREATE TABLE IF NOT EXISTS results (
 );
 
 -- 4. Teachers Table
-CREATE TABLE IF NOT EXISTS teachers (
+CREATE TABLE teachers (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   email TEXT UNIQUE NOT NULL,
   school TEXT,
   grades INTEGER[],
   subjects TEXT[],
-  passwordHash TEXT -- In a real app, use Supabase Auth instead
+  passwordHash TEXT
 );
 
 -- Enable Row Level Security (RLS)
--- For a simple lab, we can enable public access or set up basic policies
--- Here we allow all operations for simplicity in this demo environment
 ALTER TABLE quizzes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE lessons ENABLE ROW LEVEL SECURITY;
 ALTER TABLE results ENABLE ROW LEVEL SECURITY;
