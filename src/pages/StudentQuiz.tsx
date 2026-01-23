@@ -258,9 +258,6 @@ const StudentQuiz: React.FC = () => {
         .insert([{
           student_name: studentData?.name || "Unknown Student",
           quiz_id: quiz.id,
-          score: Math.round((finalAnswers.filter(a => a.isCorrect).length / quiz.questions.length) * 100), // Saving as percentage or raw? Let's check schema. Schema has score int. Let's save raw score for now or percentage. The Dashboard usually expects raw score or we can adapt. Let's save RAW SCORE based on table usage.
-          // Table schema: score int, total_questions int. So raw score is better.
-          // Wait, the insert above uses filter length.
           score: finalAnswers.filter(a => a.isCorrect).length,
           total_questions: quiz.questions.length,
           time_taken: totalTimeTaken,
@@ -408,8 +405,8 @@ const StudentQuiz: React.FC = () => {
 
             {showFeedback && feedbackMessage && (
               <div className={`p-3 rounded-lg mb-4 text-center animate-fade-in ${feedbackMessage.includes("Correct")
-                  ? "bg-green-100 text-green-800 border border-green-200"
-                  : "bg-red-100 text-red-800 border border-red-200"
+                ? "bg-green-100 text-green-800 border border-green-200"
+                : "bg-red-100 text-red-800 border border-red-200"
                 }`}>
                 <div className="flex items-center justify-center gap-2">
                   {feedbackMessage.includes("Correct")
@@ -441,8 +438,8 @@ const StudentQuiz: React.FC = () => {
                   key={index}
                   onClick={() => handleOptionSelect(index)}
                   className={`p-4 rounded-lg cursor-pointer border transition-colors ${selectedOption === index
-                      ? colors.selected
-                      : 'border-gray-200 hover:border-gray-300 bg-white'
+                    ? colors.selected
+                    : 'border-gray-200 hover:border-gray-300 bg-white'
                     }`}
                 >
                   <div className="flex items-center gap-3">
