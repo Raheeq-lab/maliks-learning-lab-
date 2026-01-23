@@ -21,6 +21,7 @@ import {
   getTotalStudents,
   getTotalCompletions
 } from '@/utils/dashboardUtils';
+import { dbService } from '@/services/dbService';
 
 const TeacherDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -58,25 +59,27 @@ const TeacherDashboard: React.FC = () => {
     const filteredGrades = (teacher.grades || []).filter(g => g >= 1 && g <= 11);
     setSelectedGrades(filteredGrades);
 
-    // Load quizzes
-    const storedQuizzes = localStorage.getItem('mathWithMalikQuizzes');
-    if (storedQuizzes) {
-      setQuizzes(JSON.parse(storedQuizzes));
-    }
+    const loadAllData = async () => {
+      try {
+        // Load quizzes
+        const fetchedQuizzes = await dbService.getQuizzes();
+        setQuizzes(fetchedQuizzes);
 
-    // Load lessons
-    const storedLessons = localStorage.getItem('mathWithMalikLessons');
-    if (storedLessons) {
-      setLessons(JSON.parse(storedLessons));
-    }
+        // Load lessons
+        const fetchedLessons = await dbService.getLessons();
+        setLessons(fetchedLessons);
 
-    // Load quiz results
-    const storedResults = localStorage.getItem('mathWithMalikResults');
-    if (storedResults) {
-      setResults(JSON.parse(storedResults));
-    }
+        // Load quiz results
+        const fetchedResults = await dbService.getResults();
+        setResults(fetchedResults);
+      } catch (error) {
+        console.error("Error loading dashboard data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    setIsLoading(false);
+    loadAllData();
   }, [navigate]);
 
   const handleLogout = () => {
@@ -84,49 +87,65 @@ const TeacherDashboard: React.FC = () => {
     navigate('/');
   };
 
-  const handleCreateQuiz = (quiz: Quiz) => {
-    let updatedQuizzes;
-    if (editingQuiz) {
-      updatedQuizzes = quizzes.map(q => q.id === quiz.id ? quiz : q);
+  const handleCreateQuiz = async (quiz: Quiz) => {
+    try {
+      await dbService.saveQuiz(quiz);
+
+      const updatedQuizzes = await dbService.getQuizzes();
+      setQuizzes(updatedQuizzes);
+
+      if (editingQuiz) {
+        toast({
+          title: "Quiz updated!",
+          description: `Your quiz "${quiz.title}" has been updated.`,
+        });
+      } else {
+        toast({
+          title: "Quiz created!",
+          description: `Your new ${quiz.subject} quiz "${quiz.title}" is ready. Share the code with your students.`,
+        });
+      }
+
+      setShowQuizForm(false);
+      setEditingQuiz(null);
+    } catch (error) {
       toast({
-        title: "Quiz updated!",
-        description: `Your quiz "${quiz.title}" has been updated.`,
-      });
-    } else {
-      updatedQuizzes = [...quizzes, quiz];
-      toast({
-        title: "Quiz created!",
-        description: `Your new ${quiz.subject} quiz "${quiz.title}" is ready. Share the code with your students.`,
+        title: "Error saving quiz",
+        description: "There was a problem saving your quiz. Please try again.",
+        variant: "destructive"
       });
     }
-
-    setQuizzes(updatedQuizzes);
-    localStorage.setItem('mathWithMalikQuizzes', JSON.stringify(updatedQuizzes));
-    setShowQuizForm(false);
-    setEditingQuiz(null);
   };
 
-  const handleCreateLesson = (lesson: Lesson) => {
-    let updatedLessons;
-    if (editingLesson) {
-      updatedLessons = lessons.map(l => l.id === lesson.id ? lesson : l);
+  const handleCreateLesson = async (lesson: Lesson) => {
+    try {
+      await dbService.saveLesson(lesson);
+
+      const updatedLessons = await dbService.getLessons();
+      setLessons(updatedLessons);
+
+      if (editingLesson) {
+        toast({
+          title: "Lesson updated!",
+          description: `Your lesson "${lesson.title}" has been updated.`,
+        });
+      } else {
+        toast({
+          title: "Lesson created!",
+          description: `Your new ${lesson.subject} lesson "${lesson.title}" is ready. Share the code with your students.`,
+        });
+      }
+
+      setShowLessonBuilder(false);
+      setShowScaffoldedLessonBuilder(false);
+      setEditingLesson(null);
+    } catch (error) {
       toast({
-        title: "Lesson updated!",
-        description: `Your lesson "${lesson.title}" has been updated.`,
-      });
-    } else {
-      updatedLessons = [...lessons, lesson];
-      toast({
-        title: "Lesson created!",
-        description: `Your new ${lesson.subject} lesson "${lesson.title}" is ready. Share the code with your students.`,
+        title: "Error saving lesson",
+        description: "There was a problem saving your lesson. Please try again.",
+        variant: "destructive"
       });
     }
-
-    setLessons(updatedLessons);
-    localStorage.setItem('mathWithMalikLessons', JSON.stringify(updatedLessons));
-    setShowLessonBuilder(false);
-    setShowScaffoldedLessonBuilder(false);
-    setEditingLesson(null);
   };
 
   const handleCancelQuizForm = () => {
@@ -157,29 +176,45 @@ const TeacherDashboard: React.FC = () => {
     setShowLessonBuilder(true);
   };
 
-  const handleDeleteQuiz = (quizId: string) => {
+  const handleDeleteQuiz = async (quizId: string) => {
     if (confirm("Are you sure you want to delete this quiz? This action cannot be undone.")) {
-      const updatedQuizzes = quizzes.filter(q => q.id !== quizId);
-      setQuizzes(updatedQuizzes);
-      localStorage.setItem('mathWithMalikQuizzes', JSON.stringify(updatedQuizzes));
-      toast({
-        title: "Quiz deleted",
-        description: "The quiz has been permanently removed.",
-        variant: "destructive",
-      });
+      try {
+        await dbService.deleteQuiz(quizId);
+        const updatedQuizzes = await dbService.getQuizzes();
+        setQuizzes(updatedQuizzes);
+        toast({
+          title: "Quiz deleted",
+          description: "The quiz has been permanently removed.",
+          variant: "destructive",
+        });
+      } catch (error) {
+        toast({
+          title: "Error deleting quiz",
+          description: "There was a problem deleting the quiz.",
+          variant: "destructive"
+        });
+      }
     }
   };
 
-  const handleDeleteLesson = (lessonId: string) => {
+  const handleDeleteLesson = async (lessonId: string) => {
     if (confirm("Are you sure you want to delete this lesson? This action cannot be undone.")) {
-      const updatedLessons = lessons.filter(l => l.id !== lessonId);
-      setLessons(updatedLessons);
-      localStorage.setItem('mathWithMalikLessons', JSON.stringify(updatedLessons));
-      toast({
-        title: "Lesson deleted",
-        description: "The lesson has been permanently removed.",
-        variant: "destructive",
-      });
+      try {
+        await dbService.deleteLesson(lessonId);
+        const updatedLessons = await dbService.getLessons();
+        setLessons(updatedLessons);
+        toast({
+          title: "Lesson deleted",
+          description: "The lesson has been permanently removed.",
+          variant: "destructive",
+        });
+      } catch (error) {
+        toast({
+          title: "Error deleting lesson",
+          description: "There was a problem deleting the lesson.",
+          variant: "destructive"
+        });
+      }
     }
   };
 

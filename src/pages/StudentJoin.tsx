@@ -10,6 +10,7 @@ import { BookOpen, BookText, Laptop } from 'lucide-react';
 import NavBar from '@/components/NavBar';
 import SubjectSelector from '@/components/SubjectSelector';
 import { Quiz } from '@/types/quiz';
+import { dbService } from '@/services/dbService';
 
 const StudentJoin: React.FC = () => {
   const navigate = useNavigate();
@@ -19,36 +20,8 @@ const StudentJoin: React.FC = () => {
   const [selectedSubject, setSelectedSubject] = useState<string>("math");
   const [isJoining, setIsJoining] = useState(false);
   const [debugInfo, setDebugInfo] = useState<string>("");
-  const [availableQuizzes, setAvailableQuizzes] = useState<Quiz[]>([]);
   
-  // Load quizzes on component mount
-  useEffect(() => {
-    const loadQuizzes = () => {
-      try {
-        const quizzesString = localStorage.getItem('mathWithMalikQuizzes');
-        if (quizzesString) {
-          const loadedQuizzes = JSON.parse(quizzesString);
-          setAvailableQuizzes(loadedQuizzes);
-          
-          if (loadedQuizzes.length > 0) {
-            setDebugInfo(`Loaded ${loadedQuizzes.length} quizzes. Available codes: ${loadedQuizzes.map((q: any) => q.accessCode || 'no-code').join(', ')}`);
-            console.log("Available quizzes:", loadedQuizzes);
-          } else {
-            setDebugInfo("No quizzes found in localStorage");
-          }
-        } else {
-          setDebugInfo("No quizzes found in localStorage (key not found)");
-        }
-      } catch (error) {
-        console.error("Error loading quizzes:", error);
-        setDebugInfo(`Error loading quizzes: ${error instanceof Error ? error.message : String(error)}`);
-      }
-    };
-    
-    loadQuizzes();
-  }, []);
-  
-  const handleJoin = (e: React.FormEvent) => {
+  const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!name.trim()) {
@@ -75,35 +48,12 @@ const StudentJoin: React.FC = () => {
     const cleanAccessCode = accessCode.trim().toUpperCase();
     console.log("Attempting to join with clean code:", cleanAccessCode);
     
-    // Debug information
-    console.log("All available quizzes:", availableQuizzes);
-    console.log("Available access codes:", availableQuizzes.map(q => q.accessCode?.trim()?.toUpperCase()));
-    
-    setTimeout(() => {
+    try {
+      // Find quiz or lesson with matching access code via dbService
+      const quiz = await dbService.getQuizByCode(cleanAccessCode);
+      const lesson = !quiz ? await dbService.getLessonByCode(cleanAccessCode) : null;
+      
       setIsJoining(false);
-      
-      // Find quiz with matching access code regardless of subject
-      const quiz = availableQuizzes.find(q => 
-        q.accessCode && q.accessCode.trim().toUpperCase() === cleanAccessCode
-      );
-      
-      console.log("Quiz match found:", quiz ? "Yes" : "No");
-      
-      // Get lessons from local storage
-      const lessonsString = localStorage.getItem('mathWithMalikLessons');
-      let lessons = [];
-      
-      try {
-        lessons = lessonsString ? JSON.parse(lessonsString) : [];
-      } catch (error) {
-        console.error("Error parsing lessons:", error);
-        lessons = [];
-      }
-      
-      // Find lesson with matching access code
-      const lesson = lessons.find((l: any) => 
-        l.accessCode && l.accessCode.trim().toUpperCase() === cleanAccessCode
-      );
       
       if (quiz) {
         // Confirm the quiz has questions
@@ -157,18 +107,21 @@ const StudentJoin: React.FC = () => {
           description: "The lesson view is currently being developed.",
         });
       } else {
-        // Debug information for troubleshooting
-        const availableCodes = availableQuizzes.map(q => q.accessCode?.trim()?.toUpperCase() || 'no-code');
-        
-        setDebugInfo(`No match for: "${cleanAccessCode}". Available: ${availableCodes.join(', ')}`);
-        
         toast({
           title: "Invalid access code",
           description: "No quiz or lesson found with this access code. Please check and try again.",
           variant: "destructive",
         });
       }
-    }, 1500);
+    } catch (error) {
+      setIsJoining(false);
+      console.error("Error joining quiz/lesson:", error);
+      toast({
+        title: "Connection error",
+        description: "Failed to connect to the database. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const getSubjectIcon = () => {

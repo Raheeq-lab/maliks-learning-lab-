@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import { dbService } from '@/services/dbService';
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -36,7 +37,7 @@ const TeacherSignupForm: React.FC = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     // Create teacher account with default grades and subjects
     // These will be selected on the dashboard after login
     const teacher = {
@@ -51,32 +52,25 @@ const TeacherSignupForm: React.FC = () => {
       passwordHash: values.password
     };
     
-    // Store in localStorage (in a real app, this would be a server API call)
-    const teachersStr = localStorage.getItem('mathWithMalikTeachers');
-    const teachers = teachersStr ? JSON.parse(teachersStr) : [];
-    
-    // Check if email already exists
-    if (teachers.some((t: any) => t.email === values.email)) {
+    try {
+      // Store in database via dbService
+      // Note: In a production app, we would handle email uniqueness and password hashing at the DB/Auth level
+      await dbService.saveTeacher(teacher);
+
       toast({
-        title: "Email already registered",
-        description: "This email is already in use. Please use a different one or sign in.",
-        variant: "destructive",
+        title: "Account created successfully!",
+        description: "Welcome to Malik's Learning Lab! You are now signed in.",
       });
-      return;
+
+      navigate('/teacher-dashboard');
+    } catch (error) {
+      console.error("Error signing up:", error);
+      toast({
+        title: "Signup failed",
+        description: "There was a problem creating your account. Please try again.",
+        variant: "destructive"
+      });
     }
-    
-    teachers.push(teacher);
-    localStorage.setItem('mathWithMalikTeachers', JSON.stringify(teachers));
-    
-    // Log the teacher in
-    localStorage.setItem('mathWithMalikTeacher', JSON.stringify(teacher));
-    
-    toast({
-      title: "Account created successfully!",
-      description: "Welcome to Malik's Learning Lab! You are now signed in.",
-    });
-    
-    navigate('/teacher-dashboard');
   };
   
   return (

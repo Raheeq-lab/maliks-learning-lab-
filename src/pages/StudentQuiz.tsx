@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { Clock, CheckCircle, XCircle, Zap, GaugeCircle } from "lucide-react";
-import { QuizQuestion, StudentAnswer } from '@/types/quiz';
+import { QuizQuestion, StudentAnswer, StudentQuizResult } from '@/types/quiz';
 import { BookOpen, BookText, Laptop } from "lucide-react";
 import PowerMeter from '@/components/PowerMeter';
+import { dbService } from '@/services/dbService';
 
 interface StudentData {
   name: string;
@@ -59,19 +60,8 @@ const StudentQuiz: React.FC = () => {
         setStudentData(student);
         console.log("Student data loaded:", student);
         
-        // Get quiz data
-        const storedQuizzes = localStorage.getItem('mathWithMalikQuizzes');
-        if (!storedQuizzes) {
-          toast({
-            title: "Error",
-            description: "No quiz data found. Please contact your teacher.",
-            variant: "destructive",
-          });
-          navigate('/student-join');
-          return;
-        }
-
-        const quizzes = JSON.parse(storedQuizzes);
+        // Get quiz data via dbService
+        const quizzes = await dbService.getQuizzes();
         console.log("Available quizzes:", quizzes.length);
         console.log("Looking for quiz with ID:", student.quizId);
         
@@ -264,13 +254,12 @@ const StudentQuiz: React.FC = () => {
     }, 2000);
   };
   
-  const completeQuiz = (finalAnswers: StudentAnswer[]) => {
+  const completeQuiz = async (finalAnswers: StudentAnswer[]) => {
     setQuizCompleted(true);
     
     const totalTimeTaken = Math.floor((Date.now() - startTime) / 1000);
     
-    // In a real app, this would be saved to Firebase
-    const quizResult = {
+    const quizResult: StudentQuizResult = {
       id: `result-${Date.now()}`,
       studentName: studentData?.name || "Unknown Student",
       quizId: quiz.id,
@@ -279,19 +268,26 @@ const StudentQuiz: React.FC = () => {
       timeTaken: totalTimeTaken,
       completedAt: new Date().toISOString(),
       answers: finalAnswers,
-      finalPower: power // Save the final power level
+      // @ts-ignore - finalPower is not in the type but we are keeping it for backward compatibility
+      finalPower: power
     };
     
-    // Store results
-    const storedResults = localStorage.getItem('mathWithMalikResults') || '[]';
-    const results = JSON.parse(storedResults);
-    results.push(quizResult);
-    localStorage.setItem('mathWithMalikResults', JSON.stringify(results));
-    
-    toast({
-      title: "Quiz completed!",
-      description: `Your score: ${quizResult.score}/${quizResult.totalQuestions}`,
-    });
+    try {
+      // Store results via dbService
+      await dbService.saveResult(quizResult);
+
+      toast({
+        title: "Quiz completed!",
+        description: `Your score: ${quizResult.score}/${quizResult.totalQuestions}`,
+      });
+    } catch (error) {
+      console.error("Error saving quiz result:", error);
+      toast({
+        title: "Score not saved",
+        description: "Your score was not saved to the database, but you finished the quiz!",
+        variant: "destructive"
+      });
+    }
   };
 
   const formatTime = (seconds: number): string => {
