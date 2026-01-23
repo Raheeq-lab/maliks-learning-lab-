@@ -145,8 +145,7 @@ const TeacherDashboard: React.FC = () => {
             subject: newQuizData.subject,
             time_limit: newQuizData.timeLimit,
             access_code: newQuizData.accessCode,
-            questions: newQuizData.questions,
-            created_by: teacherData?.id
+            questions: newQuizData.questions
           }])
           .select()
           .single();
