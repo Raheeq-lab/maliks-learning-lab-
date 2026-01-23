@@ -144,18 +144,22 @@ const TeacherDashboard: React.FC = () => {
           questionsCount: newQuizData.questions?.length
         });
 
+        // Strictly sanitize the payload to match the database schema exactly
+        const payload = {
+          title: newQuizData.title,
+          description: newQuizData.description || '',
+          grade_level: Number(newQuizData.gradeLevel),
+          subject: newQuizData.subject,
+          time_limit: Number(newQuizData.timeLimit),
+          access_code: newQuizData.accessCode,
+          questions: newQuizData.questions
+        };
+
+        console.log("Sending payload to Supabase:", payload);
+
         const { data, error } = await supabase
           .from('quizzes')
-          .insert([{
-            title: newQuizData.title,
-            description: newQuizData.description,
-            grade_level: newQuizData.gradeLevel,
-            subject: newQuizData.subject,
-            time_limit: newQuizData.timeLimit,
-            access_code: newQuizData.accessCode,
-            questions: newQuizData.questions,
-            created_by: quiz.createdBy
-          }])
+          .insert([payload])
           .select()
           .single();
 
