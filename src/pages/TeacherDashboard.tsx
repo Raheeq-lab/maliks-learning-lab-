@@ -21,6 +21,7 @@ import {
   getTotalStudents,
   getTotalCompletions
 } from '@/utils/dashboardUtils';
+import { supabase } from '@/lib/supabase';
 
 const TeacherDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -58,52 +59,121 @@ const TeacherDashboard: React.FC = () => {
     const filteredGrades = (teacher.grades || []).filter(g => g >= 1 && g <= 11);
     setSelectedGrades(filteredGrades);
 
-    // Load quizzes
-    const storedQuizzes = localStorage.getItem('mathWithMalikQuizzes');
-    if (storedQuizzes) {
-      setQuizzes(JSON.parse(storedQuizzes));
-    }
+    const loadData = async () => {
+      // Load quizzes from Supabase
+      const { data: quizzesData, error: quizzesError } = await supabase
+        .from('quizzes')
+        .select('*');
 
-    // Load lessons
+      if (quizzesError) {
+        console.error('Error fetching quizzes:', quizzesError);
+        toast({
+          title: "Error loading quizzes",
+          description: quizzesError.message,
+          variant: "destructive"
+        });
+      } else {
+        setQuizzes(quizzesData || []);
+      }
+
+      // Load results from Supabase (optional, for performance tab)
+      const { data: resultsData, error: resultsError } = await supabase
+        .from('quiz_results')
+        .select('*');
+
+      if (!resultsError && resultsData) {
+        setResults(resultsData);
+      }
+    };
+
+    loadData();
+
+    // Load lessons (Local Storage for now, or move to Supabase later)
     const storedLessons = localStorage.getItem('mathWithMalikLessons');
     if (storedLessons) {
       setLessons(JSON.parse(storedLessons));
     }
 
-    // Load quiz results
-    const storedResults = localStorage.getItem('mathWithMalikResults');
-    if (storedResults) {
-      setResults(JSON.parse(storedResults));
-    }
-
     setIsLoading(false);
-  }, [navigate]);
+  }, [navigate, toast]);
 
   const handleLogout = () => {
     localStorage.removeItem('mathWithMalikTeacher');
     navigate('/');
   };
 
-  const handleCreateQuiz = (quiz: Quiz) => {
-    let updatedQuizzes;
-    if (editingQuiz) {
-      updatedQuizzes = quizzes.map(q => q.id === quiz.id ? quiz : q);
+  const handleCreateQuiz = async (quiz: Quiz) => {
+    try {
+      let updatedQuizzes;
+
+      // Ensure access code is unique and uppercase
+      const quizToSave = {
+        ...quiz,
+        accessCode: quiz.accessCode.toUpperCase(),
+      };
+
+      if (editingQuiz) {
+        // Update existing quiz
+        const { error } = await supabase
+          .from('quizzes')
+          .update({
+            title: quiz.title,
+            description: quiz.description,
+            grade_level: quiz.gradeLevel,
+            subject: quiz.subject,
+            time_limit: quiz.timeLimit,
+            questions: quiz.questions
+          })
+          .eq('id', quiz.id);
+
+        if (error) throw error;
+
+        updatedQuizzes = quizzes.map(q => q.id === quiz.id ? quiz : q);
+        toast({
+          title: "Quiz updated!",
+          description: `Your quiz "${quiz.title}" has been updated.`,
+        });
+      } else {
+        // Create new quiz
+        const { id, ...newQuizData } = quizToSave;
+        const { data, error } = await supabase
+          .from('quizzes')
+          .insert([{
+            title: newQuizData.title,
+            description: newQuizData.description,
+            grade_level: newQuizData.gradeLevel,
+            subject: newQuizData.subject,
+            time_limit: newQuizData.timeLimit,
+            access_code: newQuizData.accessCode,
+            questions: newQuizData.questions,
+            created_by: teacherData?.id
+          }])
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        // Use the returned data which includes the real ID
+        const createdQuiz = { ...quiz, id: data.id };
+        updatedQuizzes = [...quizzes, createdQuiz];
+
+        toast({
+          title: "Quiz created!",
+          description: `Your new ${quiz.subject} quiz "${quiz.title}" is ready. Share the code with your students.`,
+        });
+      }
+
+      setQuizzes(updatedQuizzes);
+      setShowQuizForm(false);
+      setEditingQuiz(null);
+    } catch (error: any) {
+      console.error('Error saving quiz:', error);
       toast({
-        title: "Quiz updated!",
-        description: `Your quiz "${quiz.title}" has been updated.`,
-      });
-    } else {
-      updatedQuizzes = [...quizzes, quiz];
-      toast({
-        title: "Quiz created!",
-        description: `Your new ${quiz.subject} quiz "${quiz.title}" is ready. Share the code with your students.`,
+        title: "Error saving quiz",
+        description: error.message || "Failed to save to database",
+        variant: "destructive"
       });
     }
-
-    setQuizzes(updatedQuizzes);
-    localStorage.setItem('mathWithMalikQuizzes', JSON.stringify(updatedQuizzes));
-    setShowQuizForm(false);
-    setEditingQuiz(null);
   };
 
   const handleCreateLesson = (lesson: Lesson) => {
@@ -157,16 +227,31 @@ const TeacherDashboard: React.FC = () => {
     setShowLessonBuilder(true);
   };
 
-  const handleDeleteQuiz = (quizId: string) => {
+  const handleDeleteQuiz = async (quizId: string) => {
     if (confirm("Are you sure you want to delete this quiz? This action cannot be undone.")) {
-      const updatedQuizzes = quizzes.filter(q => q.id !== quizId);
-      setQuizzes(updatedQuizzes);
-      localStorage.setItem('mathWithMalikQuizzes', JSON.stringify(updatedQuizzes));
-      toast({
-        title: "Quiz deleted",
-        description: "The quiz has been permanently removed.",
-        variant: "destructive",
-      });
+      try {
+        const { error } = await supabase
+          .from('quizzes')
+          .delete()
+          .eq('id', quizId);
+
+        if (error) throw error;
+
+        const updatedQuizzes = quizzes.filter(q => q.id !== quizId);
+        setQuizzes(updatedQuizzes);
+        toast({
+          title: "Quiz deleted",
+          description: "The quiz has been permanently removed.",
+          variant: "destructive",
+        });
+      } catch (error: any) {
+        console.error("Error deleting quiz:", error);
+        toast({
+          title: "Error deleting quiz",
+          description: error.message,
+          variant: "destructive"
+        });
+      }
     }
   };
 
@@ -200,7 +285,6 @@ const TeacherDashboard: React.FC = () => {
   const filteredLessons = lessons.filter(lesson => lesson.subject === selectedSubject);
 
   const handleCreateLessonClick = () => {
-    // Show scaffolded lesson builder
     setShowScaffoldedLessonBuilder(true);
   };
 
