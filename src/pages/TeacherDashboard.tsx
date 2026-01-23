@@ -136,6 +136,14 @@ const TeacherDashboard: React.FC = () => {
       } else {
         // Create new quiz
         const { id, ...newQuizData } = quizToSave;
+        console.log("Attempting to save quiz:", {
+          title: newQuizData.title,
+          grade: newQuizData.gradeLevel,
+          subject: newQuizData.subject,
+          code: newQuizData.accessCode,
+          questionsCount: newQuizData.questions?.length
+        });
+
         const { data, error } = await supabase
           .from('quizzes')
           .insert([{
@@ -145,7 +153,8 @@ const TeacherDashboard: React.FC = () => {
             subject: newQuizData.subject,
             time_limit: newQuizData.timeLimit,
             access_code: newQuizData.accessCode,
-            questions: newQuizData.questions
+            questions: newQuizData.questions,
+            created_by: quiz.createdBy
           }])
           .select()
           .single();
