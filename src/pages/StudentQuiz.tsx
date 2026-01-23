@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { Clock, CheckCircle, XCircle, Zap, GaugeCircle } from "lucide-react";
-import { QuizQuestion, StudentAnswer } from '@/types/quiz';
+import { Clock, CheckCircle, XCircle, Zap } from "lucide-react";
+import { StudentAnswer } from '@/types/quiz';
 import { BookOpen, BookText, Laptop } from "lucide-react";
 import PowerMeter from '@/components/PowerMeter';
+import { supabase } from '@/lib/supabase';
 
 interface StudentData {
   name: string;
@@ -28,17 +29,14 @@ const StudentQuiz: React.FC = () => {
   const [score, setScore] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [startTime] = useState(Date.now());
-  
+
   // Power meter state
   const [power, setPower] = useState(50); // Starting power at 50%
   const [isAnimating, setIsAnimating] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const maxPower = 100;
-  
-  // Debug state
-  const [debugInfo, setDebugInfo] = useState<string>("");
-  
+
   // Load student data and quiz
   useEffect(() => {
     const loadData = async () => {
@@ -57,41 +55,26 @@ const StudentQuiz: React.FC = () => {
 
         const student = JSON.parse(storedStudentData);
         setStudentData(student);
-        console.log("Student data loaded:", student);
-        
-        // Get quiz data
-        const storedQuizzes = localStorage.getItem('mathWithMalikQuizzes');
-        if (!storedQuizzes) {
+
+        // Get quiz data from Supabase
+        const { data: quizData, error } = await supabase
+          .from('quizzes')
+          .select('*')
+          .eq('id', student.quizId)
+          .single();
+
+        if (error || !quizData) {
+          console.error("Error loading quiz:", error);
           toast({
             title: "Error",
-            description: "No quiz data found. Please contact your teacher.",
+            description: "Quiz not found or could not be loaded. Please contact your teacher.",
             variant: "destructive",
           });
           navigate('/student-join');
           return;
         }
 
-        const quizzes = JSON.parse(storedQuizzes);
-        console.log("Available quizzes:", quizzes.length);
-        console.log("Looking for quiz with ID:", student.quizId);
-        
-        const matchingQuiz = quizzes.find((q: any) => q.id === student.quizId);
-        
-        if (!matchingQuiz) {
-          setDebugInfo(`Quiz not found. Student ID: ${student.quizId}, Available quiz IDs: ${quizzes.map((q: any) => q.id).join(', ')}`);
-          toast({
-            title: "Error",
-            description: "Quiz not found. Please contact your teacher.",
-            variant: "destructive",
-          });
-          navigate('/student-join');
-          return;
-        }
-
-        console.log("Found matching quiz:", matchingQuiz.title);
-        console.log("Quiz has questions:", matchingQuiz.questions ? matchingQuiz.questions.length : 0);
-        
-        if (!matchingQuiz.questions || matchingQuiz.questions.length === 0) {
+        if (!quizData.questions || quizData.questions.length === 0) {
           toast({
             title: "Error",
             description: "This quiz doesn't have any questions. Please contact your teacher.",
@@ -101,12 +84,11 @@ const StudentQuiz: React.FC = () => {
           return;
         }
 
-        setQuiz(matchingQuiz);
-        setTimeLeft(matchingQuiz.timeLimit || 30); // Default 30 seconds per question if not specified
+        setQuiz(quizData);
+        setTimeLeft(quizData.timeLimit || 30); // Default 30 seconds per question if not specified
         setIsLoading(false);
       } catch (error) {
         console.error("Error loading quiz:", error);
-        setDebugInfo(`Error: ${error instanceof Error ? error.message : String(error)}`);
         toast({
           title: "Error",
           description: "Failed to load quiz data. Please try again.",
@@ -122,7 +104,7 @@ const StudentQuiz: React.FC = () => {
   // Timer effect
   useEffect(() => {
     if (isLoading || quizCompleted) return;
-    
+
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
@@ -181,7 +163,7 @@ const StudentQuiz: React.FC = () => {
     if (!quiz || !quiz.subject) return null;
 
     const colors = getSubjectColor();
-    
+
     switch (quiz.subject) {
       case "math": return <BookOpen size={16} className={colors.text} />;
       case "english": return <BookText size={16} className={colors.text} />;
@@ -205,52 +187,52 @@ const StudentQuiz: React.FC = () => {
 
   const handleNextQuestion = () => {
     if (!quiz) return;
-    
+
     // Save answer
     const currentQuestion = quiz.questions[currentQuestionIndex];
     const isCorrect = selectedOption === currentQuestion.correctOptionIndex;
-    
+
     // Update power based on answer
     const powerChange = isCorrect ? 10 : -5;
     const newPower = Math.max(0, Math.min(maxPower, power + powerChange));
-    
+
     // Set feedback message
-    const feedbackMsg = isCorrect 
-      ? `Correct! +10 Power! ${getMotivationMessage(newPower)}` 
+    const feedbackMsg = isCorrect
+      ? `Correct! +10 Power! ${getMotivationMessage(newPower)}`
       : `Incorrect! -5 Power. ${getMotivationMessage(newPower)}`;
-    
+
     setFeedbackMessage(feedbackMsg);
     setShowFeedback(true);
     setIsAnimating(true);
-    
+
     // Update power with animation
     setPower(newPower);
-    
+
     // Play sound effect (will be silent if browser blocks autoplay)
     const sound = new Audio(isCorrect ? '/correct-sound.mp3' : '/incorrect-sound.mp3');
     sound.volume = 0.5;
-    sound.play().catch(() => {}); // Catch and ignore autoplay errors
-    
+    sound.play().catch(() => { }); // Catch and ignore autoplay errors
+
     const answer: StudentAnswer = {
       questionId: currentQuestion.id,
       selectedOptionIndex: selectedOption,
       isCorrect: isCorrect,
       timeTaken: quiz.timeLimit - timeLeft
     };
-    
+
     const updatedAnswers = [...answers, answer];
     setAnswers(updatedAnswers);
-    
+
     // Update score
     if (isCorrect) {
       setScore(prev => prev + 1);
     }
-    
+
     // Hide feedback after 2 seconds
     setTimeout(() => {
       setShowFeedback(false);
       setIsAnimating(false);
-      
+
       // Check if this was the last question
       if (currentQuestionIndex === quiz.questions.length - 1) {
         // Quiz completed
@@ -263,35 +245,44 @@ const StudentQuiz: React.FC = () => {
       }
     }, 2000);
   };
-  
-  const completeQuiz = (finalAnswers: StudentAnswer[]) => {
+
+  const completeQuiz = async (finalAnswers: StudentAnswer[]) => {
     setQuizCompleted(true);
-    
+
     const totalTimeTaken = Math.floor((Date.now() - startTime) / 1000);
-    
-    // In a real app, this would be saved to Firebase
-    const quizResult = {
-      id: `result-${Date.now()}`,
-      studentName: studentData?.name || "Unknown Student",
-      quizId: quiz.id,
-      score: finalAnswers.filter(a => a.isCorrect).length,
-      totalQuestions: quiz.questions.length,
-      timeTaken: totalTimeTaken,
-      completedAt: new Date().toISOString(),
-      answers: finalAnswers,
-      finalPower: power // Save the final power level
-    };
-    
-    // Store results
-    const storedResults = localStorage.getItem('mathWithMalikResults') || '[]';
-    const results = JSON.parse(storedResults);
-    results.push(quizResult);
-    localStorage.setItem('mathWithMalikResults', JSON.stringify(results));
-    
-    toast({
-      title: "Quiz completed!",
-      description: `Your score: ${quizResult.score}/${quizResult.totalQuestions}`,
-    });
+
+    try {
+      // Submit results to Supabase
+      const { error } = await supabase
+        .from('quiz_results')
+        .insert([{
+          student_name: studentData?.name || "Unknown Student",
+          quiz_id: quiz.id,
+          score: Math.round((finalAnswers.filter(a => a.isCorrect).length / quiz.questions.length) * 100), // Saving as percentage or raw? Let's check schema. Schema has score int. Let's save raw score for now or percentage. The Dashboard usually expects raw score or we can adapt. Let's save RAW SCORE based on table usage.
+          // Table schema: score int, total_questions int. So raw score is better.
+          // Wait, the insert above uses filter length.
+          score: finalAnswers.filter(a => a.isCorrect).length,
+          total_questions: quiz.questions.length,
+          time_taken: totalTimeTaken,
+          answers: finalAnswers
+        }]);
+
+      if (error) {
+        console.error("Error submitting results:", error);
+        toast({
+          title: "Warning",
+          description: "Could not save results to server. Please show your score to the teacher.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Quiz completed!",
+          description: "Your results have been submitted.",
+        });
+      }
+    } catch (err) {
+      console.error("Error in completeQuiz:", err);
+    }
   };
 
   const formatTime = (seconds: number): string => {
@@ -315,14 +306,6 @@ const StudentQuiz: React.FC = () => {
             </div>
           </CardContent>
         </Card>
-        
-        {/* Debug info - only shown during development */}
-        {debugInfo && (
-          <div className="mt-4 p-4 bg-red-50 text-red-800 border border-red-200 rounded-md max-w-md">
-            <p className="font-semibold">Debug Information:</p>
-            <p className="text-sm font-mono break-all">{debugInfo}</p>
-          </div>
-        )}
       </div>
     );
   }
@@ -341,7 +324,7 @@ const StudentQuiz: React.FC = () => {
               <div className={`text-6xl font-bold mb-2 ${colors.completed}`}>{score}/{quiz?.questions.length}</div>
               <p className="text-gray-500">Your Score</p>
             </div>
-            
+
             <div className="space-y-4">
               <div className="p-4 rounded-lg bg-gray-50">
                 <p className="text-gray-600">Time taken: {formatTime(Math.floor((Date.now() - startTime) / 1000))}</p>
@@ -352,7 +335,7 @@ const StudentQuiz: React.FC = () => {
                   <PowerMeter power={power} animate={false} />
                 </div>
               </div>
-              
+
               <div className="p-4 border rounded-lg">
                 <p className="font-semibold mb-2">Leaderboard Rank</p>
                 <div className="flex items-center justify-center gap-2 text-xl">
@@ -365,7 +348,7 @@ const StudentQuiz: React.FC = () => {
             </div>
           </CardContent>
           <CardFooter>
-            <Button 
+            <Button
               className={`w-full ${colors.button}`}
               onClick={() => navigate('/student-join')}
             >
@@ -383,20 +366,12 @@ const StudentQuiz: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center bg-quiz-light">
         <div className="text-center p-8">
           <p className="text-xl text-red-600">No questions found for this quiz.</p>
-          <Button 
+          <Button
             className="mt-4"
             onClick={() => navigate('/student-join')}
           >
             Return to Join Page
           </Button>
-          
-          {/* Debug info */}
-          {debugInfo && (
-            <div className="mt-4 p-4 bg-red-50 text-red-800 border border-red-200 rounded-md">
-              <p className="font-semibold">Debug Information:</p>
-              <p className="text-sm font-mono break-all">{debugInfo}</p>
-            </div>
-          )}
         </div>
       </div>
     );
@@ -423,38 +398,37 @@ const StudentQuiz: React.FC = () => {
           </div>
         </div>
       </header>
-      
+
       <main className="flex-1 container mx-auto p-4 flex items-center justify-center">
         <Card className="w-full max-w-3xl shadow-lg">
           <CardHeader>
             <div className="w-full mb-4">
               <PowerMeter power={power} animate={isAnimating} showIcon={true} />
             </div>
-            
+
             {showFeedback && feedbackMessage && (
-              <div className={`p-3 rounded-lg mb-4 text-center animate-fade-in ${
-                feedbackMessage.includes("Correct") 
-                  ? "bg-green-100 text-green-800 border border-green-200" 
+              <div className={`p-3 rounded-lg mb-4 text-center animate-fade-in ${feedbackMessage.includes("Correct")
+                  ? "bg-green-100 text-green-800 border border-green-200"
                   : "bg-red-100 text-red-800 border border-red-200"
-              }`}>
+                }`}>
                 <div className="flex items-center justify-center gap-2">
-                  {feedbackMessage.includes("Correct") 
-                    ? <CheckCircle size={18} className="text-green-600" /> 
+                  {feedbackMessage.includes("Correct")
+                    ? <CheckCircle size={18} className="text-green-600" />
                     : <XCircle size={18} className="text-red-600" />
                   }
                   <p className="font-medium">{feedbackMessage}</p>
                 </div>
               </div>
             )}
-            
+
             <CardTitle className="text-xl">
               {currentQuestion?.text}
             </CardTitle>
             {currentQuestion?.imageUrl && (
               <div className="mt-4">
-                <img 
-                  src={currentQuestion.imageUrl} 
-                  alt="Question illustration" 
+                <img
+                  src={currentQuestion.imageUrl}
+                  alt="Question illustration"
                   className="mx-auto max-h-60 rounded-md border border-gray-200"
                 />
               </div>
@@ -463,19 +437,17 @@ const StudentQuiz: React.FC = () => {
           <CardContent>
             <div className="space-y-3">
               {currentQuestion?.options.map((option, index) => (
-                <div 
+                <div
                   key={index}
                   onClick={() => handleOptionSelect(index)}
-                  className={`p-4 rounded-lg cursor-pointer border transition-colors ${
-                    selectedOption === index 
+                  className={`p-4 rounded-lg cursor-pointer border transition-colors ${selectedOption === index
                       ? colors.selected
                       : 'border-gray-200 hover:border-gray-300 bg-white'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-6 h-6 flex items-center justify-center rounded-full ${
-                      selectedOption === index ? colors.button + " text-white" : 'bg-gray-100'
-                    }`}>
+                    <div className={`w-6 h-6 flex items-center justify-center rounded-full ${selectedOption === index ? colors.button + " text-white" : 'bg-gray-100'
+                      }`}>
                       {String.fromCharCode(65 + index)}
                     </div>
                     <span>{option}</span>
@@ -490,7 +462,7 @@ const StudentQuiz: React.FC = () => {
                 Student: {studentData?.name}
               </p>
             </div>
-            <Button 
+            <Button
               onClick={handleNextQuestion}
               disabled={selectedOption === null || showFeedback}
               className={colors.button}
