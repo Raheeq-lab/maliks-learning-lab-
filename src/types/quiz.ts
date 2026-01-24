@@ -64,10 +64,12 @@ export interface Lesson {
 
 export interface LessonContent {
   id: string;
-  type: "text" | "image" | "imageWithPrompt" | "dragAndDrop" | "labeling" | "video" | "activity"; // Added activity type
+  type: "text" | "image" | "imageWithPrompt" | "dragAndDrop" | "labeling" | "video" | "activity" | "file"; // Added file type
   content: string;
   imageUrl?: string;
   videoUrl?: string; // Added for video content
+  fileUrl?: string; // Added for file content
+  fileName?: string; // Added for file name
   prompt?: string;
   options?: string[];
   solution?: string | string[];
@@ -99,10 +101,12 @@ export interface LessonPhase {
 
 export interface LessonPhaseContent {
   id: string;
-  type: "text" | "image" | "video" | "quiz" | "activity" | "resource";
+  type: "text" | "image" | "video" | "quiz" | "activity" | "resource" | "file";
   content: string;
   imageUrl?: string;
   videoUrl?: string;
+  fileUrl?: string;
+  fileName?: string;
   quizQuestions?: QuizQuestion[];
   resourceUrl?: string;
   aiToolUsed?: string;

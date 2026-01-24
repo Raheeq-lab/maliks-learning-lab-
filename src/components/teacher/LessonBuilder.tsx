@@ -10,7 +10,7 @@ import {
   X, Plus, Trash2, Image, Upload, FileText, BookOpen, Laptop,
   BookText, Brain, BarChart2, Gamepad2, BriefcaseBusiness, MessageSquare,
   Pen, Headphones, Pencil, Search, Play, MousePointer, CheckSquare, FileUp,
-  Video, ArrowLeft, Activity, Timer, Star, Users, Gamepad, Wand2, Loader2, Sparkles
+  Video, ArrowLeft, Activity, Timer, Star, Users, Gamepad, Wand2, Loader2, Sparkles, File
 } from "lucide-react";
 import { Lesson, LessonContent, ActivitySettings, TeamInfo, GameQuestion } from '@/types/quiz';
 import SubjectSelector from '@/components/SubjectSelector';
@@ -94,6 +94,7 @@ const LessonBuilder: React.FC<LessonBuilderProps> = ({ grades, onSave, onCancel,
   const [selectedLearningType, setSelectedLearningType] = useState<string>('');
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const videoInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const fileDocInputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const [selectedGrade, setSelectedGrade] = useState<number>(initialData?.gradeLevel || grades[0] || 1);
 
   // New game activity state
@@ -115,6 +116,12 @@ const LessonBuilder: React.FC<LessonBuilderProps> = ({ grades, onSave, onCancel,
     switch (subject) {
       case "math":
         return [
+          {
+            id: "scaffolded-lesson",
+            title: "Scaffolded Lesson (40m)",
+            description: "Structured 5-phase lesson: Engage, Model, Guided, Independent, Reflect.",
+            icon: <BookOpen className="text-purple-600" />
+          },
           {
             id: "problem-solving",
             title: "Problem Solving Practice",
@@ -149,6 +156,12 @@ const LessonBuilder: React.FC<LessonBuilderProps> = ({ grades, onSave, onCancel,
       case "english":
         return [
           {
+            id: "scaffolded-lesson",
+            title: "Scaffolded Lesson (40m)",
+            description: "Structured 5-phase lesson: Engage, Model, Guided, Independent, Reflect.",
+            icon: <BookOpen className="text-green-600" />
+          },
+          {
             id: "reading-comprehension",
             title: "Reading Comprehension",
             description: "Read passages and answer questions to build understanding.",
@@ -181,6 +194,12 @@ const LessonBuilder: React.FC<LessonBuilderProps> = ({ grades, onSave, onCancel,
         ];
       case "ict":
         return [
+          {
+            id: "scaffolded-lesson",
+            title: "Scaffolded Lesson (40m)",
+            description: "Structured 5-phase lesson: Engage, Model, Guided, Independent, Reflect.",
+            icon: <BookOpen className="text-orange-600" />
+          },
           {
             id: "identify-label",
             title: "Identify & Label",
@@ -219,6 +238,14 @@ const LessonBuilder: React.FC<LessonBuilderProps> = ({ grades, onSave, onCancel,
 
   const getSuggestedContentBlocks = (learningTypeId: string): LessonContent[] => {
     switch (learningTypeId) {
+      case "scaffolded-lesson":
+        return [
+          { id: `content-${Date.now()}-1`, type: 'text', content: '## **Engage (5m)**\nHook students and activate prior knowledge.\n\n[Add content here]' },
+          { id: `content-${Date.now()}-2`, type: 'text', content: '## **Model (8m)**\nI Do: Demonstrate the concept.\n\n[Add content here]' },
+          { id: `content-${Date.now()}-3`, type: 'text', content: '## **Guided Practice (12m)**\nWe Do: Practice together.\n\n[Add content here]' },
+          { id: `content-${Date.now()}-4`, type: 'text', content: '## **Independent Practice (10m)**\nYou Do: Students practice alone.\n\n[Add content here]' },
+          { id: `content-${Date.now()}-5`, type: 'text', content: '## **Reflect (5m)**\nExit Ticket / Summary.\n\n[Add content here]' }
+        ];
       case "problem-solving":
         return [
           { id: `content-${Date.now()}-1`, type: 'text', content: 'Problem Statement:' },
@@ -874,6 +901,62 @@ const LessonBuilder: React.FC<LessonBuilderProps> = ({ grades, onSave, onCancel,
     }
   };
 
+  const handleFileUpload = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Check file size (limit to 20MB for documents)
+    if (file.size > 20 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Document size should be less than 20MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check file type (basic extension check or mime type)
+    const validTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // docx
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation', // pptx
+    ];
+
+    // We can also check extension if mime types are tricky
+    const fileName = file.name.toLowerCase();
+    const validExtensions = ['.pdf', '.doc', '.docx', '.ppt', '.pptx'];
+    const hasValidExtension = validExtensions.some(ext => fileName.endsWith(ext));
+
+    if (!validTypes.includes(file.type) && !hasValidExtension) {
+      toast({
+        title: "Invalid file type",
+        description: "Only PDF, Word, and PowerPoint files are allowed",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Convert to base64
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      handleContentChange(index, 'fileUrl', base64);
+      handleContentChange(index, 'fileName', file.name);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeFile = (index: number) => {
+    handleContentChange(index, 'fileUrl', undefined);
+    handleContentChange(index, 'fileName', undefined);
+    // Reset file input
+    if (fileDocInputRefs.current[index]) {
+      fileDocInputRefs.current[index]!.value = '';
+    }
+  };
+
   const handleAddOption = (contentIndex: number) => {
     setContentBlocks(prev => prev.map((block, i) => {
       if (i !== contentIndex) return block;
@@ -989,6 +1072,15 @@ Task: ${prompt}`;
         toast({
           title: "Incomplete content",
           description: `Text block ${i + 1} needs content.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (block.type === 'file' && !block.fileUrl) {
+        toast({
+          title: "Missing file",
+          description: `File block ${i + 1} needs a document uploaded.`,
           variant: "destructive",
         });
         return;
@@ -1176,6 +1268,14 @@ Task: ${prompt}`;
                   onClick={() => handleAddContent('activity')}
                 >
                   <Plus size={16} className="mr-1" /> Add Activity
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleAddContent('file')}
+                >
+                  <Plus size={16} className="mr-1" /> Add File
                 </Button>
               </div>
             </CardHeader>
@@ -1378,6 +1478,65 @@ Task: ${prompt}`;
                         </div>
                       )}
 
+                      {block.type === 'file' && (
+                        <div className="space-y-4">
+                          <Label>Document (PDF, Word, PowerPoint)</Label>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="file"
+                              accept=".pdf,.doc,.docx,.ppt,.pptx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation"
+                              ref={(el) => (fileDocInputRefs.current[index] = el)}
+                              onChange={(e) => handleFileUpload(index, e)}
+                              className="hidden"
+                              id={`file-upload-${index}`}
+                            />
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => fileDocInputRefs.current[index]?.click()}
+                            >
+                              <Upload size={16} className="mr-2" />
+                              Upload Document
+                            </Button>
+                            {block.fileUrl && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={() => removeFile(index)}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <Trash2 size={16} className="mr-1" />
+                                Remove
+                              </Button>
+                            )}
+                          </div>
+                          {block.fileUrl && (
+                            <div className="mt-2 p-3 border rounded bg-slate-50 flex items-center gap-3">
+                              <File className="text-blue-500" size={24} />
+                              <div className="flex-1 overflow-hidden">
+                                <p className="font-medium truncate">{block.fileName || 'Document'}</p>
+                                <a
+                                  href={block.fileUrl}
+                                  download={block.fileName || 'download'}
+                                  className="text-xs text-blue-600 hover:underline"
+                                >
+                                  Download/View
+                                </a>
+                              </div>
+                            </div>
+                          )}
+                          <div>
+                            <Label htmlFor={`file-description-${index}`}>Description (Optional)</Label>
+                            <Input
+                              id={`file-description-${index}`}
+                              value={block.content || ''}
+                              onChange={(e) => handleContentChange(index, 'content', e.target.value)}
+                              placeholder="Document description..."
+                            />
+                          </div>
+                        </div>
+                      )}
+
                       {block.type === 'imageWithPrompt' && (
                         <div className="space-y-4">
                           <Label>Image with Prompt</Label>
@@ -1532,8 +1691,8 @@ Task: ${prompt}`;
             </Button>
           </div>
         </div>
-      </form>
-    </div>
+      </form >
+    </div >
   );
 };
 
