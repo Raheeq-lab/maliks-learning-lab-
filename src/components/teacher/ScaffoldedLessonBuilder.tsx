@@ -904,6 +904,22 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                             </div>
                           </div>
                         )}
+                        {content.type === "file" && content.fileUrl && (
+                          <div className="flex items-center gap-2 p-3 bg-blue-50 rounded border border-blue-100">
+                            <File className="text-blue-500" size={24} />
+                            <div className="flex-1 overflow-hidden">
+                              <div className="font-medium text-blue-900 truncate">{content.fileName || "Document"}</div>
+                              <p className="text-xs text-blue-700">{content.content || "Uploaded document"}</p>
+                              <a
+                                href={content.fileUrl}
+                                download={content.fileName || 'download'}
+                                className="text-xs text-blue-600 font-bold hover:underline mt-1 inline-block"
+                              >
+                                Download / View
+                              </a>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
