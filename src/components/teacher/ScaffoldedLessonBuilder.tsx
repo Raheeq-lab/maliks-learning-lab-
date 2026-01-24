@@ -9,7 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import {
   ArrowLeft, Plus, Trash2, Clock, BookOpen, Laptop, BookText, Brain,
-  Play, PenTool, FileText, Download, Save, Eye, Sparkles, Wand2, Loader2
+  Play, PenTool, FileText, Download, Save, Eye, Sparkles, Wand2, Loader2,
+  Upload, File, X, Image as ImageIcon
 } from "lucide-react";
 import {
   Lesson,
@@ -133,6 +134,9 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
   const [activePhase, setActivePhase] = useState<keyof LessonStructure>("engage");
   const [showPreview, setShowPreview] = useState(false);
   const [activitySettings, setActivitySettings] = useState<ActivitySettings>(initialActivitySettings);
+  const imageInputRefs = React.useRef<{ [key: string]: HTMLInputElement | null }>({});
+  const videoInputRefs = React.useRef<{ [key: string]: HTMLInputElement | null }>({});
+  const fileInputRefs = React.useRef<{ [key: string]: HTMLInputElement | null }>({});
 
   // AI Generation State
   const [generatingPhase, setGeneratingPhase] = useState<string | null>(null);
@@ -266,6 +270,76 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
     setGeneratingPhase(null);
   };
 
+  const handleImageUpload = (phase: keyof LessonStructure, contentId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Image size should be less than 5MB", variant: "destructive" });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      handleContentChange(phase, contentId, "imageUrl", base64);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleVideoUpload = (phase: keyof LessonStructure, contentId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 50 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Video size should be less than 50MB", variant: "destructive" });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      handleContentChange(phase, contentId, "videoUrl", base64);
+      handleContentChange(phase, contentId, "fileName", file.name);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleFileUpload = (phase: keyof LessonStructure, contentId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 20 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Document size should be less than 20MB", variant: "destructive" });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      handleContentChange(phase, contentId, "fileUrl", base64);
+      handleContentChange(phase, contentId, "fileName", file.name);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeImage = (phase: keyof LessonStructure, contentId: string) => {
+    handleContentChange(phase, contentId, "imageUrl", undefined);
+    if (imageInputRefs.current[contentId]) imageInputRefs.current[contentId]!.value = '';
+  };
+
+  const removeVideo = (phase: keyof LessonStructure, contentId: string) => {
+    handleContentChange(phase, contentId, "videoUrl", undefined);
+    handleContentChange(phase, contentId, "fileName", undefined);
+    if (videoInputRefs.current[contentId]) videoInputRefs.current[contentId]!.value = '';
+  };
+
+  const removeFile = (phase: keyof LessonStructure, contentId: string) => {
+    handleContentChange(phase, contentId, "fileUrl", undefined);
+    handleContentChange(phase, contentId, "fileName", undefined);
+    if (fileInputRefs.current[contentId]) fileInputRefs.current[contentId]!.value = '';
+  };
+
 
   const handleSave = () => {
     if (!title.trim()) {
@@ -366,7 +440,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
 
       case "image":
         return (
-          <div className="space-y-2">
+          <div className="space-y-4">
             <div className="flex justify-between items-center">
               <Label>Image</Label>
               <Button
@@ -379,17 +453,36 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                 <Trash2 size={16} />
               </Button>
             </div>
-            <Input
-              type="text"
-              value={content.imageUrl || ''}
-              onChange={(e) => handleContentChange(phase, content.id, "imageUrl", e.target.value)}
-              placeholder="Enter image URL"
-            />
-            <Input
-              value={content.content}
-              onChange={(e) => handleContentChange(phase, content.id, "content", e.target.value)}
-              placeholder="Image caption (optional)"
-            />
+
+            <div className="flex items-center gap-2">
+              <input
+                type="file"
+                accept="image/*"
+                ref={(el) => (imageInputRefs.current[content.id] = el)}
+                onChange={(e) => handleImageUpload(phase, content.id, e)}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => imageInputRefs.current[content.id]?.click()}
+                className="flex items-center gap-2"
+              >
+                <Upload size={16} />
+                Upload Image
+              </Button>
+              {content.imageUrl && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => removeImage(phase, content.id)}
+                  className="text-red-500"
+                >
+                  <X size={16} className="mr-1" /> Remove
+                </Button>
+              )}
+            </div>
+
             {content.imageUrl && (
               <div className="mt-2">
                 <img
@@ -399,12 +492,18 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                 />
               </div>
             )}
+
+            <Input
+              value={content.content}
+              onChange={(e) => handleContentChange(phase, content.id, "content", e.target.value)}
+              placeholder="Image caption (optional)"
+            />
           </div>
         );
 
       case "video":
         return (
-          <div className="space-y-2">
+          <div className="space-y-4">
             <div className="flex justify-between items-center">
               <Label>Video</Label>
               <Button
@@ -417,12 +516,43 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                 <Trash2 size={16} />
               </Button>
             </div>
-            <Input
-              type="text"
-              value={content.videoUrl || ''}
-              onChange={(e) => handleContentChange(phase, content.id, "videoUrl", e.target.value)}
-              placeholder="Enter video URL (YouTube or direct MP4 link)"
-            />
+
+            <div className="flex items-center gap-2">
+              <input
+                type="file"
+                accept="video/*"
+                ref={(el) => (videoInputRefs.current[content.id] = el)}
+                onChange={(e) => handleVideoUpload(phase, content.id, e)}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => videoInputRefs.current[content.id]?.click()}
+                className="flex items-center gap-2"
+              >
+                <Upload size={16} />
+                Upload Video
+              </Button>
+              {content.videoUrl && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => removeVideo(phase, content.id)}
+                  className="text-red-500"
+                >
+                  <X size={16} className="mr-1" /> Remove
+                </Button>
+              )}
+            </div>
+
+            {content.videoUrl && (
+              <div className="mt-2 p-2 border rounded bg-slate-50 flex items-center gap-2">
+                <Play size={16} className="text-blue-500" />
+                <span className="text-sm truncate max-w-[200px]">{content.fileName || "Video file uploaded"}</span>
+              </div>
+            )}
+
             <Input
               value={content.content}
               onChange={(e) => handleContentChange(phase, content.id, "content", e.target.value)}
@@ -535,7 +665,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
         return (
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <Label>Resource</Label>
+              <Label>Resource Link</Label>
               <Button
                 type="button"
                 onClick={() => handleRemoveContent(phase, content.id)}
@@ -555,6 +685,68 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
               value={content.resourceUrl || ''}
               onChange={(e) => handleContentChange(phase, content.id, "resourceUrl", e.target.value)}
               placeholder="Resource URL or reference"
+            />
+          </div>
+        );
+
+      case "file":
+        return (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <Label>Document (PDF, Word, PPT)</Label>
+              <Button
+                type="button"
+                onClick={() => handleRemoveContent(phase, content.id)}
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 text-red-500"
+              >
+                <Trash2 size={16} />
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx,.ppt,.pptx"
+                ref={(el) => (fileInputRefs.current[content.id] = el)}
+                onChange={(e) => handleFileUpload(phase, content.id, e)}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => fileInputRefs.current[content.id]?.click()}
+                className="flex items-center gap-2"
+              >
+                <Upload size={16} />
+                Upload Document
+              </Button>
+              {content.fileUrl && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => removeFile(phase, content.id)}
+                  className="text-red-500"
+                >
+                  <X size={16} className="mr-1" /> Remove
+                </Button>
+              )}
+            </div>
+
+            {content.fileUrl && (
+              <div className="mt-2 p-3 border rounded bg-slate-50 flex items-center gap-3">
+                <File className="text-blue-500" size={24} />
+                <div className="flex-1 overflow-hidden">
+                  <p className="font-medium truncate text-sm">{content.fileName || 'Document'}</p>
+                </div>
+              </div>
+            )}
+
+            <Input
+              value={content.content}
+              onChange={(e) => handleContentChange(phase, content.id, "content", e.target.value)}
+              placeholder="Document description"
             />
           </div>
         );
@@ -968,6 +1160,15 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                       <Plus size={16} />
                       <span>Add Activity</span>
                     </Button>
+                    <Button
+                      onClick={() => handleAddContent("engage", "file")}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-1"
+                    >
+                      <Plus size={16} />
+                      <span>Add File</span>
+                    </Button>
                   </div>
                 </TabsContent>
 
@@ -1045,6 +1246,15 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                       <Plus size={16} />
                       <span>Add Resource</span>
                     </Button>
+                    <Button
+                      onClick={() => handleAddContent("model", "file")}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-1"
+                    >
+                      <Plus size={16} />
+                      <span>Add File</span>
+                    </Button>
                   </div>
                 </TabsContent>
 
@@ -1114,6 +1324,15 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                       <Plus size={16} />
                       <span>Add Activity</span>
                     </Button>
+                    <Button
+                      onClick={() => handleAddContent("guidedPractice", "file")}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-1"
+                    >
+                      <Plus size={16} />
+                      <span>Add File</span>
+                    </Button>
                   </div>
                 </TabsContent>
 
@@ -1182,6 +1401,15 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                       <Plus size={16} />
                       <span>Add Activity</span>
                     </Button>
+                    <Button
+                      onClick={() => handleAddContent("independentPractice", "file")}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-1"
+                    >
+                      <Plus size={16} />
+                      <span>Add File</span>
+                    </Button>
                   </div>
                 </TabsContent>
 
@@ -1249,6 +1477,15 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                     >
                       <Plus size={16} />
                       <span>Add Activity</span>
+                    </Button>
+                    <Button
+                      onClick={() => handleAddContent("reflect", "file")}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-1"
+                    >
+                      <Plus size={16} />
+                      <span>Add File</span>
                     </Button>
                   </div>
                 </TabsContent>
