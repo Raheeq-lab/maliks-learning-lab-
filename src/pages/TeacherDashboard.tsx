@@ -65,7 +65,18 @@ const TeacherDashboard: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (quizzesError) throw quizzesError;
-      setQuizzes(quizzesData || []);
+      if (quizzesError) throw quizzesError;
+
+      const mappedQuizzes = (quizzesData || []).map((q: any) => ({
+        ...q,
+        gradeLevel: q.grade_level,
+        timeLimit: q.time_limit,
+        accessCode: q.access_code,
+        createdBy: q.created_by,
+        isPublic: q.is_public
+      }));
+
+      setQuizzes(mappedQuizzes);
 
       // 2. Fetch Lessons (RLS will filter by created_by = user.id)
       const { data: lessonsData, error: lessonsError } = await supabase
