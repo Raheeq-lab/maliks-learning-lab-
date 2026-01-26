@@ -6,8 +6,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import TeacherSignup from "./pages/TeacherSignup";
-import { AuthProvider } from "./context/AuthContext";
 import TeacherLogin from "./pages/TeacherLogin";
+import TeacherDashboard from "./pages/TeacherDashboard";
+import StudentJoin from "./pages/StudentJoin";
+import StudentQuiz from "./pages/StudentQuiz";
+import NotFound from "./pages/NotFound";
+import { AuthProvider } from "./context/AuthContext";
+
+const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
