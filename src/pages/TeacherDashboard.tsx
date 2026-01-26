@@ -263,7 +263,10 @@ const TeacherDashboard: React.FC = () => {
 
   const handleTogglePublicQuiz = async (quiz: Quiz) => {
     try {
-      const newStatus = !((quiz as any).is_public);
+      // Use the camelCase property we mapped earlier
+      const newStatus = !quiz.isPublic;
+
+      // Update in Supabase (database uses snake_case column 'is_public')
       const { error } = await supabase
         .from('quizzes')
         .update({ is_public: newStatus })
@@ -271,7 +274,7 @@ const TeacherDashboard: React.FC = () => {
 
       if (error) throw error;
 
-      // Optimistic update
+      // Optimistic update - update the camelCase property in local state
       setQuizzes(prev => prev.map(q => q.id === quiz.id ? { ...q, isPublic: newStatus } : q));
 
       toast({
@@ -289,7 +292,10 @@ const TeacherDashboard: React.FC = () => {
 
   const handleTogglePublicLesson = async (lesson: Lesson) => {
     try {
-      const newStatus = !((lesson as any).is_public || lesson.isPublic);
+      // Use the camelCase property
+      const newStatus = !lesson.isPublic;
+
+      // Update in Supabase (database uses snake_case column 'is_public')
       const { error } = await supabase
         .from('lessons')
         .update({ is_public: newStatus })
