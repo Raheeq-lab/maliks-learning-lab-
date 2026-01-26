@@ -334,179 +334,168 @@ const TeacherDashboard: React.FC = () => {
     }
   };
 
-  toast({
-    title: "Visibility updated",
-    description: `Lesson is now ${newStatus ? 'Public' : 'Private'}`
-  });
-} catch (error: any) {
-  toast({
-    title: "Error updating visibility",
-    description: error.message,
-    variant: "destructive"
-  });
-}
+
+
+  const handleCopyCode = (title: string) => {
+    toast({
+      title: "Code copied!",
+      description: `The access code for "${title}" has been copied to clipboard.`,
+    });
   };
 
-const handleCopyCode = (title: string) => {
-  toast({
-    title: "Code copied!",
-    description: `The access code for "${title}" has been copied to clipboard.`,
-  });
-};
+  const getSubjectIcon = () => {
+    switch (selectedSubject) {
+      case "math": return <Book className="text-purple-500" />;
+      case "english": return <BookText className="text-green-500" />;
+      case "ict": return <Laptop className="text-orange-500" />;
+      default: return <Book className="text-purple-500" />;
+    }
+  };
 
-const getSubjectIcon = () => {
-  switch (selectedSubject) {
-    case "math": return <Book className="text-purple-500" />;
-    case "english": return <BookText className="text-green-500" />;
-    case "ict": return <Laptop className="text-orange-500" />;
-    default: return <Book className="text-purple-500" />;
+  if (authLoading || isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center flex-col gap-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        <p className="text-gray-500">Loading your classroom...</p>
+      </div>
+    );
   }
-};
 
-if (authLoading || isLoading) {
+  const filteredQuizzes = quizzes.filter(quiz => quiz.subject === selectedSubject);
+  const filteredLessons = lessons.filter(lesson => lesson.subject === selectedSubject);
+
   return (
-    <div className="min-h-screen flex items-center justify-center flex-col gap-4">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
-      <p className="text-gray-500">Loading your classroom...</p>
+    <div className="min-h-screen flex flex-col">
+      <DashboardHeader
+        teacherName={user?.user_metadata?.full_name || user?.email || 'Teacher'}
+        onLogout={handleLogout}
+      />
+
+      <main className="flex-1 container mx-auto py-8 px-4">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">Malik's Learning Lab</h1>
+          {/* Could add a refresh button here */}
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-6 mb-6">
+          <div className="w-full sm:w-1/2">
+            <SubjectSelector
+              selectedSubject={selectedSubject}
+              onChange={(subject) => setSelectedSubject(subject as "math" | "english" | "ict")}
+            />
+          </div>
+          <div className="w-full sm:w-1/2">
+            <GradeSelector
+              selectedGrades={selectedGrades}
+              onChange={setSelectedGrades}
+              subject={selectedSubject}
+              availableGrades={availableGrades}
+            />
+          </div>
+        </div>
+
+        {!showQuizForm && !showLessonBuilder && !showScaffoldedLessonBuilder ? (
+          <Tabs defaultValue="quizzes">
+            <TabsList className="mb-8 flex-wrap h-auto gap-2">
+              <TabsTrigger value="quizzes" className="flex items-center gap-2">
+                <Book size={16} />
+                <span>Quiz Zone</span>
+              </TabsTrigger>
+              <TabsTrigger value="lessons" className="flex items-center gap-2">
+                <FileText size={16} />
+                <span>Lesson Builder</span>
+              </TabsTrigger>
+              <TabsTrigger value="library" className="flex items-center gap-2">
+                <Globe size={16} />
+                <span>Public Library</span>
+              </TabsTrigger>
+              <TabsTrigger value="performance" className="flex items-center gap-2">
+                <BarChart size={16} />
+                <span>Performance</span>
+              </TabsTrigger>
+              <TabsTrigger value="generate" className="flex items-center gap-2">
+                {getSubjectIcon()}
+                <span>Content Generator</span>
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="quizzes">
+              <QuizzesTab
+                quizzes={filteredQuizzes}
+                onCreateQuiz={() => setShowQuizForm(true)}
+                onCopyCode={handleCopyCode}
+                onEditQuiz={(q) => { setEditingQuiz(q); setShowQuizForm(true); }}
+                onDeleteQuiz={handleDeleteQuiz}
+                onTogglePublic={handleTogglePublicQuiz}
+                subject={selectedSubject}
+              />
+            </TabsContent>
+
+            <TabsContent value="lessons">
+              <LessonsTab
+                lessons={filteredLessons}
+                onCreateLesson={() => setShowScaffoldedLessonBuilder(true)}
+                onCopyCode={handleCopyCode}
+                onEditLesson={(l) => { setEditingLesson(l); setShowLessonBuilder(true); }}
+                onDeleteLesson={handleDeleteLesson}
+                onTogglePublic={handleTogglePublicLesson}
+                subject={selectedSubject}
+              />
+            </TabsContent>
+
+            <TabsContent value="library">
+              <PublicLibrary onCopySuccess={loadData} />
+            </TabsContent>
+
+            <TabsContent value="performance">
+              <PerformanceTab
+                quizzes={quizzes}
+                getTotalStudents={() => getTotalStudents(results)}
+                getTotalCompletions={() => getTotalCompletions(results)}
+                getLeaderboardEntries={(quizId) => getLeaderboardEntries(results, quizId)}
+                findQuizById={(id) => findQuizById(quizzes, id)}
+                subject={selectedSubject}
+              />
+            </TabsContent>
+
+            <TabsContent value="generate">
+              <QuestionGeneratorTab
+                grades={selectedGrades}
+                subject={selectedSubject}
+                onCreateQuiz={handleCreateQuiz}
+                onCreateLesson={handleCreateLesson}
+              />
+            </TabsContent>
+          </Tabs>
+        ) : showQuizForm ? (
+          <QuizForm
+            grades={selectedGrades}
+            onSave={handleCreateQuiz}
+            onCancel={() => { setShowQuizForm(false); setEditingQuiz(null); }}
+            subject={selectedSubject}
+            initialData={editingQuiz}
+          />
+        ) : showScaffoldedLessonBuilder ? (
+          <ScaffoldedLessonBuilder
+            grades={selectedGrades}
+            onSave={handleCreateLesson}
+            onCancel={() => { setShowScaffoldedLessonBuilder(false); setEditingLesson(null); }}
+            subject={selectedSubject}
+          />
+        ) : (
+          <LessonBuilder
+            grades={selectedGrades}
+            onSave={handleCreateLesson}
+            onCancel={() => { setShowLessonBuilder(false); setEditingLesson(null); }}
+            subject={selectedSubject}
+            initialData={editingLesson}
+          />
+        )}
+      </main>
+
+      <DashboardFooter />
     </div>
   );
-}
-
-const filteredQuizzes = quizzes.filter(quiz => quiz.subject === selectedSubject);
-const filteredLessons = lessons.filter(lesson => lesson.subject === selectedSubject);
-
-return (
-  <div className="min-h-screen flex flex-col">
-    <DashboardHeader
-      teacherName={user?.user_metadata?.full_name || user?.email || 'Teacher'}
-      onLogout={handleLogout}
-    />
-
-    <main className="flex-1 container mx-auto py-8 px-4">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Malik's Learning Lab</h1>
-        {/* Could add a refresh button here */}
-      </div>
-
-      <div className="flex flex-col sm:flex-row gap-6 mb-6">
-        <div className="w-full sm:w-1/2">
-          <SubjectSelector
-            selectedSubject={selectedSubject}
-            onChange={(subject) => setSelectedSubject(subject as "math" | "english" | "ict")}
-          />
-        </div>
-        <div className="w-full sm:w-1/2">
-          <GradeSelector
-            selectedGrades={selectedGrades}
-            onChange={setSelectedGrades}
-            subject={selectedSubject}
-            availableGrades={availableGrades}
-          />
-        </div>
-      </div>
-
-      {!showQuizForm && !showLessonBuilder && !showScaffoldedLessonBuilder ? (
-        <Tabs defaultValue="quizzes">
-          <TabsList className="mb-8 flex-wrap h-auto gap-2">
-            <TabsTrigger value="quizzes" className="flex items-center gap-2">
-              <Book size={16} />
-              <span>Quiz Zone</span>
-            </TabsTrigger>
-            <TabsTrigger value="lessons" className="flex items-center gap-2">
-              <FileText size={16} />
-              <span>Lesson Builder</span>
-            </TabsTrigger>
-            <TabsTrigger value="library" className="flex items-center gap-2">
-              <Globe size={16} />
-              <span>Public Library</span>
-            </TabsTrigger>
-            <TabsTrigger value="performance" className="flex items-center gap-2">
-              <BarChart size={16} />
-              <span>Performance</span>
-            </TabsTrigger>
-            <TabsTrigger value="generate" className="flex items-center gap-2">
-              {getSubjectIcon()}
-              <span>Content Generator</span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="quizzes">
-            <QuizzesTab
-              quizzes={filteredQuizzes}
-              onCreateQuiz={() => setShowQuizForm(true)}
-              onCopyCode={handleCopyCode}
-              onEditQuiz={(q) => { setEditingQuiz(q); setShowQuizForm(true); }}
-              onDeleteQuiz={handleDeleteQuiz}
-              onTogglePublic={handleTogglePublicQuiz}
-              subject={selectedSubject}
-            />
-          </TabsContent>
-
-          <TabsContent value="lessons">
-            <LessonsTab
-              lessons={filteredLessons}
-              onCreateLesson={() => setShowScaffoldedLessonBuilder(true)}
-              onCopyCode={handleCopyCode}
-              onEditLesson={(l) => { setEditingLesson(l); setShowLessonBuilder(true); }}
-              onDeleteLesson={handleDeleteLesson}
-              onTogglePublic={handleTogglePublicLesson}
-              subject={selectedSubject}
-            />
-          </TabsContent>
-
-          <TabsContent value="library">
-            <PublicLibrary onCopySuccess={loadData} />
-          </TabsContent>
-
-          <TabsContent value="performance">
-            <PerformanceTab
-              quizzes={quizzes}
-              getTotalStudents={() => getTotalStudents(results)}
-              getTotalCompletions={() => getTotalCompletions(results)}
-              getLeaderboardEntries={(quizId) => getLeaderboardEntries(results, quizId)}
-              findQuizById={(id) => findQuizById(quizzes, id)}
-              subject={selectedSubject}
-            />
-          </TabsContent>
-
-          <TabsContent value="generate">
-            <QuestionGeneratorTab
-              grades={selectedGrades}
-              subject={selectedSubject}
-              onCreateQuiz={handleCreateQuiz}
-              onCreateLesson={handleCreateLesson}
-            />
-          </TabsContent>
-        </Tabs>
-      ) : showQuizForm ? (
-        <QuizForm
-          grades={selectedGrades}
-          onSave={handleCreateQuiz}
-          onCancel={() => { setShowQuizForm(false); setEditingQuiz(null); }}
-          subject={selectedSubject}
-          initialData={editingQuiz}
-        />
-      ) : showScaffoldedLessonBuilder ? (
-        <ScaffoldedLessonBuilder
-          grades={selectedGrades}
-          onSave={handleCreateLesson}
-          onCancel={() => { setShowScaffoldedLessonBuilder(false); setEditingLesson(null); }}
-          subject={selectedSubject}
-        />
-      ) : (
-        <LessonBuilder
-          grades={selectedGrades}
-          onSave={handleCreateLesson}
-          onCancel={() => { setShowLessonBuilder(false); setEditingLesson(null); }}
-          subject={selectedSubject}
-          initialData={editingLesson}
-        />
-      )}
-    </main>
-
-    <DashboardFooter />
-  </div>
-);
 };
 
 export default TeacherDashboard;
