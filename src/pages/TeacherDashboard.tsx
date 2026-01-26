@@ -263,11 +263,14 @@ const TeacherDashboard: React.FC = () => {
 
   const handleTogglePublicQuiz = async (quiz: Quiz) => {
     try {
-      // Use mapped property 'isPublic' which is kept up-to-date in state
-      const newStatus = !quiz.isPublic;
+      // Use isPublic (frontend state) as primary source, fallback to is_public
+      const currentStatus = quiz.isPublic !== undefined ? quiz.isPublic : (quiz as any).is_public;
+      const newStatus = !currentStatus;
 
-      // Optimistic update FIRST for instant feel
-      setQuizzes(prev => prev.map(q => q.id === quiz.id ? { ...q, isPublic: newStatus } : q));
+      // Optimistic update first for instant feedback mechanism
+      setQuizzes(prev => prev.map(q =>
+        q.id === quiz.id ? { ...q, isPublic: newStatus, is_public: newStatus } : q
+      ));
 
       const { error } = await supabase
         .from('quizzes')
@@ -275,8 +278,10 @@ const TeacherDashboard: React.FC = () => {
         .eq('id', quiz.id);
 
       if (error) {
-        // Revert if error
-        setQuizzes(prev => prev.map(q => q.id === quiz.id ? { ...q, isPublic: !newStatus } : q));
+        // Revert on error
+        setQuizzes(prev => prev.map(q =>
+          q.id === quiz.id ? { ...q, isPublic: currentStatus, is_public: currentStatus } : q
+        ));
         throw error;
       }
 
@@ -295,10 +300,13 @@ const TeacherDashboard: React.FC = () => {
 
   const handleTogglePublicLesson = async (lesson: Lesson) => {
     try {
-      const newStatus = !lesson.isPublic;
+      const currentStatus = lesson.isPublic !== undefined ? lesson.isPublic : (lesson as any).is_public;
+      const newStatus = !currentStatus;
 
       // Optimistic update
-      setLessons(prev => prev.map(l => l.id === lesson.id ? { ...l, isPublic: newStatus } : l));
+      setLessons(prev => prev.map(l =>
+        l.id === lesson.id ? { ...l, isPublic: newStatus, is_public: newStatus } : l
+      ));
 
       const { error } = await supabase
         .from('lessons')
@@ -306,8 +314,10 @@ const TeacherDashboard: React.FC = () => {
         .eq('id', lesson.id);
 
       if (error) {
-        // Revert
-        setLessons(prev => prev.map(l => l.id === lesson.id ? { ...l, isPublic: !newStatus } : l));
+        // Revert on error
+        setLessons(prev => prev.map(l =>
+          l.id === lesson.id ? { ...l, isPublic: currentStatus, is_public: currentStatus } : l
+        ));
         throw error;
       }
 
@@ -323,10 +333,12 @@ const TeacherDashboard: React.FC = () => {
       });
     }
   };
-  title: "Visibility updated",
+
+  toast({
+    title: "Visibility updated",
     description: `Lesson is now ${newStatus ? 'Public' : 'Private'}`
-});
-    } catch (error: any) {
+  });
+} catch (error: any) {
   toast({
     title: "Error updating visibility",
     description: error.message,
