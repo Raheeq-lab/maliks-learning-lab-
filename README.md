@@ -7,16 +7,20 @@ Malik's Learning Lab is a comprehensive educational platform designed to empower
 
 ### For Teachers
 - **Comprehensive Dashboard**: A central hub to manage all educational content across multiple subjects.
-- **Scaffolded Lesson Builder**: Create structured 40-minute lessons following the proven 5-phase model:
+- **Unified Lesson Builder**: 
+  - **6 Learning Types**: Choose from Scaffolded, Problem Solving, Visual & Interactive, Game-Based, Real-World Application, and Math Talks.
+  - **Visual Selection Grid**: Intuitive card-based interface to select your preferred teaching style.
+  - **Universal 5-Phase Structure**: Apply the proven Engage-Model-Guided-Independent-Reflect model to **any** learning type you select.
+- **Scaffolded Lesson Framework**: 
   - **Engage** (5 min): Hook students and activate prior knowledge
   - **Model** (8 min): Demonstrate and explain new concepts
   - **Guided Practice** (12 min): Practice together with teacher support
   - **Independent Practice** (10 min): Students apply learning independently
   - **Reflect** (5 min): Summarize and check for understanding
-- **Interactive Lesson Builder**: Create rich lessons with:
+- **Rich Content Creation**: 
   - Text content with AI-assisted generation
   - Image uploads directly from your computer
-  - Video uploads (up to 50MB)
+  - Video uploads (up to 50MB) 
   - Document uploads (PowerPoint, Word, PDF up to 20MB)
   - Interactive activities and quizzes
 - **Advanced Quiz Management**:
