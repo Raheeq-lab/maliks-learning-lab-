@@ -73,8 +73,10 @@ const callGemini = async (apiKey: string, prompt: string): Promise<GenerationRes
     // Configurations to try in order. Prioritize stable 1.5 models.
     const configurations = [
         { version: 'v1beta', model: 'gemini-1.5-flash' },
+        { version: 'v1beta', model: 'gemini-1.5-flash-001' },
+        { version: 'v1beta', model: 'gemini-1.5-flash-latest' },
         { version: 'v1beta', model: 'gemini-1.5-pro' },
-        { version: 'v1beta', model: 'gemini-1.5-flash-8b' }
+        { version: 'v1', model: 'gemini-pro' }
     ];
 
     let firstError = '';

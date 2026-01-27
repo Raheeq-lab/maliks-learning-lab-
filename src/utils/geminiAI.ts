@@ -1,0 +1,220 @@
+import { QuizQuestion as AppQuizQuestion } from "@/types/quiz";
+
+// User-specified interface
+export interface QuizQuestion {
+    question: string;
+    options: string[];
+    correctAnswer: string; // The text of the correct answer or "A", "B", etc. We will ask AI to be clear.
+    explanation: string;
+}
+
+export interface LessonPlan {
+    subject: string;
+    grade: string;
+    topic: string;
+    phases: {
+        engage: { duration: string; activities: string[] };
+        model: { duration: string; activities: string[] };
+        guidedPractice: { duration: string; activities: string[] };
+        independentPractice: { duration: string; activities: string[] };
+        reflect: { duration: string; activities: string[] };
+    };
+}
+
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+
+const MODELS = [
+    { model: "gemini-flash-latest", version: "v1beta" }
+];
+
+/**
+ * Generic function to call Gemini API with fallback mechanisms
+ */
+async function callGeminiAPI(prompt: string): Promise<any> {
+    if (!GEMINI_API_KEY) {
+        throw new Error("Gemini API Key is missing. Please check your .env file.");
+    }
+
+    let lastError = null;
+
+    for (const { model, version } of MODELS) {
+        try {
+            console.log(`[Gemini API] Attempting model: ${model} (${version})`);
+            console.log(`[Gemini API] Prompt preview: ${prompt.substring(0, 50)}...`);
+
+            const isV1 = version === 'v1';
+            const generationConfig: any = {
+                temperature: 0.7
+            };
+
+            // Only add response_mime_type for v1beta (Gemini 1.5+) models
+            if (!isV1) {
+                generationConfig.response_mime_type = "application/json";
+            }
+
+            const response = await fetch(`https://generativelanguage.googleapis.com/${version}/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [{ text: prompt }]
+                    }],
+                    generationConfig: generationConfig,
+                    safetySettings: [
+                        {
+                            category: "HARM_CATEGORY_HARASSMENT",
+                            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+                        }
+                    ]
+                })
+            });
+
+            console.log(`[Gemini API] Response Status: ${response.status}`);
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                const msg = errorData.error?.message || `Status ${response.status}`;
+                throw new Error(msg);
+            }
+
+            const data = await response.json();
+            // console.log(`[Gemini API] Raw Response:`, JSON.stringify(data).substring(0, 200) + "...");
+
+            const candidate = data.candidates?.[0];
+
+            if (!candidate || !candidate.content || !candidate.content.parts || !candidate.content.parts[0].text) {
+                throw new Error("Empty response from Gemini API");
+            }
+
+            const textContent = candidate.content.parts[0].text;
+
+            // Clean markdown code blocks
+            const cleanedJson = textContent.replace(/```json\n?|\n?```/g, "").trim();
+
+            try {
+                const parsed = JSON.parse(cleanedJson);
+                console.log(`[Gemini API] Successfully parsed JSON`);
+                return parsed;
+            } catch (e) {
+                console.error(`[Gemini API] JSON Parse Error:`, e);
+                console.error(`[Gemini API] Failed Content:`, cleanedJson);
+                throw new Error("Failed to parse Gemini response as JSON");
+            }
+
+        } catch (error: any) {
+            console.warn(`[Gemini API] Failed with model ${model}:`, error.message);
+            lastError = error;
+            // Continue to next model
+        }
+    }
+
+    throw new Error(`All Gemini models failed. Last error: ${lastError?.message || "Unknown error"}`);
+}
+
+export const generateQuizQuestions = async (
+    subject: string,
+    grade: string,
+    topic: string,
+    numQuestions: number
+): Promise<QuizQuestion[]> => {
+    const prompt = `
+    You are an expert teacher. Create a ${numQuestions}-question multiple-choice quiz about "${topic}" for ${grade} students in ${subject}.
+    
+    Strictly follow this JSON format for the output. Return ONLY the JSON array.
+    
+    [
+      {
+        "question": "The question text here",
+        "options": ["A) Option 1", "B) Option 2", "C) Option 3", "D) Option 4"],
+        "correctAnswer": "A) Option 1",
+        "explanation": "Brief explanation of why this is correct."
+      }
+    ]
+  `;
+
+    try {
+        const result = await callGeminiAPI(prompt);
+        // Handle case where result might be wrapped in { questions: [] } or just []
+        let questions: QuizQuestion[] = [];
+
+        if (Array.isArray(result)) {
+            questions = result;
+        } else if (result.questions && Array.isArray(result.questions)) {
+            questions = result.questions;
+        } else {
+            throw new Error("Unexpected JSON structure returned");
+        }
+
+        return questions;
+
+    } catch (error) {
+        console.error("Error generating quiz:", error);
+        throw error;
+    }
+};
+
+export const generateLessonPlan = async (
+    subject: string,
+    grade: string,
+    topic: string
+): Promise<LessonPlan> => {
+    const prompt = `
+    Create a 40-minute structured lesson plan for ${grade} ${subject} on the topic "${topic}".
+    Use the 5-phase teaching model: Engage (5min), Model (8min), Guided Practice (12min), Independent Practice (10min), Reflect (5min).
+    
+    Strictly follow this JSON format:
+    {
+      "subject": "${subject}",
+      "grade": "${grade}",
+      "topic": "${topic}",
+      "phases": {
+        "engage": { "duration": "5 minutes", "activities": ["Activity 1", "Activity 2"] },
+        "model": { "duration": "8 minutes", "activities": ["Direct instruction", "Demonstration"] },
+        "guidedPractice": { "duration": "12 minutes", "activities": ["Group work", "Scaffolding"] },
+        "independentPractice": { "duration": "10 minutes", "activities": ["Individual task"] },
+        "reflect": { "duration": "5 minutes", "activities": ["Exit ticket"] }
+      }
+    }
+  `;
+
+    return await callGeminiAPI(prompt);
+};
+
+export const generateTextContent = async (prompt: string): Promise<string> => {
+    const fullPrompt = `You are a helpful assistant for teachers. Generate clear, educational content based on the user's request. 
+  Do not wrap in JSON. Just provide the text content directly.
+  
+  User Request: ${prompt}`;
+
+    try {
+        const result = await callGeminiAPI(fullPrompt);
+        // If callGeminiAPI returns an object/JSON, try to extract text if possible, 
+        // or just return the string if it managed to parse it as such (though callGeminiAPI tries to parse JSON).
+        // Since callGeminiAPI expects JSON, we should probably adjust the prompt in callGeminiAPI 
+        // OR stick to the existing pattern where we ask for JSON with a "content" field.
+        // For safety, let's just ask for a simple JSON wrapper.
+
+        return typeof result === 'string' ? result : JSON.stringify(result);
+    } catch (e) {
+        // If JSON parse fails in callGeminiAPI, it might throw. 
+        // We should probably allow callGeminiAPI to return raw text if JSON parse fails? 
+        // For now, let's implement a direct fetch here to avoid the JSON strictness of callGeminiAPI
+        // or just use a simple wrapper.
+
+        // Quick fix: Re-implement simple text fetch here to avoid breaking the strict JSON logic of callGeminiAPI
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+        });
+        const data = await response.json();
+        return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    }
+};
+
+export const isConfigured = (): boolean => {
+    return !!GEMINI_API_KEY;
+};

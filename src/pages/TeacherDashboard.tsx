@@ -79,31 +79,30 @@ const TeacherDashboard: React.FC = () => {
       setQuizzes(mappedQuizzes);
 
       // 2. Fetch Lessons (RLS will filter by created_by = user.id)
+      // 2. Fetch Lessons (RLS will filter by created_by = user.id)
+      // Note: DB seems to use 'createdat' based on user logs, but let's try to be safe.
+      // If the user ran the SQL migration I provided, the columns SHOULD be there.
+      // BUT, if the previous logs showed 'created_at' does not exist, then it means 'createdat' IS the column.
+      // I will revert to 'createdat' for ordering, BUT I will map "gradelevel" OR "grade_level" to the frontend.
+
       const { data: lessonsData, error: lessonsError } = await supabase
         .from('lessons')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('createdat', { ascending: false });
 
       if (lessonsError) {
-        // If table doesn't exist yet or other error, log it but don't break everything
         console.warn('Error fetching lessons:', lessonsError);
       } else {
-        // Map database fields to frontend Lesson interface if needed
-        // The migration created snake_case columns, but let's see if Supabase client auto-maps or if we need to aliasing
-        // For now, assuming direct mapping or we might need to transform keys if strict typing is enforced.
-        // Let's assume the returned data keys match the DB columns.
-        // We might need a transformer if the frontend strictly expects camelCase.
-        // However, the `Lesson` type has camelCase. Supabase returns snake_case by default.
-        // Let's do a quick map.
         const mappedLessons = (lessonsData || []).map((l: any) => ({
           ...l,
-          gradeLevel: l.grade_level,
-          timeLimit: l.time_limit, // if exists
-          learningType: l.learning_type,
-          lessonStructure: l.lesson_structure,
-          accessCode: l.access_code,
-          createdBy: l.created_by,
-          createdAt: l.created_at
+          // Handle both cases just to be robust
+          gradeLevel: l.grade_level || l.gradelevel,
+          timeLimit: l.time_limit,
+          learningType: l.learning_type || l.learningtype, // Just in case
+          lessonStructure: l.lesson_structure || l.lessonstructure,
+          accessCode: l.access_code || l.accesscode,
+          createdBy: l.created_by || l.createdby,
+          createdAt: l.created_at || l.createdat
         }));
         setLessons(mappedLessons);
       }
@@ -436,9 +435,17 @@ const TeacherDashboard: React.FC = () => {
                 lessons={filteredLessons}
                 onCreateLesson={() => setShowScaffoldedLessonBuilder(true)}
                 onCopyCode={handleCopyCode}
-                onEditLesson={(l) => { setEditingLesson(l); setShowLessonBuilder(true); }}
+                onEditLesson={(l) => {
+                  setEditingLesson(l);
+                  if (l.learningType === 'scaffolded') {
+                    setShowScaffoldedLessonBuilder(true);
+                  } else {
+                    setShowLessonBuilder(true);
+                  }
+                }}
                 onDeleteLesson={handleDeleteLesson}
                 onTogglePublic={handleTogglePublicLesson}
+                onRunLesson={(id) => navigate(`/teacher/lesson/${id}/run`)}
                 subject={selectedSubject}
               />
             </TabsContent>
@@ -481,6 +488,11 @@ const TeacherDashboard: React.FC = () => {
             onSave={handleCreateLesson}
             onCancel={() => { setShowScaffoldedLessonBuilder(false); setEditingLesson(null); }}
             subject={selectedSubject}
+            initialData={editingLesson}
+            onSwitchToGeneric={() => {
+              setShowScaffoldedLessonBuilder(false);
+              setShowLessonBuilder(true);
+            }}
           />
         ) : (
           <LessonBuilder

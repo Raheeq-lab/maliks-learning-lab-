@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import TeacherSignup from "./pages/TeacherSignup";
 import TeacherLogin from "./pages/TeacherLogin";
 import TeacherDashboard from "./pages/TeacherDashboard";
+import LessonRunnable from "./pages/LessonRunnable";
 import StudentJoin from "./pages/StudentJoin";
 import StudentQuiz from "./pages/StudentQuiz";
 import NotFound from "./pages/NotFound";
@@ -26,6 +27,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/teacher-signup" element={<TeacherSignup />} />
             <Route path="/teacher-login" element={<TeacherLogin />} />
+            <Route path="/teacher/lesson/:id/run" element={<LessonRunnable />} />
             <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
             <Route path="/student-join" element={<StudentJoin />} />
             <Route path="/student-quiz" element={<StudentQuiz />} />

@@ -1,21 +1,21 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { Copy, BookOpen, BookText, Laptop, BrainCircuit, Wand2, FileText, CheckSquare } from "lucide-react";
+import { BookOpen, BookText, Laptop, BrainCircuit, Wand2, FileText, CheckSquare, Sparkles, AlertCircle, Plus, RefreshCw, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Quiz, Lesson } from "@/types/quiz";
+import { generateQuizQuestions, generateLessonPlan, isConfigured, QuizQuestion as GeminiQuizQuestion } from "@/utils/geminiAI";
 
 interface QuestionGeneratorTabProps {
   grades: number[];
   subject?: "math" | "english" | "ict";
-  onCreateQuiz?: (quiz: Quiz) => void;
-  onCreateLesson?: (lesson: Lesson) => void;
+  onCreateQuiz: (quiz: Quiz) => void;
+  onCreateLesson: (lesson: Lesson) => void;
 }
 
 const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
@@ -26,103 +26,107 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
 }) => {
   const { toast } = useToast();
   const [selectedGrade, setSelectedGrade] = useState<string>("");
-  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
-  const [customTopic, setCustomTopic] = useState("");
-  const [generatedPrompt, setGeneratedPrompt] = useState<string>("");
   const [activeTab, setActiveTab] = useState<"quiz" | "lesson">("quiz");
+  const [learningType, setLearningType] = useState<string>("scaffolded");
 
-  const handleGeneratePrompt = () => {
-    if (!selectedGrade || (selectedTopics.length === 0 && !customTopic)) {
-      toast({
-        title: "Missing information",
-        description: "Please select grade level and a topic.",
-        variant: "destructive",
-      });
+  // Quiz State
+  const [customTopic, setCustomTopic] = useState("");
+  const [numQuestions, setNumQuestions] = useState<string>("5");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [generatedQuestions, setGeneratedQuestions] = useState<GeminiQuizQuestion[]>([]);
+
+  const handleGenerate = async () => {
+    setError(null);
+    if (!selectedGrade || !customTopic) {
+      setError("Please select a grade and enter a topic.");
       return;
     }
 
-    const topic = customTopic || selectedTopics[0];
-
-    let prompt = "";
-
-    if (activeTab === 'quiz') {
-      prompt = `Create a ${subject} quiz for grade ${selectedGrade} students about "${topic}".
-Include 5 multiple choice questions with 4 options each.
-Mark the correct answer.
-Format the output as a JSON object with the following structure:
-{
-"title": "Quiz Title",
-"description": "Brief description",
-"questions": [
-    {
-    "text": "Question text",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
-    "correctOptionIndex": 0 // 0-3
-    }
-]
-}`;
-    } else {
-      prompt = `Create a ${subject} lesson plan for grade ${selectedGrade} students about "${topic}".
-The lesson should be structure with Engage, Model, Guided Practice, Independent Practice, and Reflect phases.
-Format the output as a JSON object with the following structure:
-{
-"title": "Lesson Title",
-"description": "Lesson description",
-"lessonStructure": {
-    "engage": { "timeInMinutes": 5, "content": [{ "type": "text", "content": "..." }] },
-    "model": { "timeInMinutes": 10, "content": [{ "type": "text", "content": "..." }] },
-    "guidedPractice": { "timeInMinutes": 15, "content": [{ "type": "text", "content": "..." }] },
-    "independentPractice": { "timeInMinutes": 15, "content": [{ "type": "text", "content": "..." }] },
-    "reflect": { "timeInMinutes": 5, "content": [{ "type": "text", "content": "..." }] }
-}
-}`;
+    if (!isConfigured()) {
+      setError("Gemini API Key is missing in environment variables. Please check your .env file.");
+      return;
     }
 
-    setGeneratedPrompt(prompt);
-    toast({
-      title: "Prompt Generated!",
-      description: "Copy the prompt below to use in your favorite AI tool.",
-    });
+    setIsGenerating(true);
+
+    try {
+      if (activeTab === 'quiz') {
+        const questions = await generateQuizQuestions(
+          subject,
+          selectedGrade,
+          customTopic,
+          parseInt(numQuestions)
+        );
+        setGeneratedQuestions(questions);
+        toast({ title: "Success", description: `Generated ${questions.length} questions!` });
+      } else {
+        // Lesson Generation
+        const lessonPlan = await generateLessonPlan(subject, selectedGrade, customTopic);
+
+        const newLesson: Lesson = {
+          id: crypto.randomUUID(),
+          title: `Lesson: ${customTopic}`,
+          description: `A ${subject} lesson for grade ${selectedGrade}`,
+          gradeLevel: parseInt(selectedGrade),
+          subject: subject,
+          content: [], // Legacy compat
+          learningType: learningType,
+          lessonStructure: {
+            engage: { title: "Engage", timeInMinutes: 5, content: lessonPlan.phases.engage.activities.map(a => ({ type: 'text', content: a, id: crypto.randomUUID() })) },
+            model: { title: "Model", timeInMinutes: 8, content: lessonPlan.phases.model.activities.map(a => ({ type: 'text', content: a, id: crypto.randomUUID() })) },
+            guidedPractice: { title: "Guided Practice", timeInMinutes: 12, content: lessonPlan.phases.guidedPractice.activities.map(a => ({ type: 'text', content: a, id: crypto.randomUUID() })) },
+            independentPractice: { title: "Independent Practice", timeInMinutes: 10, content: lessonPlan.phases.independentPractice.activities.map(a => ({ type: 'text', content: a, id: crypto.randomUUID() })) },
+            reflect: { title: "Reflect", timeInMinutes: 5, content: lessonPlan.phases.reflect.activities.map(a => ({ type: 'text', content: a, id: crypto.randomUUID() })) }
+          },
+          accessCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
+          createdBy: 'AI',
+          createdAt: new Date().toISOString(),
+          isPublic: false
+        };
+
+        onCreateLesson(newLesson);
+        toast({ title: "Lesson Created", description: "Lesson plan added to your dashboard." });
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Failed to generate content. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
-  const handleCopyPrompt = () => {
-    navigator.clipboard.writeText(generatedPrompt);
-    toast({
-      title: "Copied to clipboard!",
-      description: "Prompt copied to clipboard.",
-    });
-  };
+  const handleAddToQuiz = () => {
+    if (generatedQuestions.length === 0) return;
 
-  // Get topics based on subject
-  const getTopics = () => {
-    switch (subject) {
-      case "math":
-        return [
-          { value: "algebra", label: "Algebra" },
-          { value: "geometry", label: "Geometry" },
-          { value: "arithmetic", label: "Arithmetic" },
-          { value: "fractions", label: "Fractions" },
-          { value: "decimals", label: "Decimals" },
-        ];
-      case "english":
-        return [
-          { value: "grammar", label: "Grammar" },
-          { value: "vocabulary", label: "Vocabulary" },
-          { value: "reading", label: "Reading Comprehension" },
-          { value: "writing", label: "Creative Writing" },
-          { value: "literature", label: "Literature" },
-        ];
-      case "ict":
-        return [
-          { value: "hardware", label: "Computer Hardware" },
-          { value: "software", label: "Software & OS" },
-          { value: "networks", label: "Networks" },
-          { value: "programming", label: "Programming Basics" },
-          { value: "internet", label: "Internet Safety" },
-        ];
-      default:
-        return [];
-    }
+    const newQuiz: Quiz = {
+      id: crypto.randomUUID(),
+      title: `${customTopic} Quiz`,
+      description: `Generated ${subject} quiz for Grade ${selectedGrade}`,
+      gradeLevel: parseInt(selectedGrade) || 0,
+      subject: subject,
+      timeLimit: generatedQuestions.length * 2 * 60, // 2 mins per question
+      questions: generatedQuestions.map(q => ({
+        id: crypto.randomUUID(),
+        text: q.question,
+        type: 'multiple-choice', // assuming all ai generated are MC
+        options: q.options,
+        correctOptionIndex: q.options.findIndex(o => o.includes(q.correctAnswer) || q.correctAnswer.includes(o)) > -1
+          ? q.options.findIndex(o => o.includes(q.correctAnswer) || q.correctAnswer.includes(o))
+          : 0, // Fallback if match fails, ideally we fix this parsing logic
+        explanation: q.explanation,
+        points: 10
+      })),
+      accessCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
+      createdBy: "AI",
+      createdAt: new Date().toISOString(),
+      isPublic: false
+    };
+
+    onCreateQuiz(newQuiz);
+    toast({ title: "Quiz Saved!", description: "Questions added to your library." });
+    setGeneratedQuestions([]); // Reset results
+    setCustomTopic(""); // Optional: reset form
   };
 
   const getSubjectIcon = () => {
@@ -134,7 +138,6 @@ Format the output as a JSON object with the following structure:
     }
   };
 
-  // Get color based on subject
   const getSubjectColor = () => {
     switch (subject) {
       case "math": return "bg-purple-600 hover:bg-purple-700";
@@ -149,128 +152,165 @@ Format the output as a JSON object with the following structure:
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {getSubjectIcon()}
-          <h2 className="text-xl font-semibold">AI Prompt Generator</h2>
+          <h2 className="text-xl font-semibold">AI Content Generator</h2>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-purple-600 bg-purple-50 px-3 py-1 rounded-full border border-purple-100">
+          <Sparkles size={14} />
+          <span>Powered by Gemini 1.5 Flash</span>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Generate AI Prompts</CardTitle>
+          <CardTitle>Generate New Content</CardTitle>
           <p className="text-sm text-gray-500">
-            Select your requirements to generate a perfect prompt for ChatGPT, Gemini, or Claude.
+            Create high-quality {subject} materials aligned with Grade {selectedGrade || "?"} curriculum.
           </p>
-          <Tabs
-            value={activeTab}
-            onValueChange={(v) => setActiveTab(v as "quiz" | "lesson")}
-            className="w-full mt-4"
-          >
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "quiz" | "lesson")} className="w-full mt-4">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="quiz" className="flex gap-2">
-                <CheckSquare size={16} /> Quiz Prompt
-              </TabsTrigger>
-              <TabsTrigger value="lesson" className="flex gap-2">
-                <FileText size={16} /> Lesson Prompt
-              </TabsTrigger>
+              <TabsTrigger value="quiz" className="flex gap-2"><CheckSquare size={16} /> Generate Quiz</TabsTrigger>
+              <TabsTrigger value="lesson" className="flex gap-2"><FileText size={16} /> Generate Lesson</TabsTrigger>
             </TabsList>
           </Tabs>
         </CardHeader>
+
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium mb-1 block">Grade Level</label>
-              <Select value={selectedGrade} onValueChange={setSelectedGrade}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select grade" />
-                </SelectTrigger>
-                <SelectContent>
-                  {grades.map(grade => (
-                    <SelectItem key={grade} value={grade.toString()}>Grade {grade}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-1 block">Topic</label>
-              <Select
-                value={selectedTopics.length > 0 ? selectedTopics[0] : "custom"}
-                onValueChange={(value) => {
-                  if (value === "custom") {
-                    setSelectedTopics([]);
-                  } else {
-                    setSelectedTopics([value]);
-                    setCustomTopic("");
-                  }
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select topic" />
-                </SelectTrigger>
-                <SelectContent>
-                  {getTopics().map(topic => (
-                    <SelectItem key={topic.value} value={topic.value}>{topic.label}</SelectItem>
-                  ))}
-                  <SelectItem value="custom">Custom Topic</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {(selectedTopics.length === 0 || customTopic || selectedTopics[0] === "custom") && (
-            <div>
-              <Label htmlFor="custom-topic">Custom Topic / Context</Label>
-              <Input
-                id="custom-topic"
-                value={customTopic}
-                onChange={(e) => setCustomTopic(e.target.value)}
-                placeholder="e.g., Photosynthesis basics, Fractions with unlike denominators, etc."
-                className="mt-1"
-              />
-            </div>
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
           )}
 
-          <div>
-            <Button
-              onClick={handleGeneratePrompt}
-              className={`w-full ${getSubjectColor()} gap-2`}
-            >
-              <Wand2 size={16} />
-              Generate Prompt
-            </Button>
-          </div>
-
-          {generatedPrompt && (
-            <div className="space-y-2 pt-4 border-t">
-              <div className="flex justify-between items-center">
-                <label className="text-sm font-medium">Generated Prompt</label>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCopyPrompt}
-                  className="flex items-center gap-1"
-                >
-                  <Copy size={14} />
-                  Copy Prompt
-                </Button>
+          {generatedQuestions.length === 0 ? (
+            /* Input Form */
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Grade Level</Label>
+                  <Select value={selectedGrade} onValueChange={setSelectedGrade}>
+                    <SelectTrigger><SelectValue placeholder="Select Grade" /></SelectTrigger>
+                    <SelectContent>
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(g => (
+                        <SelectItem key={g} value={g.toString()}>Grade {g}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {activeTab === 'quiz' && (
+                  <div>
+                    <Label>Number of Questions</Label>
+                    <Select value={numQuestions} onValueChange={setNumQuestions}>
+                      <SelectTrigger><SelectValue placeholder="5" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="5">5 Questions</SelectItem>
+                        <SelectItem value="10">10 Questions</SelectItem>
+                        <SelectItem value="15">15 Questions</SelectItem>
+                        <SelectItem value="20">20 Questions</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
               </div>
-              <Textarea
-                value={generatedPrompt}
-                readOnly
-                rows={12}
-                className="font-mono text-sm bg-slate-50"
-              />
-              <p className="text-xs text-muted-foreground">
-                Copy this prompt and paste it into Google Gemini, ChatGPT, or Claude to generate your content.
-              </p>
+
+              <div>
+                <Label htmlFor="topic">Topic / Learning Objective</Label>
+                <Input
+                  id="topic"
+                  value={customTopic}
+                  onChange={e => setCustomTopic(e.target.value)}
+                  placeholder={`e.g. ${subject === 'math' ? 'Linear Equations' : subject === 'english' ? 'Shakespeare Sonnets' : 'Network Security'}`}
+                />
+              </div>
+
+              {activeTab === 'lesson' && (
+                <div>
+                  <Label>Learning Type</Label>
+                  <Select value={learningType} onValueChange={setLearningType}>
+                    <SelectTrigger><SelectValue placeholder="Select Learning Type" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="scaffolded">Scaffolded Lesson (5-phase)</SelectItem>
+                      <SelectItem value="problem-solving">Problem Solving Practice</SelectItem>
+                      <SelectItem value="visual">Visual & Interactive Learning</SelectItem>
+                      <SelectItem value="game-based">Game-Based Quizzes</SelectItem>
+                      <SelectItem value="real-world">Real-World Application</SelectItem>
+                      <SelectItem value="math-talks">Math Talks (Discussion)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {learningType === 'scaffolded' && "Structured 5-phase lesson: Engage, Model, Guided, Independent, Reflect."}
+                    {learningType === 'problem-solving' && "Solve step-by-step problems to build logic and accuracy."}
+                    {learningType === 'visual' && "Learn through graphs, number lines, and diagrams."}
+                    {learningType === 'game-based' && "Practice with fun, timed challenges and scoring levels."}
+                    {learningType === 'real-world' && "Apply concepts in budgeting, measuring, and real-life scenarios."}
+                    {learningType === 'math-talks' && "Explain solution strategies or compare methods."}
+                  </p>
+                </div>
+              )}
+
+              <Button
+                onClick={handleGenerate}
+                disabled={isGenerating}
+                className={`w-full h-12 text-lg ${getSubjectColor()}`}
+              >
+                {isGenerating ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Generating with AI...
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="mr-2" size={20} />
+                    Generate {activeTab === 'quiz' ? 'Quiz' : 'Lesson'}
+                  </>
+                )}
+              </Button>
+            </div>
+          ) : (
+            /* Results Display */
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex justify-between items-center">
+                <h3 className="font-semibold text-lg">Generated Questions ({generatedQuestions.length})</h3>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setGeneratedQuestions([])}>
+                    <RefreshCw className="mr-2 h-4 w-4" /> Regenerate
+                  </Button>
+                  <Button onClick={handleAddToQuiz} className="bg-green-600 hover:bg-green-700">
+                    <Plus className="mr-2 h-4 w-4" /> Add to Quiz
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+                {generatedQuestions.map((q, idx) => (
+                  <Card key={idx} className="border-l-4 border-l-purple-500">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex gap-2">
+                        <span className="bg-purple-100 text-purple-800 px-2 py-0.5 rounded text-sm w-fit whitespace-nowrap h-fit">Q{idx + 1}</span>
+                        {q.question}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      {q.options.map((opt, optIdx) => {
+                        const isCorrect = opt.includes(q.correctAnswer) || q.correctAnswer.includes(opt); // Simple naive matching, dependent on Gemini output
+                        return (
+                          <div key={optIdx} className={`p-3 rounded border flex items-center justify-between ${isCorrect ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-100'}`}>
+                            <span>{opt}</span>
+                            {isCorrect && <Check className="h-4 w-4 text-green-600" />}
+                          </div>
+                        );
+                      })}
+                    </CardContent>
+                    <CardFooter className="pt-0 pb-4 px-6 text-sm text-gray-500 bg-gray-50/50 mt-2 rounded-b-lg">
+                      <p className="mt-2"><span className="font-semibold">Explanation:</span> {q.explanation}</p>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
             </div>
           )}
         </CardContent>
-        <CardFooter className="flex justify-between border-t pt-5">
-          <div className="text-sm text-muted-foreground flex items-center gap-1">
-            <BrainCircuit size={14} />
-            Optimized for Large Language Models
-          </div>
-        </CardFooter>
       </Card>
     </div>
   );

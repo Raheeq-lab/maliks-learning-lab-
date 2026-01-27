@@ -24,7 +24,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import ActivitySection from './ActivitySection';
-import { AIConfig, generateContent } from "@/services/aiService";
+import { generateTextContent, isConfigured } from "@/utils/geminiAI";
 
 interface LearningTypeOption {
   id: string;
@@ -39,7 +39,10 @@ interface LessonBuilderProps {
   onCancel: () => void;
   subject: "math" | "english" | "ict";
   initialData?: Lesson | null;
+  onSwitchToScaffolded?: () => void;
 }
+
+
 
 const generateAccessCode = () => {
   const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -86,7 +89,7 @@ const getSubjectColorClass = (subject: "math" | "english" | "ict") => {
   }
 };
 
-const LessonBuilder: React.FC<LessonBuilderProps> = ({ grades, onSave, onCancel, subject = "math", initialData }) => {
+const LessonBuilder: React.FC<LessonBuilderProps> = ({ grades, onSave, onCancel, subject = "math", initialData, onSwitchToScaffolded }) => {
   const { toast } = useToast();
   const [title, setTitle] = useState(initialData?.title || '');
   const [description, setDescription] = useState(initialData?.description || '');
@@ -776,6 +779,11 @@ const LessonBuilder: React.FC<LessonBuilderProps> = ({ grades, onSave, onCancel,
   };
 
   const handleLearningTypeChange = (typeId: string) => {
+    if (typeId === 'scaffolded-lesson' && onSwitchToScaffolded) {
+      onSwitchToScaffolded();
+      return;
+    }
+
     setSelectedLearningType(typeId);
 
     // Update content blocks with suggested template based on learning type
@@ -1002,11 +1010,10 @@ const LessonBuilder: React.FC<LessonBuilderProps> = ({ grades, onSave, onCancel,
       return;
     }
 
-    const apiKey = localStorage.getItem('aiApiKey') || import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey) {
+    if (!isConfigured()) {
       toast({
-        title: "API Key Required",
-        description: "Please configure your API key in the Question Generator tab settings first.",
+        title: "Configuration Error",
+        description: "Gemini API Key is missing in environment variables.",
         variant: "destructive",
       });
       return;
@@ -1014,32 +1021,28 @@ const LessonBuilder: React.FC<LessonBuilderProps> = ({ grades, onSave, onCancel,
 
     setGeneratingBlockId(block.id);
 
-    const config: AIConfig = {
-      provider: 'gemini',
-      apiKey
-    };
-
     // Contextualize the prompt with grade and subject
     const contextPrompt = `Subject: ${subject}, Grade: ${selectedGrade}.
 Task: ${prompt}`;
 
-    const response = await generateContent(config, contextPrompt, 'text');
+    try {
+      const content = await generateTextContent(contextPrompt);
 
-    if (response.error) {
-      toast({
-        title: "Generation Failed",
-        description: response.error,
-        variant: "destructive",
-      });
-    } else {
-      handleContentChange(index, 'content', response.content);
+      // Update the block content
+      handleContentChange(index, 'content', content);
       toast({
         title: "Content Generated",
         description: "Text content has been updated.",
       });
+    } catch (error: any) {
+      toast({
+        title: "Generation Failed",
+        description: error.message || "Failed to generate content",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingBlockId(null);
     }
-
-    setGeneratingBlockId(null);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -1209,26 +1212,42 @@ Task: ${prompt}`;
               <CardTitle>Learning Type</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {getLearningTypes().map((type) => (
-                  <div
-                    key={type.id}
-                    className={`p-4 border rounded-lg cursor-pointer transition-all ${selectedLearningType === type.id
-                      ? 'border-2 border-blue-500 bg-blue-50 shadow-md transform scale-[1.02]'
-                      : 'hover:bg-gray-50'
-                      }`}
-                    onClick={() => handleLearningTypeChange(type.id)}
-                  >
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="p-2 rounded-full bg-gray-100">
-                        {type.icon}
-                      </div>
-                      <h3 className="font-semibold">{type.title}</h3>
-                    </div>
-                    <p className="text-sm text-gray-500">{type.description}</p>
+              {initialData ? (
+                <div className="p-4 bg-gray-50 border rounded-lg flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-white border">
+                    {getLearningTypes().find(t => t.id === (selectedLearningType || initialData.learningType))?.icon || <BookOpen className="text-gray-500" />}
                   </div>
-                ))}
-              </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">
+                      {getLearningTypes().find(t => t.id === (selectedLearningType || initialData.learningType))?.title || "Custom Lesson"}
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      {getLearningTypes().find(t => t.id === (selectedLearningType || initialData.learningType))?.description || "This lesson type cannot be changed once created."}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {getLearningTypes().map((type) => (
+                    <div
+                      key={type.id}
+                      className={`p-4 border rounded-lg cursor-pointer transition-all ${selectedLearningType === type.id
+                        ? 'border-2 border-blue-500 bg-blue-50 shadow-md transform scale-[1.02]'
+                        : 'hover:bg-gray-50'
+                        }`}
+                      onClick={() => handleLearningTypeChange(type.id)}
+                    >
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="p-2 rounded-full bg-gray-100">
+                          {type.icon}
+                        </div>
+                        <h3 className="font-semibold">{type.title}</h3>
+                      </div>
+                      <p className="text-sm text-gray-500">{type.description}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
