@@ -76,6 +76,7 @@ const LessonsTab: React.FC<LessonsTabProps> = ({ lessons, onCreateLesson, onCopy
               onCopy={() => onCopyCode(lesson.title)}
               onEdit={() => onEditLesson(lesson)}
               onDelete={() => onDeleteLesson(lesson.id)}
+              onTogglePublic={() => onTogglePublic && onTogglePublic(lesson)}
               subject={lesson.subject}
             />
           ))}

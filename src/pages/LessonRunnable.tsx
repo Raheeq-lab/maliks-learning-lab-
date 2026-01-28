@@ -34,21 +34,24 @@ const LessonRunnable: React.FC = () => {
     }, [id]);
 
     useEffect(() => {
+        let intervalId: NodeJS.Timeout;
+
         if (isRunning && timeLeft > 0) {
-            timerRef.current = setInterval(() => {
+            intervalId = setInterval(() => {
                 setTimeLeft((prev) => {
                     if (prev <= 1) {
                         setIsRunning(false);
-                        if (timerRef.current) clearInterval(timerRef.current);
                         return 0;
                     }
                     return prev - 1;
                 });
             }, 1000);
-        } else {
-            if (timerRef.current) clearInterval(timerRef.current);
         }
-    }, [isRunning, timeLeft]);
+
+        return () => {
+            if (intervalId) clearInterval(intervalId);
+        };
+    }, [isRunning]);
 
     // When phase changes, set the new time
     useEffect(() => {
@@ -96,7 +99,9 @@ const LessonRunnable: React.FC = () => {
     };
 
     const handleToggleTimer = () => {
-        setIsRunning(!isRunning);
+        if (timeLeft > 0) {
+            setIsRunning(!isRunning);
+        }
     };
 
     const handleResetTimer = () => {

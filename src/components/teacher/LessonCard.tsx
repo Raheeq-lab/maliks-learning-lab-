@@ -10,6 +10,7 @@ interface LessonCardProps {
     accessCode: string;
     isPublic?: boolean;
     onRun: () => void;
+    onTogglePublic: () => void;
     onCopy: () => void;
     onEdit: () => void;
     onDelete: () => void;
@@ -25,6 +26,7 @@ const LessonCard: React.FC<LessonCardProps> = ({
     onCopy,
     onEdit,
     onDelete,
+    onTogglePublic,
     subject = "math"
 }) => {
     const [copied, setCopied] = useState(false);
@@ -57,7 +59,11 @@ const LessonCard: React.FC<LessonCardProps> = ({
                         </CardTitle>
                         <p className="text-sm text-gray-500 mt-1">Grade {gradeLevel}</p>
                     </div>
-                    <Badge variant={isPublic ? "secondary" : "outline"} className={isPublic ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}>
+                    <Badge
+                        variant={isPublic ? "secondary" : "outline"}
+                        className={`cursor-pointer transition-colors ${isPublic ? "bg-green-100 text-green-700 hover:bg-green-200" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
+                        onClick={onTogglePublic}
+                    >
                         {isPublic ? (
                             <><Globe size={10} className="mr-1" /> Public</>
                         ) : (
@@ -68,8 +74,6 @@ const LessonCard: React.FC<LessonCardProps> = ({
             </CardHeader>
 
             <CardContent className="space-y-4">
-
-
                 {!isPublic && (
                     <div className="text-center">
                         <p className="text-xs text-gray-400 italic">Private Dashboard Only</p>
@@ -86,8 +90,14 @@ const LessonCard: React.FC<LessonCardProps> = ({
                     <Button variant="outline" size="sm" className="flex-1" onClick={onEdit}>
                         <Edit size={14} className="mr-1" /> Edit
                     </Button>
-                    <Button variant="outline" size="sm" className="flex-1" onClick={handleCopy}>
-                        <Copy size={14} className="mr-1" /> {copied ? "Copied" : "Code"}
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className={`flex-1 ${isPublic ? 'text-green-600' : 'text-gray-500'} hover:bg-gray-100`}
+                        onClick={onTogglePublic}
+                    >
+                        {isPublic ? <Globe size={14} className="mr-1" /> : <Lock size={14} className="mr-1" />}
+                        {isPublic ? 'Public' : 'Private'}
                     </Button>
                     <Button variant="outline" size="sm" className="flex-1 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={onDelete}>
                         <Trash2 size={14} className="mr-1" /> Delete

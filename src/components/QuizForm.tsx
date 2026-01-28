@@ -45,6 +45,42 @@ const QuizForm: React.FC<QuizFormProps> = ({ grades, onSave, onCancel, subject =
   const [questions, setQuestions] = useState<QuizQuestion[]>(initialData?.questions || [initialQuestion]);
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+  // Load draft from localStorage on mount
+  React.useEffect(() => {
+    if (!initialData) {
+      const savedDraft = localStorage.getItem('quiz_form_draft');
+      if (savedDraft) {
+        try {
+          const parsed = JSON.parse(savedDraft);
+          if (parsed.title) setTitle(parsed.title);
+          if (parsed.description) setDescription(parsed.description);
+          if (parsed.selectedGrade) setSelectedGrade(parsed.selectedGrade);
+          if (parsed.selectedSubject) setSelectedSubject(parsed.selectedSubject);
+          if (parsed.timeLimit) setTimeLimit(parsed.timeLimit);
+          if (parsed.questions) setQuestions(parsed.questions);
+          // toast({ title: "Draft restored", description: "We found an unsaved quiz draft." });
+        } catch (e) {
+          console.error("Failed to parse draft", e);
+        }
+      }
+    }
+  }, [initialData]);
+
+  // Save draft to localStorage on changes
+  React.useEffect(() => {
+    if (!initialData) {
+      const draft = {
+        title,
+        description,
+        selectedGrade,
+        selectedSubject,
+        timeLimit,
+        questions
+      };
+      localStorage.setItem('quiz_form_draft', JSON.stringify(draft));
+    }
+  }, [title, description, selectedGrade, selectedSubject, timeLimit, questions, initialData]);
+
   const handleAddQuestion = () => {
     setQuestions(prev => [...prev, {
       id: `q-${Date.now()}-${prev.length}`,
@@ -212,6 +248,12 @@ const QuizForm: React.FC<QuizFormProps> = ({ grades, onSave, onCancel, subject =
     };
 
     onSave(quiz);
+    localStorage.removeItem('quiz_form_draft');
+  };
+
+  const handleCancel = () => {
+    localStorage.removeItem('quiz_form_draft');
+    onCancel();
   };
 
   return (
@@ -222,7 +264,7 @@ const QuizForm: React.FC<QuizFormProps> = ({ grades, onSave, onCancel, subject =
           <Button
             variant="ghost"
             size="icon"
-            onClick={onCancel}
+            onClick={handleCancel}
             className="mr-2"
           >
             <ArrowLeft size={20} />
@@ -404,7 +446,7 @@ const QuizForm: React.FC<QuizFormProps> = ({ grades, onSave, onCancel, subject =
         </CardContent>
 
         <CardFooter className="flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
+          <Button type="button" variant="outline" onClick={handleCancel}>Cancel</Button>
           <Button type="submit">{initialData ? 'Save Changes' : 'Create Quiz'}</Button>
         </CardFooter>
       </form>

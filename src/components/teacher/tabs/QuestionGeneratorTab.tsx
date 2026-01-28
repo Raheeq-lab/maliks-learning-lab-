@@ -10,6 +10,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Quiz, Lesson } from "@/types/quiz";
 import { generateQuizQuestions, generateLessonPlan, isConfigured, QuizQuestion as GeminiQuizQuestion } from "@/utils/geminiAI";
+import { getLearningTypes } from "@/utils/lessonUtils";
 
 interface QuestionGeneratorTabProps {
   grades: number[];
@@ -230,22 +231,20 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
                   <Select value={learningType} onValueChange={setLearningType}>
                     <SelectTrigger><SelectValue placeholder="Select Learning Type" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="scaffolded">Scaffolded Lesson (5-phase)</SelectItem>
-                      <SelectItem value="problem-solving">Problem Solving Practice</SelectItem>
-                      <SelectItem value="visual">Visual & Interactive Learning</SelectItem>
-                      <SelectItem value="game-based">Game-Based Quizzes</SelectItem>
-                      <SelectItem value="real-world">Real-World Application</SelectItem>
-                      <SelectItem value="math-talks">Math Talks (Discussion)</SelectItem>
+                      {getLearningTypes(subject).map((type: any) => (
+                        <SelectItem key={type.id} value={type.id}>
+                          {type.title}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {learningType === 'scaffolded' && "Structured 5-phase lesson: Engage, Model, Guided, Independent, Reflect."}
-                    {learningType === 'problem-solving' && "Solve step-by-step problems to build logic and accuracy."}
-                    {learningType === 'visual' && "Learn through graphs, number lines, and diagrams."}
-                    {learningType === 'game-based' && "Practice with fun, timed challenges and scoring levels."}
-                    {learningType === 'real-world' && "Apply concepts in budgeting, measuring, and real-life scenarios."}
-                    {learningType === 'math-talks' && "Explain solution strategies or compare methods."}
-                  </p>
+                  <div className="mt-1">
+                    {getLearningTypes(subject).find((t: any) => t.id === learningType) && (
+                      <p className="text-xs text-gray-500">
+                        {getLearningTypes(subject).find((t: any) => t.id === learningType)?.description}
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
 

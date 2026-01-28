@@ -10,8 +10,9 @@ import { useToast } from "@/components/ui/use-toast";
 import {
   ArrowLeft, Plus, Trash2, Clock, BookOpen, Laptop, BookText, Brain,
   Play, PenTool, FileText, Download, Save, Eye, Sparkles, Wand2, Loader2,
-  Upload, File, X, Image as ImageIcon, BarChart2, Gamepad2, BriefcaseBusiness,
-  MessageSquare, Pen, Headphones, Pencil, Search, MousePointer, CheckSquare, FileUp
+  Upload, File, X, Image, BarChart2, Gamepad2, BriefcaseBusiness,
+  MessageSquare, Pen, Headphones, Pencil, Search, MousePointer, CheckSquare, FileUp,
+  Lock, Globe, Settings
 } from "lucide-react";
 import {
   Lesson,
@@ -21,6 +22,7 @@ import {
   QuizQuestion,
   ActivitySettings
 } from '@/types/quiz';
+import { getLearningTypes } from "@/utils/lessonUtils";
 import { useNavigate } from 'react-router-dom';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
@@ -97,130 +99,6 @@ const getAiToolSuggestions = (subject: "math" | "english" | "ict") => {
   }
 };
 
-const getLearningTypes = (subject: "math" | "english" | "ict") => {
-  switch (subject) {
-    case "math":
-      return [
-        {
-          id: "scaffolded-lesson",
-          title: "Scaffolded Lesson (40m)",
-          description: "Structured 5-phase lesson: Engage, Model, Guided, Independent, Reflect.",
-          icon: <BookOpen className="text-purple-600" />
-        },
-        {
-          id: "problem-solving",
-          title: "Problem Solving Practice",
-          description: "Solve step-by-step math problems to build logic and accuracy.",
-          icon: <Brain className="text-purple-600" />
-        },
-        {
-          id: "visual-interactive",
-          title: "Visual & Interactive Learning",
-          description: "Learn through graphs, number lines, and drag-and-drop tools.",
-          icon: <BarChart2 className="text-purple-600" />
-        },
-        {
-          id: "game-based",
-          title: "Game-Based Quizzes",
-          description: "Practice with fun, timed challenges and scoring levels.",
-          icon: <Gamepad2 className="text-purple-600" />
-        },
-        {
-          id: "real-world",
-          title: "Real-World Application",
-          description: "Apply math in budgeting, measuring, and real-life scenarios.",
-          icon: <BriefcaseBusiness className="text-purple-600" />
-        },
-        {
-          id: "math-talks",
-          title: "Math Talks",
-          description: "Explain your solution strategy or compare methods with others.",
-          icon: <MessageSquare className="text-purple-600" />
-        }
-      ];
-    case "english":
-      return [
-        {
-          id: "scaffolded-lesson",
-          title: "Scaffolded Lesson (40m)",
-          description: "Structured 5-phase lesson: Engage, Model, Guided, Independent, Reflect.",
-          icon: <BookOpen className="text-green-600" />
-        },
-        {
-          id: "reading-comprehension",
-          title: "Reading Comprehension",
-          description: "Read passages and answer questions to build understanding.",
-          icon: <FileText className="text-green-600" />
-        },
-        {
-          id: "grammar-practice",
-          title: "Grammar Practice",
-          description: "Work on punctuation, sentence structure, and parts of speech.",
-          icon: <Pen className="text-green-600" />
-        },
-        {
-          id: "picture-based",
-          title: "Picture-Based Writing",
-          description: "Describe or create stories from a visual prompt.",
-          icon: <ImageIcon className="text-green-600" />
-        },
-        {
-          id: "speaking-listening",
-          title: "Speaking & Listening",
-          description: "Record spoken answers or respond after watching a clip.",
-          icon: <Headphones className="text-green-600" />
-        },
-        {
-          id: "creative-expression",
-          title: "Creative Expression",
-          description: "Write stories, letters, and journal entries using prompts.",
-          icon: <Pencil className="text-green-600" />
-        }
-      ];
-    case "ict":
-      return [
-        {
-          id: "scaffolded-lesson",
-          title: "Scaffolded Lesson (40m)",
-          description: "Structured 5-phase lesson: Engage, Model, Guided, Independent, Reflect.",
-          icon: <BookOpen className="text-orange-600" />
-        },
-        {
-          id: "identify-label",
-          title: "Identify & Label",
-          description: "Name parts of computers, software, or interfaces using images.",
-          icon: <Search className="text-orange-600" />
-        },
-        {
-          id: "watch-demonstrate",
-          title: "Watch & Demonstrate",
-          description: "Watch a task-based video and complete the digital activity.",
-          icon: <Play className="text-orange-600" />
-        },
-        {
-          id: "digital-tool",
-          title: "Digital Tool Use",
-          description: "Practice using basic apps (e.g., Word, Paint, Scratch).",
-          icon: <MousePointer className="text-orange-600" />
-        },
-        {
-          id: "concept-check",
-          title: "Concept Check Quizzes",
-          description: "Answer questions about ICT theory and digital safety.",
-          icon: <CheckSquare className="text-orange-600" />
-        },
-        {
-          id: "create-submit",
-          title: "Create & Submit",
-          description: "Upload original work like a document, design, or code snippet.",
-          icon: <FileUp className="text-orange-600" />
-        }
-      ];
-    default:
-      return [];
-  }
-};
-
 const getTopicSuggestions = (subject: "math" | "english" | "ict", grade: number) => {
   if (subject === "math") {
     if (grade <= 5) {
@@ -250,6 +128,10 @@ const getTopicSuggestions = (subject: "math" | "english" | "ict", grade: number)
 };
 
 const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grades, subject, onSave, onCancel, initialData, onSwitchToGeneric }) => {
+  const handleCancel = () => {
+    localStorage.removeItem('scaffolded_lesson_builder_draft');
+    onCancel();
+  };
   const { toast } = useToast();
   const navigate = useNavigate();
   const [title, setTitle] = useState(initialData?.title || '');
@@ -260,6 +142,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
   const [lessonStructure, setLessonStructure] = useState<LessonStructure>(initialData?.lessonStructure || initialLessonStructure);
   const [activePhase, setActivePhase] = useState<keyof LessonStructure>("engage");
   const [showPreview, setShowPreview] = useState(false);
+  const [isPublic, setIsPublic] = useState(initialData?.isPublic ?? true); // Default to public
   const [activitySettings, setActivitySettings] = useState<ActivitySettings>(initialActivitySettings);
   const imageInputRefs = React.useRef<{ [key: string]: HTMLInputElement | null }>({});
   const videoInputRefs = React.useRef<{ [key: string]: HTMLInputElement | null }>({});
@@ -271,6 +154,43 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
 
   const aiTools = getAiToolSuggestions(subject);
   const topicSuggestions = getTopicSuggestions(subject, gradeLevel);
+
+  // Load draft from localStorage on mount
+  React.useEffect(() => {
+    if (!initialData) {
+      const savedDraft = localStorage.getItem('scaffolded_lesson_builder_draft');
+      if (savedDraft) {
+        try {
+          const parsed = JSON.parse(savedDraft);
+          if (parsed.title) setTitle(parsed.title);
+          if (parsed.description) setDescription(parsed.description);
+          if (parsed.gradeLevel) setGradeLevel(parsed.gradeLevel);
+          if (parsed.topic) setTopic(parsed.topic);
+          if (parsed.selectedLearningType) setSelectedLearningType(parsed.selectedLearningType);
+          if (parsed.lessonStructure) setLessonStructure(parsed.lessonStructure);
+          if (parsed.isPublic !== undefined) setIsPublic(parsed.isPublic);
+        } catch (e) {
+          console.error("Failed to parse lesson draft", e);
+        }
+      }
+    }
+  }, [initialData]);
+
+  // Save draft to localStorage on changes
+  React.useEffect(() => {
+    if (!initialData) {
+      const draft = {
+        title,
+        description,
+        gradeLevel,
+        topic,
+        selectedLearningType,
+        lessonStructure,
+        isPublic
+      };
+      localStorage.setItem('scaffolded_lesson_builder_draft', JSON.stringify(draft));
+    }
+  }, [title, description, gradeLevel, topic, selectedLearningType, lessonStructure, isPublic, initialData]);
 
   const totalLessonTime = Object.values(lessonStructure).reduce(
     (total, phase) => total + phase.timeInMinutes, 0
@@ -500,10 +420,11 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
       createdAt: initialData?.createdAt || new Date().toISOString(),
       accessCode: initialData?.accessCode || generateAccessCode(),
       learningType: selectedLearningType,
+      isPublic,
     };
 
     onSave(lesson);
-
+    localStorage.removeItem('scaffolded_lesson_builder_draft');
     toast({
       title: "Lesson saved!",
       description: "Your scaffolded lesson has been created successfully.",
@@ -1106,7 +1027,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
         <Button
           variant="ghost"
           size="icon"
-          onClick={onCancel}
+          onClick={handleCancel}
           className="mr-2"
           aria-label="Go back"
         >
@@ -1660,11 +1581,33 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
             </div>
           </CardContent>
 
-          <CardFooter className="border-t p-4 flex justify-end gap-2">
-            <Button variant="outline" onClick={onCancel}>Cancel</Button>
-            <Button onClick={handleSave}>
-              <Save className="mr-2 h-4 w-4" /> Save Lesson
-            </Button>
+          <CardFooter className="border-t p-4 flex justify-between items-center gap-2">
+            <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+              <Button
+                size="sm"
+                variant={isPublic ? "ghost" : "default"}
+                onClick={() => setIsPublic(false)}
+                className={`flex gap-2 ${!isPublic ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+              >
+                <Lock size={16} />
+                Private
+              </Button>
+              <Button
+                size="sm"
+                variant={isPublic ? "default" : "ghost"}
+                onClick={() => setIsPublic(true)}
+                className={`flex gap-2 ${isPublic ? 'bg-white text-black shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+              >
+                <Globe size={16} />
+                Public
+              </Button>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={handleCancel}>Cancel</Button>
+              <Button onClick={handleSave}>
+                <Save className="mr-2 h-4 w-4" /> Save Lesson
+              </Button>
+            </div>
           </CardFooter>
         </Card>
       )}
