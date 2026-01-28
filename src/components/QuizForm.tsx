@@ -300,6 +300,20 @@ const QuizForm: React.FC<QuizFormProps> = ({ grades, onSave, onCancel, subject =
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
+                <Label htmlFor="subject">Subject</Label>
+                <Select value={selectedSubject} onValueChange={(v) => setSelectedSubject(v as "math" | "english" | "ict")}>
+                  <SelectTrigger id="subject">
+                    <SelectValue placeholder="Select subject" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="math">Math</SelectItem>
+                    <SelectItem value="english">English</SelectItem>
+                    <SelectItem value="ict">ICT</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
                 <Label htmlFor="grade">Grade Level</Label>
                 <Select value={selectedGrade} onValueChange={setSelectedGrade}>
                   <SelectTrigger>

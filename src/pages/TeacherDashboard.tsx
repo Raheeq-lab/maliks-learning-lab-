@@ -175,6 +175,11 @@ const TeacherDashboard: React.FC = () => {
 
         if (error) throw error;
         toast({ title: "Quiz created!", description: "Access code: " + payload.access_code });
+
+        // Auto-switch subject if different so user sees their new quiz
+        if (payload.subject && payload.subject !== selectedSubject) {
+          setSelectedSubject(payload.subject as "math" | "english" | "ict");
+        }
       }
 
       setShowQuizForm(false);
