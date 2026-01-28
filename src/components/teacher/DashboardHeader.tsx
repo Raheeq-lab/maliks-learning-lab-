@@ -13,15 +13,17 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ teacherName, onLogout
     <header className="bg-quiz-purple text-white shadow-md">
       <div className="container mx-auto py-4 px-4 flex justify-between items-center">
         <div className="flex items-center gap-2">
-          <div className="bg-white text-quiz-purple font-bold rounded-lg p-2">M</div>
-          <span className="font-bold text-xl">Malik's Learning Lab</span>
+          <h1 className="text-xl font-bold">Malik's Learning Lab</h1>
+          <span className="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full border border-green-200">
+            v2.1 (Live)
+          </span>
         </div>
-        
+
         <div className="flex items-center gap-4">
           <span>Welcome, {teacherName}</span>
-          <Button 
-            variant="destructive" 
-            className="bg-red-600 hover:bg-red-700 text-white font-semibold" 
+          <Button
+            variant="destructive"
+            className="bg-red-600 hover:bg-red-700 text-white font-semibold"
             onClick={onLogout}
           >
             Logout
