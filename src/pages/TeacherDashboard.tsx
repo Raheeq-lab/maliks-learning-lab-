@@ -35,6 +35,11 @@ const TeacherDashboard: React.FC = () => {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [results, setResults] = useState<StudentQuizResult[]>([]);
 
+  // Persist active tab
+  const [activeTab, setActiveTab] = useState<string>(() => {
+    return localStorage.getItem("activeDashboardTab") || "quizzes";
+  });
+
   const [isLoading, setIsLoading] = useState(true);
   const [showQuizForm, setShowQuizForm] = useState(false);
   const [showLessonBuilder, setShowLessonBuilder] = useState(false);
@@ -394,7 +399,13 @@ const TeacherDashboard: React.FC = () => {
         </div>
 
         {!showQuizForm && !showLessonBuilder && !showScaffoldedLessonBuilder ? (
-          <Tabs defaultValue="quizzes">
+          <Tabs
+            value={activeTab}
+            onValueChange={(val) => {
+              setActiveTab(val);
+              localStorage.setItem("activeDashboardTab", val);
+            }}
+          >
             <TabsList className="mb-8 flex-wrap h-auto gap-2">
               <TabsTrigger value="quizzes" className="flex items-center gap-2">
                 <Book size={16} />
