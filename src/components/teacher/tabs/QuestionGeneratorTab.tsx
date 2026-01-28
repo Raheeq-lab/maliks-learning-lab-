@@ -167,7 +167,11 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
           <p className="text-sm text-gray-500">
             Create high-quality {subject} materials aligned with Grade {selectedGrade || "?"} curriculum.
           </p>
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "quiz" | "lesson")} className="w-full mt-4">
+          <Tabs value={activeTab} onValueChange={(v) => {
+            setActiveTab(v as "quiz" | "lesson");
+            setGeneratedQuestions([]);
+            setError(null);
+          }} className="w-full mt-4">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="quiz" className="flex gap-2"><CheckSquare size={16} /> Generate Quiz</TabsTrigger>
               <TabsTrigger value="lesson" className="flex gap-2"><FileText size={16} /> Generate Lesson</TabsTrigger>
