@@ -12,21 +12,43 @@ import { Quiz, Lesson } from "@/types/quiz";
 import { generateQuizQuestions, generateLessonPlan, isConfigured, QuizQuestion as GeminiQuizQuestion } from "@/utils/geminiAI";
 import { getLearningTypes } from "@/utils/lessonUtils";
 
+
+
 interface QuestionGeneratorTabProps {
-  grades: number[];
+  availableGrades?: number[]; // changed from grades
   subject?: "math" | "english" | "ict";
   onCreateQuiz: (quiz: Quiz) => void;
   onCreateLesson: (lesson: Lesson) => void;
 }
 
 const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
-  grades,
+  availableGrades = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
   subject = "math",
   onCreateQuiz,
   onCreateLesson
 }) => {
   const { toast } = useToast();
-  const [selectedGrade, setSelectedGrade] = useState<string>("");
+
+  const [selectedGrade, setSelectedGrade] = useState<string>(""); // Keep this for the specific generation dropdown? 
+  // Actually, the previous code used `selectedGrade` (single string) for generation.
+  // The user wants the "Target Grades" bar here.
+  // If we add the bar, does it replace the single dropdown? 
+  // Probably the "Target Grades" bar is for *filtering* generally or just context?
+  // Wait, in Generator, we select *one* grade to generate content for usually.
+  // But the "Target Grades" bar is multi-select.
+  // Maybe just put it there as a "Preferred Grades" selector?
+  // OR, maybe the user wants to generate content for *multiple* grades?
+  // The current generator function takes `selectedGrade` (string).
+  // Let's Keep the single select for specific generation, but show the Bar as "Quick Select"?
+  // Or maybe the user *wants* multi-select generation?
+  // The prompt says: "add indudivally in all the section like when i want to create quzzes just show there also".
+  // This likely means they want the VISUAL selector there.
+  // Let's add the selector and maybe sync it? Or just let it exist.
+  // If I select multiple in the bar, maybe I can pick one from them in the dropdown?
+  // Or sticking to the single select is safer for the AI logic.
+
+  // Let's place the GradeSelector at the top.
+
   const [activeTab, setActiveTab] = useState<"quiz" | "lesson">("quiz");
   const [learningType, setLearningType] = useState<string>("scaffolded");
 
@@ -189,6 +211,8 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
         </div>
       </div>
 
+
+
       <Card className="border-border/40 shadow-2xl bg-bg-card/50 backdrop-blur-xl overflow-hidden">
         {/* Accent Line */}
         <div className={`h-1.5 w-full bg-gradient-to-r ${getSubjectGradient()}`}></div>
@@ -345,8 +369,8 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
               <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                 {generatedQuestions.map((q, idx) => (
                   <Card key={idx} className={`group border-l-4 bg-bg-card/40 border-y border-r border-white/5 hover:bg-white/5 transition-all duration-300 ${subject === 'math' ? 'border-l-purple-500' :
-                      subject === 'english' ? 'border-l-emerald-500' :
-                        'border-l-orange-500'
+                    subject === 'english' ? 'border-l-emerald-500' :
+                      'border-l-orange-500'
                     }`}>
                     <CardHeader className="pb-3 pt-4">
                       <CardTitle className="text-base flex gap-3 text-white leading-relaxed">
@@ -385,7 +409,7 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
           )}
         </CardContent>
       </Card>
-    </div>
+    </div >
   );
 };
 

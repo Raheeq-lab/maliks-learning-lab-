@@ -5,6 +5,9 @@ import AccessCodeCard from '@/components/AccessCodeCard';
 import { Quiz } from '@/types/quiz';
 import { Book, BookOpen, BookText, Laptop, ArrowLeft } from 'lucide-react';
 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+
 interface QuizzesTabProps {
   quizzes: Quiz[];
   onCreateQuiz: () => void;
@@ -16,6 +19,8 @@ interface QuizzesTabProps {
 }
 
 const QuizzesTab: React.FC<QuizzesTabProps> = ({ quizzes, onCreateQuiz, onCopyCode, onEditQuiz, onDeleteQuiz, onTogglePublic, subject = "math" }) => {
+  const [filterGrade, setFilterGrade] = React.useState<string>("all");
+
   const getSubjectIcon = () => {
     switch (subject) {
       case "math": return <BookOpen size={20} className="text-math-purple" />;
@@ -34,6 +39,10 @@ const QuizzesTab: React.FC<QuizzesTabProps> = ({ quizzes, onCreateQuiz, onCopyCo
     }
   };
 
+  const filteredQuizzes = filterGrade === "all"
+    ? quizzes
+    : quizzes.filter(q => q.gradeLevel === parseInt(filterGrade) || (q as any).grade_level === parseInt(filterGrade));
+
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="flex justify-between items-center bg-bg-card p-4 rounded-xl border border-border shadow-sm">
@@ -47,7 +56,20 @@ const QuizzesTab: React.FC<QuizzesTabProps> = ({ quizzes, onCreateQuiz, onCopyCo
           </h2>
           <p className="text-text-secondary ml-[3.25rem] text-sm">Manage and organize your class assessments</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-4">
+          <div className="w-[180px]">
+            <Select value={filterGrade} onValueChange={setFilterGrade}>
+              <SelectTrigger className="bg-bg-input border-border">
+                <SelectValue placeholder="Filter by Grade" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Grades</SelectItem>
+                {[...Array(11)].map((_, i) => (
+                  <SelectItem key={i + 1} value={(i + 1).toString()}>Grade {i + 1}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <Button
             onClick={onCreateQuiz}
             className={`text-white transition-all transform hover:scale-105 shadow-lg ${getSubjectColor()}`}
@@ -57,15 +79,17 @@ const QuizzesTab: React.FC<QuizzesTabProps> = ({ quizzes, onCreateQuiz, onCopyCo
         </div>
       </div>
 
-      {quizzes.length === 0 ? (
+      {filteredQuizzes.length === 0 ? (
         <div className="text-center py-16 bg-bg-card rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center">
           <div className={`p-4 rounded-full bg-bg-secondary mb-4 ${subject === 'math' ? 'text-math-purple' : subject === 'english' ? 'text-english-green' : 'text-ict-orange'
             }`}>
             <Book size={48} />
           </div>
-          <h3 className="text-xl font-bold text-text-primary mb-2">No Quizzes Yet</h3>
+          <h3 className="text-xl font-bold text-text-primary mb-2">No Quizzes Found</h3>
           <p className="text-text-secondary max-w-md mx-auto mb-8">
-            You haven't created any {subject} quizzes. Start by creating your first interactive quiz for your students!
+            {filterGrade !== "all"
+              ? `You don't have any Grade ${filterGrade} quizzes yet.`
+              : `You haven't created any ${subject} quizzes. Start by creating your first interactive quiz for your students!`}
           </p>
           <Button
             onClick={onCreateQuiz}
@@ -77,7 +101,7 @@ const QuizzesTab: React.FC<QuizzesTabProps> = ({ quizzes, onCreateQuiz, onCopyCo
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-card-gap">
-          {quizzes.map(quiz => (
+          {filteredQuizzes.map(quiz => (
             <AccessCodeCard
               key={quiz.id}
               title={`${quiz.title} (Grade ${quiz.gradeLevel})`}

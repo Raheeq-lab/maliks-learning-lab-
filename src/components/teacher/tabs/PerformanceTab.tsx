@@ -25,9 +25,15 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
   subject = "math"
 }) => {
   const [selectedQuizId, setSelectedQuizId] = useState<string>("");
+  const [filterGrade, setFilterGrade] = useState<string>("all");
 
-  // Filter quizzes by selected subject
-  const filteredQuizzes = quizzes.filter(quiz => quiz.subject === subject);
+  // Filter quizzes by selected subject AND grade
+  const filteredQuizzes = quizzes.filter(quiz => {
+    const matchesSubject = quiz.subject === subject;
+    const matchesGrade = filterGrade === "all" || quiz.gradeLevel === parseInt(filterGrade) || (quiz as any).grade_level === parseInt(filterGrade);
+    return matchesSubject && matchesGrade;
+  });
+
   const leaderboard = selectedQuizId ? getLeaderboardEntries(selectedQuizId) : [];
   const selectedQuiz = selectedQuizId ? findQuizById(selectedQuizId) : undefined;
 
@@ -61,14 +67,29 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className={`p-2 rounded-lg bg-bg-secondary ${subject === 'math' ? 'text-math-purple' : subject === 'english' ? 'text-english-green' : 'text-ict-orange'
-          }`}>
-          <BarChart size={24} />
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className={`p-2 rounded-lg bg-bg-secondary ${subject === 'math' ? 'text-math-purple' : subject === 'english' ? 'text-english-green' : 'text-ict-orange'
+            }`}>
+            <BarChart size={24} />
+          </div>
+          <h2 className="text-2xl font-bold text-text-primary">
+            {subject.charAt(0).toUpperCase() + subject.slice(1)} Performance Analytics
+          </h2>
         </div>
-        <h2 className="text-2xl font-bold text-text-primary">
-          {subject.charAt(0).toUpperCase() + subject.slice(1)} Performance Analytics
-        </h2>
+        <div className="w-[180px]">
+          <Select value={filterGrade} onValueChange={setFilterGrade}>
+            <SelectTrigger className="bg-bg-input border-border">
+              <SelectValue placeholder="Filter by Grade" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Grades</SelectItem>
+              {[...Array(11)].map((_, i) => (
+                <SelectItem key={i + 1} value={(i + 1).toString()}>Grade {i + 1}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

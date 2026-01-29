@@ -15,7 +15,7 @@ import QuestionGeneratorTab from '@/components/teacher/tabs/QuestionGeneratorTab
 import LessonsTab from '@/components/teacher/tabs/LessonsTab';
 import PublicLibrary from '@/components/teacher/PublicLibrary';
 import SubjectSelector from '@/components/SubjectSelector';
-import GradeSelector from '@/components/teacher/GradeSelector';
+// GradeSelector removed
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import {
@@ -47,7 +47,7 @@ const TeacherDashboard: React.FC = () => {
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
 
   const [selectedSubject, setSelectedSubject] = useState<"math" | "english" | "ict">("math");
-  const [selectedGrades, setSelectedGrades] = useState<number[]>([1, 2, 3, 4, 5]);
+  // selectedGrades removed, using local state in tabs or defaults
 
   // Available grades are now 1-11 only
   const availableGrades = Array.from({ length: 11 }, (_, i) => i + 1);
@@ -66,6 +66,7 @@ const TeacherDashboard: React.FC = () => {
       const { data: quizzesData, error: quizzesError } = await supabase
         .from('quizzes')
         .select('*')
+        .eq('created_by', user.id)
         .order('created_at', { ascending: false });
 
       if (quizzesError) throw quizzesError;
@@ -85,6 +86,7 @@ const TeacherDashboard: React.FC = () => {
       const { data: lessonsData, error: lessonsError } = await supabase
         .from('lessons')
         .select('*')
+        .eq('created_by', user.id)
         .order('createdat', { ascending: false });
 
       if (lessonsError) {
@@ -385,14 +387,6 @@ const TeacherDashboard: React.FC = () => {
               onChange={(subject) => setSelectedSubject(subject as "math" | "english" | "ict")}
             />
           </div>
-          <div className="w-full sm:w-1/2">
-            <GradeSelector
-              selectedGrades={selectedGrades}
-              onChange={setSelectedGrades}
-              subject={selectedSubject}
-              availableGrades={availableGrades}
-            />
-          </div>
         </div>
 
         {!showQuizForm && !showLessonBuilder && !showScaffoldedLessonBuilder ? (
@@ -491,7 +485,7 @@ const TeacherDashboard: React.FC = () => {
 
             <TabsContent value="generate">
               <QuestionGeneratorTab
-                grades={selectedGrades}
+                availableGrades={availableGrades}
                 subject={selectedSubject}
                 onCreateQuiz={handleCreateQuiz}
                 onCreateLesson={handleCreateLesson}
@@ -500,7 +494,7 @@ const TeacherDashboard: React.FC = () => {
           </Tabs>
         ) : showQuizForm ? (
           <QuizForm
-            grades={selectedGrades}
+            grades={availableGrades}
             onSave={handleCreateQuiz}
             onCancel={() => { setShowQuizForm(false); setEditingQuiz(null); }}
             subject={selectedSubject}
@@ -508,7 +502,7 @@ const TeacherDashboard: React.FC = () => {
           />
         ) : showScaffoldedLessonBuilder ? (
           <ScaffoldedLessonBuilder
-            grades={selectedGrades}
+            grades={availableGrades}
             onSave={handleCreateLesson}
             onCancel={() => { setShowScaffoldedLessonBuilder(false); setEditingLesson(null); }}
             subject={selectedSubject}
@@ -520,7 +514,7 @@ const TeacherDashboard: React.FC = () => {
           />
         ) : (
           <LessonBuilder
-            grades={selectedGrades}
+            grades={availableGrades}
             onSave={handleCreateLesson}
             onCancel={() => { setShowLessonBuilder(false); setEditingLesson(null); }}
             subject={selectedSubject}
