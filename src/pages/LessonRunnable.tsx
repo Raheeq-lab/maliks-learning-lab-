@@ -97,7 +97,7 @@ const LessonRunnable: React.FC = () => {
         } catch (error: any) {
             console.error('Error loading lesson:', error);
             toast({ title: "Error", description: "Failed to load lesson", variant: "destructive" });
-            navigate('/teacher/dashboard');
+            navigate('/teacher-dashboard');
         } finally {
             setLoading(false);
         }
@@ -186,7 +186,7 @@ const LessonRunnable: React.FC = () => {
 
                 {/* Header Navigation */}
                 <div className="flex items-center justify-between">
-                    <Button variant="ghost" className="gap-2" onClick={() => navigate('/teacher/dashboard')}>
+                    <Button variant="ghost" className="gap-2" onClick={() => navigate('/teacher-dashboard')}>
                         <ArrowLeft size={20} />
                         Back to Dashboard
                     </Button>
@@ -222,7 +222,7 @@ const LessonRunnable: React.FC = () => {
                                         Grade {lesson.gradeLevel}
                                     </Badge>
                                     <span>•</span>
-                                    <span>{lesson.topic || lesson.subject}</span>
+                                    <span>{lesson.subject}</span>
                                 </p>
                             </div>
                             <Badge variant="outline" className="bg-white/20 text-white border-white/10 px-3 py-1 text-sm font-medium">
