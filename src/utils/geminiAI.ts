@@ -122,14 +122,19 @@ export const generateQuizQuestions = async (
     const prompt = `
     You are an expert teacher. Create a ${numQuestions}-question multiple-choice quiz about "${topic}" for ${grade} students in ${subject}.
     
+    IMPORTANT Formatting Rules:
+    - Do NOT use LaTeX or Markdown math syntax (e.g., avoid $\\frac{1}{2}$ or **bold**).
+    - Use clear plain text for math (e.g., use "1/2", "x^2", "sqrt(9)").
+    - The output must be raw JSON compatible strings.
+
     Strictly follow this JSON format for the output. Return ONLY the JSON array.
     
     [
       {
-        "question": "The question text here",
-        "options": ["A) Option 1", "B) Option 2", "C) Option 3", "D) Option 4"],
-        "correctAnswer": "A) Option 1",
-        "explanation": "Brief explanation of why this is correct."
+        "question": "The question text here (e.g. What is 1/2 + 1/4?)",
+        "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
+        "correctAnswer": "Option 1",
+        "explanation": "Brief explanation."
       }
     ]
   `;
