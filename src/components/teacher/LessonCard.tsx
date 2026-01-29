@@ -50,19 +50,22 @@ const LessonCard: React.FC<LessonCardProps> = ({
     };
 
     return (
-        <Card className={`border-l-4 ${getSubjectColor()} shadow-sm hover:shadow-md transition-all`}>
-            <CardHeader className="pb-2">
+        <Card className={`border-l-4 ${getSubjectColor()} shadow-sm hover:shadow-md transition-all bg-bg-card border-border`}>
+            <CardHeader className="pb-2 p-card-padding">
                 <div className="flex justify-between items-start">
                     <div>
-                        <CardTitle className="text-lg font-bold leading-tight">
-                            Lesson: {title}
+                        <CardTitle className="text-lg font-bold leading-tight text-text-primary tracking-tight">
+                            {title}
                         </CardTitle>
-                        <p className="text-sm text-gray-500 mt-1">Grade {gradeLevel}</p>
+                        <p className="text-xs text-text-secondary mt-1 font-medium">Grade {gradeLevel}</p>
                     </div>
                     <Badge
                         variant={isPublic ? "secondary" : "outline"}
-                        className={`cursor-pointer transition-colors ${isPublic ? "bg-green-100 text-green-700 hover:bg-green-200" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}
-                        onClick={onTogglePublic}
+                        className={`cursor-pointer transition-colors text-[10px] px-1.5 h-5 ${isPublic ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 hover:bg-green-200" : "bg-bg-secondary text-text-secondary hover:bg-bg-hover"}`}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onTogglePublic();
+                        }}
                     >
                         {isPublic ? (
                             <><Globe size={10} className="mr-1" /> Public</>
@@ -73,34 +76,38 @@ const LessonCard: React.FC<LessonCardProps> = ({
                 </div>
             </CardHeader>
 
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 p-card-padding pt-0 pb-3">
+                <div className="bg-bg-secondary/50 rounded-md p-2 flex items-center justify-between border border-border/50">
+                    <span className="text-xs text-text-secondary font-mono">CODE:</span>
+                    <span className="text-sm font-bold font-mono tracking-wider text-text-primary">{accessCode}</span>
+                </div>
                 {!isPublic && (
                     <div className="text-center">
-                        <p className="text-xs text-gray-400 italic">Private Dashboard Only</p>
+                        <p className="text-[10px] text-text-tertiary italic">Private Dashboard Only</p>
                     </div>
                 )}
             </CardContent>
 
-            <CardFooter className="flex flex-col gap-2 pt-0">
-                <Button onClick={onRun} className="w-full bg-black text-white hover:bg-gray-800">
-                    <Play size={16} className="mr-2" /> Open Lesson
+            <CardFooter className="flex flex-col gap-2 p-card-padding pt-0 w-full">
+                <Button onClick={(e) => { e.stopPropagation(); onRun(); }} className="w-full h-9 text-xs font-semibold bg-black dark:bg-white text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200">
+                    <Play size={14} className="mr-2" /> Open Lesson
                 </Button>
 
                 <div className="flex gap-2 w-full">
-                    <Button variant="outline" size="sm" className="flex-1" onClick={onEdit}>
-                        <Edit size={14} className="mr-1" /> Edit
+                    <Button variant="outline" size="sm" className="flex-1 h-8 text-xs border-border text-text-secondary hover:bg-bg-secondary hover:text-text-primary" onClick={(e) => { e.stopPropagation(); onEdit(); }}>
+                        <Edit size={12} className="mr-1" /> Edit
                     </Button>
                     <Button
                         variant="ghost"
                         size="sm"
-                        className={`flex-1 ${isPublic ? 'text-green-600' : 'text-gray-500'} hover:bg-gray-100`}
-                        onClick={onTogglePublic}
+                        className={`flex-1 h-8 text-xs ${isPublic ? 'text-green-600 dark:text-green-400' : 'text-text-secondary'} hover:bg-bg-secondary`}
+                        onClick={(e) => { e.stopPropagation(); onTogglePublic(); }}
                     >
-                        {isPublic ? <Globe size={14} className="mr-1" /> : <Lock size={14} className="mr-1" />}
+                        {isPublic ? <Globe size={12} className="mr-1" /> : <Lock size={12} className="mr-1" />}
                         {isPublic ? 'Public' : 'Private'}
                     </Button>
-                    <Button variant="outline" size="sm" className="flex-1 text-red-500 hover:text-red-700 hover:bg-red-50" onClick={onDelete}>
-                        <Trash2 size={14} className="mr-1" /> Delete
+                    <Button variant="outline" size="sm" className="flex-1 h-8 text-xs border-border text-error-coral hover:text-white hover:bg-error-coral" onClick={(e) => { e.stopPropagation(); onDelete(); }}>
+                        <Trash2 size={12} className="mr-1" />
                     </Button>
                 </div>
             </CardFooter>

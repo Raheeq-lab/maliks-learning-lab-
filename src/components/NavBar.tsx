@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu";
 import { useAuth } from "@/context/AuthContext";
-import { LogOut, LayoutDashboard, User } from "lucide-react";
+import { LogOut, LayoutDashboard } from "lucide-react";
+import ThemeToggle from './ThemeToggle';
 
 const NavBar: React.FC = () => {
   const { user, signOut } = useAuth();
@@ -16,7 +16,7 @@ const NavBar: React.FC = () => {
   };
 
   return (
-    <nav className="bg-white border-b py-4 px-6">
+    <nav className="bg-header border-b border-border py-4 px-6 transition-colors duration-300">
       <div className="container mx-auto flex items-center justify-between">
         <Link to="/" className="flex items-center space-x-2">
           <span className="text-2xl font-bold gradient-text">Malik's Learning Lab</span>
@@ -26,25 +26,25 @@ const NavBar: React.FC = () => {
           <NavigationMenu>
             <NavigationMenuList>
               <NavigationMenuItem>
-                <NavigationMenuTrigger>Subjects</NavigationMenuTrigger>
+                <NavigationMenuTrigger className="bg-transparent hover:bg-white/50 dark:hover:bg-slate-700/50">Subjects</NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <div className="grid grid-cols-1 gap-3 p-4 w-[200px]">
+                  <div className="grid grid-cols-1 gap-3 p-4 w-[200px] bg-bg-elevated">
                     <NavigationMenuLink asChild>
-                      <Link to="/?subject=math" className="flex items-center gap-2 p-2 hover:bg-slate-100 rounded-md">
-                        <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                        <span>Mathematics</span>
+                      <Link to="/?subject=math" className="flex items-center gap-2 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md">
+                        <div className="w-2 h-2 rounded-full bg-math-purple"></div>
+                        <span className="text-text-primary">Mathematics</span>
                       </Link>
                     </NavigationMenuLink>
                     <NavigationMenuLink asChild>
-                      <Link to="/?subject=english" className="flex items-center gap-2 p-2 hover:bg-slate-100 rounded-md">
-                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                        <span>English</span>
+                      <Link to="/?subject=english" className="flex items-center gap-2 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md">
+                        <div className="w-2 h-2 rounded-full bg-english-green"></div>
+                        <span className="text-text-primary">English</span>
                       </Link>
                     </NavigationMenuLink>
                     <NavigationMenuLink asChild>
-                      <Link to="/?subject=ict" className="flex items-center gap-2 p-2 hover:bg-slate-100 rounded-md">
-                        <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                        <span>ICT</span>
+                      <Link to="/?subject=ict" className="flex items-center gap-2 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md">
+                        <div className="w-2 h-2 rounded-full bg-ict-orange"></div>
+                        <span className="text-text-primary">ICT</span>
                       </Link>
                     </NavigationMenuLink>
                   </div>
@@ -53,21 +53,24 @@ const NavBar: React.FC = () => {
 
               <NavigationMenuItem>
                 <Link to="/student-join">
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white">Join Quiz</Button>
+                  <Button className="bg-focus-blue hover:bg-focus-blue-dark text-white shadow-md">Join Quiz</Button>
                 </Link>
               </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
 
+          <div className="h-6 w-px bg-border mx-2"></div>
+          <ThemeToggle />
+
           {user ? (
             <div className="flex items-center gap-2">
               <Link to="/teacher-dashboard">
-                <Button variant="ghost" className="gap-2">
+                <Button variant="ghost" className="gap-2 text-text-primary hover:bg-white/50 dark:hover:bg-slate-700/50">
                   <LayoutDashboard className="h-4 w-4" />
                   Dashboard
                 </Button>
               </Link>
-              <Button variant="ghost" className="gap-2 text-red-500 hover:text-red-600 hover:bg-red-50" onClick={handleSignOut}>
+              <Button variant="ghost" className="gap-2 text-error-coral hover:text-error-coral hover:bg-error-coral-light/20" onClick={handleSignOut}>
                 <LogOut className="h-4 w-4" />
                 Sign Out
               </Button>
@@ -75,16 +78,17 @@ const NavBar: React.FC = () => {
           ) : (
             <>
               <Link to="/teacher-login">
-                <Button variant="outline">Sign In</Button>
+                <Button variant="outline" className="border-focus-blue text-focus-blue hover:bg-focus-blue-light">Sign In</Button>
               </Link>
               <Link to="/teacher-signup">
-                <Button>Sign Up</Button>
+                <Button className="bg-focus-blue hover:bg-focus-blue-dark text-white shadow-md">Sign Up</Button>
               </Link>
             </>
           )}
         </div>
 
         <div className="md:hidden space-x-2 flex items-center">
+          <ThemeToggle />
           {user ? (
             <>
               <Link to="/teacher-dashboard">
@@ -99,7 +103,7 @@ const NavBar: React.FC = () => {
           ) : (
             <>
               <Link to="/student-join">
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">Join</Button>
+                <Button size="sm" className="bg-focus-blue hover:bg-focus-blue-dark text-white">Join</Button>
               </Link>
               <Link to="/teacher-login">
                 <Button size="sm" variant="outline">Login</Button>

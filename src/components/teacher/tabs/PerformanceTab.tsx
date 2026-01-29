@@ -25,7 +25,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
   subject = "math"
 }) => {
   const [selectedQuizId, setSelectedQuizId] = useState<string>("");
-  
+
   // Filter quizzes by selected subject
   const filteredQuizzes = quizzes.filter(quiz => quiz.subject === subject);
   const leaderboard = selectedQuizId ? getLeaderboardEntries(selectedQuizId) : [];
@@ -58,43 +58,60 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
       default: return <BookOpen size={20} className="text-purple-500" />;
     }
   };
-  
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <BarChart size={20} className={getSubjectHeaderColor()} />
-        <h2 className="text-xl font-semibold">{subject.charAt(0).toUpperCase() + subject.slice(1)} Performance Analytics</h2>
+      <div className="flex items-center gap-3 mb-6">
+        <div className={`p-2 rounded-lg bg-bg-secondary ${subject === 'math' ? 'text-math-purple' : subject === 'english' ? 'text-english-green' : 'text-ict-orange'
+          }`}>
+          <BarChart size={24} />
+        </div>
+        <h2 className="text-2xl font-bold text-text-primary">
+          {subject.charAt(0).toUpperCase() + subject.slice(1)} Performance Analytics
+        </h2>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className={`border-l-4 ${getSubjectColor()} bg-gradient-to-r`}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-2xl">{getTotalStudents()}</CardTitle>
-            <CardDescription>Total Students</CardDescription>
+        <Card className="border-none shadow-lg relative overflow-hidden group">
+          <div className={`absolute inset-0 opacity-10 ${subject === 'math' ? 'bg-math-purple' : subject === 'english' ? 'bg-english-green' : 'bg-ict-orange'
+            }`}></div>
+          <CardHeader className="pb-2 relative z-10">
+            <CardTitle className="text-4xl font-bold text-text-primary">{getTotalStudents()}</CardTitle>
+            <CardDescription className="font-medium text-text-secondary">Total Students</CardDescription>
           </CardHeader>
+          <div className={`h-1.5 w-full absolute bottom-0 left-0 ${subject === 'math' ? 'bg-math-purple' : subject === 'english' ? 'bg-english-green' : 'bg-ict-orange'
+            }`}></div>
         </Card>
-        
-        <Card className={`border-l-4 ${getSubjectColor()} bg-gradient-to-r`}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-2xl">{getTotalCompletions()}</CardTitle>
-            <CardDescription>Total Quiz Completions</CardDescription>
+
+        <Card className="border-none shadow-lg relative overflow-hidden group">
+          <div className={`absolute inset-0 opacity-10 ${subject === 'math' ? 'bg-math-purple' : subject === 'english' ? 'bg-english-green' : 'bg-ict-orange'
+            }`}></div>
+          <CardHeader className="pb-2 relative z-10">
+            <CardTitle className="text-4xl font-bold text-text-primary">{getTotalCompletions()}</CardTitle>
+            <CardDescription className="font-medium text-text-secondary">Total Quiz Completions</CardDescription>
           </CardHeader>
+          <div className={`h-1.5 w-full absolute bottom-0 left-0 ${subject === 'math' ? 'bg-math-purple' : subject === 'english' ? 'bg-english-green' : 'bg-ict-orange'
+            }`}></div>
         </Card>
-        
-        <Card className={`border-l-4 ${getSubjectColor()} bg-gradient-to-r`}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-2xl">{filteredQuizzes.length}</CardTitle>
-            <CardDescription>Total {subject.charAt(0).toUpperCase() + subject.slice(1)} Quizzes</CardDescription>
+
+        <Card className="border-none shadow-lg relative overflow-hidden group">
+          <div className={`absolute inset-0 opacity-10 ${subject === 'math' ? 'bg-math-purple' : subject === 'english' ? 'bg-english-green' : 'bg-ict-orange'
+            }`}></div>
+          <CardHeader className="pb-2 relative z-10">
+            <CardTitle className="text-4xl font-bold text-text-primary">{filteredQuizzes.length}</CardTitle>
+            <CardDescription className="font-medium text-text-secondary">Total {subject.charAt(0).toUpperCase() + subject.slice(1)} Quizzes</CardDescription>
           </CardHeader>
+          <div className={`h-1.5 w-full absolute bottom-0 left-0 ${subject === 'math' ? 'bg-math-purple' : subject === 'english' ? 'bg-english-green' : 'bg-ict-orange'
+            }`}></div>
         </Card>
       </div>
-      
+
       <Tabs defaultValue="leaderboard" className="space-y-4">
         <TabsList>
           <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
           <TabsTrigger value="analytics">Detailed Analytics</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="leaderboard">
           <Card>
             <CardHeader>
@@ -116,11 +133,11 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 {selectedQuizId && leaderboard.length > 0 ? (
-                  <LeaderboardComponent 
-                    entries={leaderboard} 
-                    quizTitle={selectedQuiz?.title || "Quiz"} 
+                  <LeaderboardComponent
+                    entries={leaderboard}
+                    quizTitle={selectedQuiz?.title || "Quiz"}
                   />
                 ) : selectedQuizId ? (
                   <div className="text-center py-8">
@@ -138,7 +155,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="analytics">
           <Card>
             <CardHeader>

@@ -1,248 +1,249 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { 
-  ChevronRight, 
-  BookOpen, 
-  Users, 
+import {
+  ChevronRight,
+  BookOpen,
+  Users,
   Award,
   Laptop,
-  BookText
+  BookText,
+  Sparkles,
+  Zap,
+  CheckCircle2
 } from "lucide-react";
 import NavBar from '@/components/NavBar';
 
 const Index: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col font-poppins bg-bg-primary">
       <NavBar />
-      
+
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-white to-gray-50 py-16 md:py-24 px-4">
-        <div className="container mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">
-            Malik's Learning Lab
+      <section className="relative overflow-hidden py-20 md:py-32 px-4">
+        {/* Background decorative elements */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0 opacity-40">
+          <div className="absolute top-[-10%] right-[-5%] w-96 h-96 rounded-full bg-focus-blue-light/50 filter blur-3xl"></div>
+          <div className="absolute bottom-[-10%] left-[-5%] w-96 h-96 rounded-full bg-success-green-light/50 filter blur-3xl"></div>
+          <div className="absolute top-[40%] left-[20%] w-64 h-64 rounded-full bg-warning-amber-light/40 filter blur-3xl"></div>
+        </div>
+
+        <div className="container mx-auto text-center relative z-10 max-w-5xl">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-focus-blue-light/50 text-focus-blue-dark font-semibold text-sm mb-6 animate-fade-in shadow-sm border border-focus-blue-light">
+            <Sparkles size={16} />
+            <span>The Future of Learning is Here</span>
+          </div>
+
+          <h1 className="text-5xl md:text-7xl font-bold mb-8 text-text-primary tracking-tight leading-tight">
+            Learning Made <span className="bg-clip-text text-transparent bg-gradient-to-r from-focus-blue to-purple-600">Fun & Focus-Friendly</span>
           </h1>
-          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            An interactive platform for students to learn Math, English, and ICT through engaging quizzes and lessons
+
+          <p className="text-xl md:text-2xl text-text-secondary max-w-3xl mx-auto mb-10 leading-relaxed">
+            An interactive platform designed to boost engagement and retention in Math, English, and ICT through color-driven lessons.
           </p>
-          <div className="flex flex-col md:flex-row justify-center gap-4">
+
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link to="/student-join">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
+              <Button size="lg" className="h-14 px-8 text-lg bg-focus-blue hover:bg-focus-blue-dark text-white rounded-full shadow-lg transition-transform hover:scale-105">
                 Join as Student
-                <ChevronRight className="ml-2 h-4 w-4" />
+                <ChevronRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
             <Link to="/teacher-signup">
-              <Button size="lg" variant="outline">
+              <Button size="lg" variant="outline" className="h-14 px-8 text-lg border-2 border-gray-200 hover:border-text-primary hover:bg-bg-secondary text-text-primary rounded-full transition-all">
                 Sign Up as Teacher
               </Button>
             </Link>
           </div>
         </div>
       </section>
-      
+
       {/* Features Section */}
-      <section className="py-16 px-4 bg-white">
+      <section className="py-20 px-4 bg-section relative z-10 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.05)] rounded-t-[3rem] transition-colors duration-300">
         <div className="container mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12">Explore Our Subjects</h2>
-          
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">Explore Our Subjects</h2>
+            <div className="h-1 w-24 bg-focus-blue mx-auto rounded-full"></div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Math */}
-            <div className="border rounded-lg p-8 text-center hover:border-purple-300 hover:shadow-md transition-all">
-              <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 text-purple-500 mb-4">
-                <BookOpen className="h-6 w-6" />
+            <div className="group bg-bg-card border border-border rounded-2xl p-8 hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-math-purple"></div>
+              <div className="absolute top-0 right-0 w-24 h-24 bg-math-purple/5 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-150 duration-500"></div>
+
+              <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-math-purple/10 text-math-purple mb-6 group-hover:scale-110 transition-transform">
+                <BookOpen className="h-8 w-8" />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-purple-700">Mathematics</h3>
-              <p className="text-gray-500 mb-6">
-                Engaging math concepts from arithmetic to algebra through interactive quizzes and lessons.
+              <h3 className="text-2xl font-bold mb-3 text-text-primary group-hover:text-math-purple transition-colors">Mathematics</h3>
+              <p className="text-text-secondary mb-6 leading-relaxed">
+                Engaging math concepts from arithmetic to algebra through interactive quizzes and lessons designed to build confidence.
               </p>
-              <div className="text-sm text-gray-400">
+              <div className="text-sm font-semibold text-math-purple bg-math-purple/5 py-1 px-3 rounded-full w-fit">
                 Grades 3-10
               </div>
             </div>
-            
+
             {/* English */}
-            <div className="border rounded-lg p-8 text-center hover:border-green-300 hover:shadow-md transition-all">
-              <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-500 mb-4">
-                <BookText className="h-6 w-6" />
+            <div className="group bg-bg-card border border-border rounded-2xl p-8 hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-english-green"></div>
+              <div className="absolute top-0 right-0 w-24 h-24 bg-english-green/5 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-150 duration-500"></div>
+
+              <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-english-green/10 text-english-green mb-6 group-hover:scale-110 transition-transform">
+                <BookText className="h-8 w-8" />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-green-700">English</h3>
-              <p className="text-gray-500 mb-6">
-                Vocabulary, grammar, and reading comprehension through picture-based lessons and quizzes.
+              <h3 className="text-2xl font-bold mb-3 text-text-primary group-hover:text-english-green transition-colors">English</h3>
+              <p className="text-text-secondary mb-6 leading-relaxed">
+                Vocabulary, grammar, and reading comprehension through picture-based lessons and immersive storytelling.
               </p>
-              <div className="text-sm text-gray-400">
+              <div className="text-sm font-semibold text-english-green bg-english-green/5 py-1 px-3 rounded-full w-fit">
                 Grades 3-10
               </div>
             </div>
-            
+
             {/* ICT */}
-            <div className="border rounded-lg p-8 text-center hover:border-orange-300 hover:shadow-md transition-all">
-              <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-orange-500 mb-4">
-                <Laptop className="h-6 w-6" />
+            <div className="group bg-bg-card border border-border rounded-2xl p-8 hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-ict-orange"></div>
+              <div className="absolute top-0 right-0 w-24 h-24 bg-ict-orange/5 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-150 duration-500"></div>
+
+              <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-ict-orange/10 text-ict-orange mb-6 group-hover:scale-110 transition-transform">
+                <Laptop className="h-8 w-8" />
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-orange-700">ICT</h3>
-              <p className="text-gray-500 mb-6">
-                Computer hardware, software, and digital literacy through interactive lessons and quizzes.
+              <h3 className="text-2xl font-bold mb-3 text-text-primary group-hover:text-ict-orange transition-colors">ICT</h3>
+              <p className="text-text-secondary mb-6 leading-relaxed">
+                Computer hardware, software, and digital literacy through interactive lessons and real-world scenarios.
               </p>
-              <div className="text-sm text-gray-400">
+              <div className="text-sm font-semibold text-ict-orange bg-ict-orange/5 py-1 px-3 rounded-full w-fit">
                 Grades 3-10
               </div>
             </div>
           </div>
         </div>
       </section>
-      
+
       {/* How It Works */}
-      <section className="py-16 px-4 bg-gray-50">
+      <section className="py-20 px-4 bg-bg-secondary transition-colors duration-300">
         <div className="container mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-4">How It Works</h2>
-          <p className="text-center text-gray-600 mb-12 max-w-3xl mx-auto">
-            Malik's Learning Lab makes it easy for teachers to create engaging learning content
-            and for students to learn through interactive experiences
-          </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-            <div className="text-center">
-              <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-500 mb-4">
-                <div className="text-lg font-bold">1</div>
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-text-primary mb-4">How It Works</h2>
+            <p className="text-text-secondary max-w-2xl mx-auto text-lg">
+              Simple steps for teachers to create and students to learn.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {/* Step 1 */}
+            <div className="bg-bg-card p-8 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative border border-border">
+              <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-focus-blue text-white rounded-full flex items-center justify-center text-xl font-bold border-4 border-bg-secondary">1</div>
+              <div className="mt-6 text-center">
+                <h3 className="text-xl font-bold mb-3 text-text-primary">Create Content</h3>
+                <p className="text-text-secondary leading-relaxed">
+                  Teachers utilize our scaffolded builder to create quizzes and color-coded lessons.
+                </p>
               </div>
-              <h3 className="text-xl font-semibold mb-3">Create Content</h3>
-              <p className="text-gray-600">
-                Teachers create quizzes and interactive lessons across multiple subjects and grade levels.
-              </p>
             </div>
-            
-            <div className="text-center">
-              <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-500 mb-4">
-                <div className="text-lg font-bold">2</div>
+
+            {/* Step 2 */}
+            <div className="bg-bg-card p-8 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative border border-border">
+              <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-focus-blue text-white rounded-full flex items-center justify-center text-xl font-bold border-4 border-bg-secondary">2</div>
+              <div className="mt-6 text-center">
+                <h3 className="text-xl font-bold mb-3 text-text-primary">Share Code</h3>
+                <p className="text-text-secondary leading-relaxed">
+                  A unique 6-digit access code is generated instantly to share with the classroom.
+                </p>
               </div>
-              <h3 className="text-xl font-semibold mb-3">Share Access Code</h3>
-              <p className="text-gray-600">
-                Every quiz and lesson gets a unique 6-digit code that teachers share with their students.
-              </p>
             </div>
-            
-            <div className="text-center">
-              <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-500 mb-4">
-                <div className="text-lg font-bold">3</div>
+
+            {/* Step 3 */}
+            <div className="bg-bg-card p-8 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative border border-border">
+              <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-focus-blue text-white rounded-full flex items-center justify-center text-xl font-bold border-4 border-bg-secondary">3</div>
+              <div className="mt-6 text-center">
+                <h3 className="text-xl font-bold mb-3 text-text-primary">Learn & Grow</h3>
+                <p className="text-text-secondary leading-relaxed">
+                  Students join, engage with the content, and get immediate, encouraging feedback.
+                </p>
               </div>
-              <h3 className="text-xl font-semibold mb-3">Learn & Assess</h3>
-              <p className="text-gray-600">
-                Students join using the code, complete activities, and get immediate feedback on their progress.
-              </p>
             </div>
+
           </div>
         </div>
       </section>
-      
+
       {/* Teacher Benefits */}
-      <section className="py-16 px-4 bg-white">
-        <div className="container mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <section className="py-24 px-4 bg-bg-card relative overflow-hidden transition-colors duration-300 text-text-primary">
+        <div className="absolute right-0 top-0 w-1/3 h-full bg-blue-50/50 dark:bg-blue-900/10 skew-x-[-10deg] pointer-events-none"></div>
+
+        <div className="container mx-auto relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-3xl font-bold mb-6">For Teachers</h2>
-              <ul className="space-y-4">
-                <li className="flex gap-3">
-                  <div className="mt-1 h-6 w-6 flex-shrink-0 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 14 14"
-                      fill="none"
-                    >
-                      <path
-                        d="M3 7L6 10L11 4"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <span className="font-medium block">Quiz Zone</span>
-                    <span className="text-gray-500 text-sm">Create multiple choice, true/false, and other quiz types across all subjects</span>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <div className="mt-1 h-6 w-6 flex-shrink-0 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 14 14"
-                      fill="none"
-                    >
-                      <path
-                        d="M3 7L6 10L11 4"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <span className="font-medium block">Lesson Builder</span>
-                    <span className="text-gray-500 text-sm">Design interactive picture-based lessons with text, images, and exercises</span>
-                  </div>
-                </li>
-                <li className="flex gap-3">
-                  <div className="mt-1 h-6 w-6 flex-shrink-0 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 14 14"
-                      fill="none"
-                    >
-                      <path
-                        d="M3 7L6 10L11 4"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <span className="font-medium block">Performance Tracking</span>
-                    <span className="text-gray-500 text-sm">Monitor student progress and identify areas for improvement</span>
-                  </div>
-                </li>
+              <div className="inline-block px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 font-bold rounded-full text-sm mb-4">FOR EDUCATORS</div>
+              <h2 className="text-4xl font-bold mb-6 text-text-primary">Empower Your Classroom</h2>
+              <p className="text-text-secondary text-lg mb-8 leading-relaxed">
+                Our tools are designed to save you time and increase student participation through proven gamification and color psychology strategies.
+              </p>
+
+              <ul className="space-y-6">
+                {[
+                  { title: "Quiz Zone", desc: "Create multiple choice, true/false, and other quiz types.", icon: <Zap className="text-warning-amber" fill="currentColor" /> },
+                  { title: "Lesson Builder", desc: "Design interactive picture-based lessons with ease.", icon: <BookOpen className="text-focus-blue" /> },
+                  { title: "Performance Tracking", desc: "Monitor student progress and identify gaps.", icon: <Award className="text-success-green" /> }
+                ].map((item, i) => (
+                  <li key={i} className="flex gap-4 p-4 rounded-xl hover:bg-bg-secondary transition-colors">
+                    <div className="mt-1 h-12 w-12 flex-shrink-0 rounded-full bg-bg-card border border-border shadow-sm flex items-center justify-center p-2.5">
+                      {item.icon}
+                    </div>
+                    <div>
+                      <span className="font-bold text-lg block text-text-primary mb-1">{item.title}</span>
+                      <span className="text-text-secondary">{item.desc}</span>
+                    </div>
+                  </li>
+                ))}
               </ul>
-              <div className="mt-8">
+
+              <div className="mt-10">
                 <Link to="/teacher-signup">
-                  <Button size="lg">
+                  <Button size="lg" className="h-12 px-8 bg-focus-blue hover:bg-focus-blue-dark text-white rounded-full shadow-md">
                     Create Teacher Account
                     <ChevronRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
               </div>
             </div>
-            
-            <div className="hidden lg:block relative h-96">
-              <div className="absolute top-0 left-0 w-full h-full bg-blue-100 rounded-lg transform rotate-3"></div>
-              <div className="absolute top-0 left-0 w-full h-full bg-white border rounded-lg shadow-lg p-6">
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-lg font-semibold">Quiz Creator</h3>
-                  <span className="text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded">Math Quiz</span>
-                </div>
-                <div className="space-y-4">
+
+            <div className="hidden lg:block relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl transform rotate-3 opacity-20 filter blur-lg"></div>
+              <div className="relative bg-bg-card border border-border rounded-2xl shadow-2xl p-8 transform hover:-translate-y-2 transition-transform duration-500">
+                <div className="flex justify-between items-center mb-8 border-b border-border pb-4">
                   <div>
-                    <label className="text-sm font-medium">Question 1</label>
-                    <div className="mt-1 p-3 border rounded-md bg-gray-50">
+                    <h3 className="text-xl font-bold text-text-primary">Quiz Creator</h3>
+                    <p className="text-sm text-text-secondary">Drafting: Algebra Basics</p>
+                  </div>
+                  <span className="text-xs font-bold bg-math-purple/10 text-math-purple px-3 py-1 rounded-full uppercase">Math Quiz</span>
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <label className="text-sm font-bold text-text-secondary mb-2 block">Question 1</label>
+                    <div className="p-4 border-2 border-focus-blue-light/50 rounded-xl bg-bg-secondary/30 text-lg font-medium text-text-primary">
                       What is the sum of 28 + 14?
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <div className="p-2 border rounded flex items-center gap-2">
-                      <div className="h-4 w-4 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs">A</div>
-                      <span>42</span>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 border-2 border-focus-blue bg-focus-blue/5 rounded-lg flex items-center gap-3 cursor-pointer">
+                      <div className="h-6 w-6 rounded-full bg-focus-blue text-white flex items-center justify-center text-xs font-bold">A</div>
+                      <span className="font-bold text-focus-blue-dark">42</span>
+                      <CheckCircle2 size={16} className="text-focus-blue ml-auto" />
                     </div>
-                    <div className="p-2 border rounded flex items-center gap-2">
-                      <div className="h-4 w-4 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center text-xs">B</div>
-                      <span>32</span>
+                    <div className="p-3 border border-border rounded-lg flex items-center gap-3 opacity-60">
+                      <div className="h-6 w-6 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-xs font-bold">B</div>
+                      <span className="text-text-primary">32</span>
                     </div>
+                  </div>
+                </div>
+
+                <div className="mt-8 flex gap-2">
+                  <div className="h-2 w-full bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-full w-1/3 bg-focus-blue"></div>
                   </div>
                 </div>
               </div>
@@ -250,71 +251,76 @@ const Index: React.FC = () => {
           </div>
         </div>
       </section>
-      
+
       {/* Student Benefits */}
-      <section className="py-16 px-4 bg-gray-50">
+      <section className="py-20 px-4 bg-bg-secondary text-text-primary transition-colors duration-300">
         <div className="container mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12">Benefits for Students</h2>
-          
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-text-primary mb-4">Benefits for Students</h2>
+            <div className="h-1 w-24 bg-success-green mx-auto rounded-full"></div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
-              <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 text-purple-500 mb-4">
-                <Award className="h-5 w-5" />
+            <div className="bg-bg-card p-8 rounded-2xl shadow-sm border border-border hover:-translate-y-1 transition-transform">
+              <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-success-green/10 text-success-green mb-6">
+                <CheckCircle2 className="h-8 w-8" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Instant Feedback</h3>
-              <p className="text-gray-600">
-                Students receive immediate results and explanations after completing quizzes.
+              <h3 className="text-xl font-bold mb-3 text-text-primary">Instant Feedback</h3>
+              <p className="text-text-secondary">
+                Students receive immediate, colorful feedback to reinforce learning and correct mistakes instantly.
               </p>
             </div>
-            
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
-              <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-green-100 text-green-500 mb-4">
-                <BookText className="h-5 w-5" />
+
+            <div className="bg-bg-card p-8 rounded-2xl shadow-sm border border-border hover:-translate-y-1 transition-transform">
+              <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-focus-blue/10 text-focus-blue mb-6">
+                <BookText className="h-8 w-8" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Interactive Learning</h3>
-              <p className="text-gray-600">
-                Engage with visual content and interactive exercises across multiple subjects.
+              <h3 className="text-xl font-bold mb-3 text-text-primary">Interactive Learning</h3>
+              <p className="text-text-secondary">
+                Engage with visual content, videos, and interactive exercises that make learning feel like play.
               </p>
             </div>
-            
-            <div className="bg-white p-6 rounded-lg shadow-sm border">
-              <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 text-orange-500 mb-4">
-                <Users className="h-5 w-5" />
+
+            <div className="bg-bg-card p-8 rounded-2xl shadow-sm border border-border hover:-translate-y-1 transition-transform">
+              <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-ict-orange/10 text-ict-orange mb-6">
+                <Users className="h-8 w-8" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Easy Access</h3>
-              <p className="text-gray-600">
-                Join quizzes and lessons with simple 6-digit codes on any device.
+              <h3 className="text-xl font-bold mb-3 text-text-primary">Easy Access</h3>
+              <p className="text-text-secondary">
+                Join quizzes and lessons with simple 6-digit codes on any device—tablet, laptop, or phone.
               </p>
             </div>
           </div>
-          
-          <div className="mt-12 text-center">
-            <Link to="/student-join">
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
-                Join a Quiz or Lesson
-                <ChevronRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
+
+          <div className="mt-16 text-center">
+            <div className="inline-block p-1 bg-bg-card rounded-full border border-border shadow-lg">
+              <Link to="/student-join">
+                <Button size="lg" className="h-14 px-10 text-lg bg-success-green hover:bg-[#059669] text-white rounded-full">
+                  Join a Quiz or Lesson Now
+                  <ChevronRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
-      
+
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 px-4">
+      <footer className="bg-gray-900 border-t border-gray-800 text-white py-16 px-4">
         <div className="container mx-auto">
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-2">Malik's Learning Lab</h2>
-            <p className="text-gray-400 mb-6">
-              Transforming education through interactive learning experiences
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl font-bold mb-4 tracking-tight">Malik's Learning Lab</h2>
+            <p className="text-gray-400 mb-8 text-lg">
+              Transforming education through interactive learning experiences, powered by color psychology.
             </p>
-            <div className="flex justify-center space-x-6">
-              <a href="#" className="text-gray-400 hover:text-white transition">About</a>
-              <a href="#" className="text-gray-400 hover:text-white transition">Contact</a>
-              <a href="#" className="text-gray-400 hover:text-white transition">Terms</a>
-              <a href="#" className="text-gray-400 hover:text-white transition">Privacy</a>
+            <div className="flex flex-wrap justify-center gap-8 mb-12">
+              <a href="#" className="text-gray-400 hover:text-white transition-colors border-b border-transparent hover:border-white pb-0.5">About Us</a>
+              <a href="#" className="text-gray-400 hover:text-white transition-colors border-b border-transparent hover:border-white pb-0.5">Contact Support</a>
+              <a href="#" className="text-gray-400 hover:text-white transition-colors border-b border-transparent hover:border-white pb-0.5">Terms of Service</a>
+              <a href="#" className="text-gray-400 hover:text-white transition-colors border-b border-transparent hover:border-white pb-0.5">Privacy Policy</a>
             </div>
-            <div className="mt-8 text-gray-500 text-sm">
-              &copy; 2025 Malik's Learning Lab. All rights reserved.
+            <div className="pt-8 border-t border-gray-800 text-gray-500 text-sm">
+              &copy; {new Date().getFullYear()} Malik's Learning Lab. All rights reserved.
             </div>
           </div>
         </div>

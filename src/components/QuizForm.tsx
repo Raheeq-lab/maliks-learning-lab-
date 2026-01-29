@@ -277,32 +277,34 @@ const QuizForm: React.FC<QuizFormProps> = ({ grades, onSave, onCancel, subject =
         <CardContent className="space-y-6">
           <div className="space-y-4">
             <div>
-              <Label htmlFor="title">Quiz Title</Label>
+              <Label htmlFor="title" className="text-text-primary">Quiz Title</Label>
               <Input
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g., Fractions Basics"
                 required
+                className="mt-1 bg-bg-input border-border text-text-primary placeholder:text-text-tertiary focus-visible:ring-focus-blue"
               />
             </div>
 
             <div>
-              <Label htmlFor="description">Description (Optional)</Label>
+              <Label htmlFor="description" className="text-text-primary">Description (Optional)</Label>
               <Textarea
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Brief description of what this quiz covers"
                 rows={2}
+                className="mt-1 bg-bg-input border-border text-text-primary placeholder:text-text-tertiary focus-visible:ring-focus-blue"
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="subject">Subject</Label>
+                <Label htmlFor="subject" className="text-text-primary">Subject</Label>
                 <Select value={selectedSubject} onValueChange={(v) => setSelectedSubject(v as "math" | "english" | "ict")}>
-                  <SelectTrigger id="subject">
+                  <SelectTrigger id="subject" className="mt-1 bg-bg-input border-border text-text-primary">
                     <SelectValue placeholder="Select subject" />
                   </SelectTrigger>
                   <SelectContent>
@@ -314,9 +316,9 @@ const QuizForm: React.FC<QuizFormProps> = ({ grades, onSave, onCancel, subject =
               </div>
 
               <div>
-                <Label htmlFor="grade">Grade Level</Label>
+                <Label htmlFor="grade" className="text-text-primary">Grade Level</Label>
                 <Select value={selectedGrade} onValueChange={setSelectedGrade}>
-                  <SelectTrigger>
+                  <SelectTrigger className="mt-1 bg-bg-input border-border text-text-primary">
                     <SelectValue placeholder="Select grade" />
                   </SelectTrigger>
                   <SelectContent>
@@ -328,7 +330,7 @@ const QuizForm: React.FC<QuizFormProps> = ({ grades, onSave, onCancel, subject =
               </div>
 
               <div>
-                <Label htmlFor="timeLimit">Time Limit (seconds per question)</Label>
+                <Label htmlFor="timeLimit" className="text-text-primary">Time Limit (seconds per question)</Label>
                 <Input
                   id="timeLimit"
                   type="number"
@@ -336,6 +338,7 @@ const QuizForm: React.FC<QuizFormProps> = ({ grades, onSave, onCancel, subject =
                   max={300}
                   value={timeLimit}
                   onChange={(e) => setTimeLimit(parseInt(e.target.value))}
+                  className="mt-1 bg-bg-input border-border text-text-primary focus-visible:ring-focus-blue"
                 />
               </div>
             </div>
@@ -357,46 +360,50 @@ const QuizForm: React.FC<QuizFormProps> = ({ grades, onSave, onCancel, subject =
             </div>
 
             {questions.map((question, qIndex) => (
-              <div key={question.id} className={`border rounded-lg p-4 space-y-4 ${getSubjectColorClass()}`}>
+              <div key={question.id} className={`border rounded-lg p-4 space-y-4 shadow-sm ${initialData?.subject === 'math' || subject === 'math' ? 'border-math-purple/30 bg-math-purple/5 dark:bg-math-purple/10' :
+                initialData?.subject === 'english' || subject === 'english' ? 'border-english-green/30 bg-english-green/5 dark:bg-english-green/10' :
+                  'border-ict-orange/30 bg-ict-orange/5 dark:bg-ict-orange/10'
+                }`}>
                 <div className="flex justify-between items-start">
-                  <h4 className="text-md font-medium">Question {qIndex + 1}</h4>
+                  <h4 className="text-md font-bold text-text-primary">Question {qIndex + 1}</h4>
                   <Button
                     type="button"
                     onClick={() => handleRemoveQuestion(qIndex)}
                     variant="ghost"
                     size="sm"
-                    className="text-red-500 hover:text-red-700"
+                    className="text-error-coral hover:text-error-coral-dark hover:bg-error-coral/10"
                   >
                     <Trash2 size={16} />
                   </Button>
                 </div>
 
                 <div>
-                  <Label htmlFor={`q${qIndex}-text`}>Question Text</Label>
+                  <Label htmlFor={`q${qIndex}-text`} className="text-text-secondary">Question Text</Label>
                   <Textarea
                     id={`q${qIndex}-text`}
                     value={question.text}
                     onChange={(e) => handleQuestionChange(qIndex, 'text', e.target.value)}
                     placeholder="e.g., What is 1/4 + 1/2?"
                     rows={2}
+                    className="mt-1 bg-bg-input border-border text-text-primary placeholder:text-text-tertiary focus-visible:ring-focus-blue"
                   />
                 </div>
 
                 {/* Question Image Upload */}
                 <div>
-                  <Label htmlFor={`q${qIndex}-image`} className="block mb-2">Question Image (Optional)</Label>
+                  <Label htmlFor={`q${qIndex}-image`} className="block mb-2 text-text-secondary">Question Image (Optional)</Label>
                   {question.imageUrl ? (
-                    <div className="relative mb-2">
+                    <div className="relative mb-2 w-fit">
                       <img
                         src={question.imageUrl}
                         alt={`Image for question ${qIndex + 1}`}
-                        className="max-h-40 rounded-md border border-gray-200"
+                        className="max-h-40 rounded-md border border-border"
                       />
                       <Button
                         type="button"
                         size="sm"
                         variant="destructive"
-                        className="absolute top-1 right-1 h-8 w-8 p-1 rounded-full"
+                        className="absolute top-1 right-1 h-8 w-8 p-1 rounded-full shadow-md"
                         onClick={() => removeImage(qIndex)}
                       >
                         <X size={16} />
@@ -421,25 +428,25 @@ const QuizForm: React.FC<QuizFormProps> = ({ grades, onSave, onCancel, subject =
                       <Button
                         type="button"
                         variant="outline"
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-2 border-border text-text-primary hover:bg-bg-secondary"
                         onClick={() => fileInputRefs.current[qIndex]?.click()}
                       >
                         <Upload size={16} />
                         Upload Image
                       </Button>
-                      <span className="text-sm text-gray-500">Max size: 5MB</span>
+                      <span className="text-sm text-text-tertiary">Max size: 5MB</span>
                     </div>
                   )}
                 </div>
 
                 <div className="space-y-3">
-                  <Label>Options (select the correct answer)</Label>
+                  <Label className="text-text-secondary">Options (select the correct answer)</Label>
                   {question.options.map((option, oIndex) => (
                     <div key={`${question.id}-option-${oIndex}`} className="flex items-center gap-2">
                       <div
-                        className={`w-6 h-6 flex items-center justify-center rounded-full cursor-pointer ${question.correctOptionIndex === oIndex
-                          ? 'bg-green-500 text-white'
-                          : 'bg-gray-100'
+                        className={`w-8 h-8 flex items-center justify-center rounded-full cursor-pointer transition-colors font-bold ${question.correctOptionIndex === oIndex
+                          ? 'bg-success-green text-white shadow-md'
+                          : 'bg-bg-secondary text-text-secondary border border-border hover:bg-bg-hover'
                           }`}
                         onClick={() => handleCorrectOptionChange(qIndex, oIndex)}
                       >
@@ -449,7 +456,7 @@ const QuizForm: React.FC<QuizFormProps> = ({ grades, onSave, onCancel, subject =
                         value={option}
                         onChange={(e) => handleOptionChange(qIndex, oIndex, e.target.value)}
                         placeholder={`Option ${String.fromCharCode(65 + oIndex)}`}
-                        className="flex-1"
+                        className="flex-1 bg-bg-input border-border text-text-primary placeholder:text-text-tertiary focus-visible:ring-focus-blue"
                       />
                     </div>
                   ))}

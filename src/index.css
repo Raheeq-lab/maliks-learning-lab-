@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
@@ -6,35 +5,277 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+
+  /* === LIGHT MODE (DEFAULT) === */
+  :root,
+  :root[data-theme="light"] {
+    /* === MAIN BACKGROUNDS === */
+    --bg-main: #FAF9F6;
+    /* Soft cream - main page background (NOT white) */
+    --bg-page: #FAF9F6;
+    /* Alternative name for main background */
+    --bg-card: #FFFFFF;
+    /* Pure white - for cards and content boxes */
+    --bg-card-hover: #F8FAFC;
+    /* Very light blue-gray - hover state */
+    --bg-header: #E0F2FE;
+    /* Light blue - header section with logo */
+
+    /* === SECTION BACKGROUNDS === */
+    --bg-section: #FFFFFF;
+    /* White - for main content sections */
+    --bg-section-alt: #FFF8F0;
+    /* Warm ivory - alternate sections */
+    --bg-elevated: #FFFFFF;
+    /* White - modal, dropdown overlays */
+
+    /* === SUBJECT-SPECIFIC BACKGROUNDS === */
+    --math-bg-light: #F3E8FF;
+    /* Light purple - Math tab/section */
+    --english-bg-light: #ECFDF5;
+    /* Light green - English tab/section */
+    --ict-bg-light: #FFF7ED;
+    /* Light orange - ICT tab/section */
+
+    /* === INTERACTIVE STATES === */
+    --bg-hover: #F5F3F0;
+    /* Hover state on cream background */
+    --bg-active: #F0EDE8;
+    /* Active/pressed state */
+    --bg-disabled: #F9FAFB;
+    /* Disabled elements */
+
+    /* === NAVIGATION TABS === */
+    --tab-active-bg: #DBEAFE;
+    /* Light blue - active tab */
+    --tab-inactive-bg: transparent;
+    /* Transparent - inactive tab */
+    --tab-hover-bg: #F0F9FF;
+    /* Very light blue - hover tab */
+
+    /* === SPECIAL BACKGROUNDS === */
+    --bg-code: #F9FAFB;
+    /* Light gray - access codes, code blocks */
+    --bg-input: #FFFFFF;
+    /* White - input fields */
+    --bg-input-focus: #FFFFFF;
+    /* White with blue border - focused inputs */
+
+    /* === CORE COLORS (HSL Values for Tailwind Opacity Support) === */
+    --focus-blue: 217 91% 60%;
+    /* #3B82F6 */
+    --focus-blue-light: 217 91% 93%;
+    /* #DBEAFE */
+    --focus-blue-dark: 221 83% 53%;
+    /* #2563EB */
+    --focus-blue-darker: 224 76% 48%;
+    /* #1D4ED8 */
+
+    --success-green: 151 84% 39%;
+    /* #10B981 */
+    --success-green-light: 151 84% 90%;
+    /* #D1FAE5 */
+    --error-coral: 0 100% 71%;
+    /* #FF6B6B */
+    --error-coral-light: 0 100% 94%;
+    /* #FEE2E2 */
+    --warning-amber: 38 92% 50%;
+    /* #F59E0B */
+    --warning-amber-light: 44 96% 89%;
+    /* #FEF3C7 */
+
+    --math-purple: 258 90% 66%;
+    /* #8B5CF6 */
+    --english-green: 151 84% 39%;
+    /* #10B981 */
+    --ict-orange: 27 96% 53%;
+    /* #F97316 */
+
+    --progress-start: 217 91% 60%;
+    --progress-middle: 173 80% 40%;
+    --progress-end: 151 84% 39%;
+
+    --text-primary: 215 28% 17%;
+    /* #1F2937 */
+    --text-secondary: 218 11% 45%;
+    /* #6B7280 */
+    --text-tertiary: 218 11% 65%;
+    /* #9CA3AF */
+    --text-on-color: 0 0% 100%;
+
+    /* === SHADCN VARS MAP === */
+    --background: 60 11% 97%;
+    /* Matches Soft cream */
+    --foreground: 215 28% 17%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 215 28% 17%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
+    --popover-foreground: 215 28% 17%;
+    --primary: 217 91% 60%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 215 28% 17%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 218 11% 45%;
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 100% 71%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 217 91% 60%;
     --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* === COMPACT TYPOGRAPHY SYSTEM === */
+    --font-xs: 0.75rem;
+    /* 12px */
+    --font-sm: 0.875rem;
+    /* 14px */
+    --font-base: 0.9375rem;
+    /* 15px */
+    --font-md: 1rem;
+    /* 16px */
+    --font-lg: 1.125rem;
+    /* 18px */
+    --font-xl: 1.25rem;
+    /* 20px */
+    --font-2xl: 1.5rem;
+    /* 24px */
+    --font-3xl: 1.75rem;
+    /* 28px */
+
+    /* === COMPACT SPACING SYSTEM === */
+    --space-0: 0;
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+    --space-16: 64px;
+
+    /* === COMPONENT SPACING === */
+    --card-padding: 20px;
+    --section-gap: 32px;
+    --card-gap: 16px;
   }
 
-  .dark {
-    --background: 222.2 84% 4.9%;
+  /* === DARK MODE === */
+  :root[data-theme="dark"] {
+    /* === MAIN BACKGROUNDS === */
+    --bg-main: #0F172A;
+    /* Deep slate - main background */
+    --bg-page: #0F172A;
+    /* Same as main */
+    --bg-card: #1E293B;
+    /* Slate gray - cards and content */
+    --bg-card-hover: #334155;
+    /* Lighter slate - hover */
+    --bg-header: #1E293B;
+    /* Slate gray - header */
+
+    /* === SECTION BACKGROUNDS === */
+    --bg-section: #1E293B;
+    /* Slate gray - content sections */
+    --bg-section-alt: #334155;
+    /* Lighter slate - alternate sections */
+    --bg-elevated: #334155;
+    /* Lighter slate - modals, dropdowns */
+
+    /* === SUBJECT-SPECIFIC BACKGROUNDS (DARKER) === */
+    --math-bg-dark: #2D1B4E;
+    /* Dark purple - Math sections */
+    --english-bg-dark: #1A3A2E;
+    /* Dark green - English sections */
+    --ict-bg-dark: #3A2817;
+    /* Dark orange - ICT sections */
+
+    /* === INTERACTIVE STATES === */
+    --bg-hover: #334155;
+    /* Hover state */
+    --bg-active: #475569;
+    /* Active/pressed state */
+    --bg-disabled: #1E293B;
+    /* Disabled elements */
+
+    /* === NAVIGATION TABS === */
+    --tab-active-bg: #1E40AF;
+    /* Darker blue - active tab */
+    --tab-inactive-bg: transparent;
+    /* Transparent */
+    --tab-hover-bg: #1E3A5F;
+    /* Dark blue hover */
+
+    /* === SPECIAL BACKGROUNDS === */
+    --bg-code: #1E293B;
+    /* Slate - code blocks */
+    --bg-input: #334155;
+    /* Lighter slate - inputs */
+    --bg-input-focus: #475569;
+    /* Even lighter - focused inputs */
+
+    /* === CORE COLORS (Adjusted for Dark Mode) === */
+    --focus-blue: 212 96% 78%;
+    /* #60A5FA - Brighter blue */
+    --focus-blue-light: 224 64% 33%;
+    /* #1E3A8A - Dark blue bg */
+    --focus-blue-dark: 217 91% 60%;
+    /* #3B82F6 */
+    --focus-blue-darker: 224 76% 48%;
+    /* #1D4ED8 */
+
+    --success-green: 156 63% 52%;
+    /* #34D399 */
+    --success-green-light: 161 94% 20%;
+    /* #065F46 */
+    --error-coral: 0 91% 71%;
+    /* #F87171 */
+    --error-coral-light: 0 63% 31%;
+    /* #7F1D1D */
+    --warning-amber: 41 96% 56%;
+    /* #FBBF24 */
+    --warning-amber-light: 30 78% 26%;
+    /* #78350F */
+
+    --math-purple: 257 92% 76%;
+    /* #A78BFA */
+    --english-green: 156 63% 52%;
+    /* #34D399 */
+    --ict-orange: 27 96% 61%;
+    /* #FB923C */
+
+    --progress-start: 217 91% 60%;
+    --progress-middle: 173 80% 40%;
+    --progress-end: 151 84% 39%;
+
+    --text-primary: 210 20% 95%;
+    /* #F1F5F9 */
+    --text-secondary: 215 16% 84%;
+    /* #CBD5E1 */
+    --text-tertiary: 215 16% 47%;
+    /* #64748B */
+    --text-on-color: 0 0% 100%;
+
+    /* === SHADCN VARS MAP (DARK) === */
+    --background: 222.2 47.4% 11.2%;
+    /* #0F172A (Deep Slate) - corrected from default black */
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    --card: 215 28% 17%;
+    /* #1E293B (Slate 800) for Cards */
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
+    --popover: 222.2 47.4% 11.2%;
     --popover-foreground: 210 40% 98%;
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
@@ -49,6 +290,40 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+    --radius: 0.5rem;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  /* Global Body Transition & Background Application */
+  body,
+  .main-container,
+  .app-wrapper {
+    background-color: var(--bg-main);
+    color: hsl(var(--text-primary));
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    padding: var(--space-5) var(--space-8);
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* Additional Dark Mode Fixes */
+  [data-theme="dark"] img,
+  [data-theme="dark"] .icon {
+    opacity: 0.9;
+    transition: opacity 0.3s ease;
+  }
+
+  [data-theme="dark"] img:hover,
+  [data-theme="dark"] .icon:hover {
+    opacity: 1;
   }
 }
 
@@ -56,8 +331,10 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
+    font-size: var(--font-base);
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
@@ -65,5 +342,26 @@
 @layer components {
   .font-poppins {
     font-family: 'Poppins', sans-serif;
+  }
+
+  /* Shared component classes for theme consistency */
+  .card-base {
+    background-color: var(--bg-card);
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .card-hover:hover {
+    background-color: var(--bg-card-hover);
+  }
+
+  .input-base {
+    background-color: var(--bg-input);
+    color: hsl(var(--text-primary));
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+
+  .input-base:focus {
+    background-color: var(--bg-input-focus);
+    border-color: hsl(var(--focus-blue));
   }
 }

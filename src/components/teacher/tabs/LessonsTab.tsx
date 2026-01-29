@@ -52,10 +52,10 @@ const LessonsTab: React.FC<LessonsTabProps> = ({ lessons, onCreateLesson, onCopy
       </div>
 
       {lessons.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
-          <FileText size={48} className="mx-auto mb-4 text-gray-400" />
-          <p className="text-gray-500">You haven't created any lessons for this subject yet.</p>
-          <p className="text-gray-500 mb-4">Get started by creating your first interactive lesson!</p>
+        <div className="text-center py-12 bg-bg-secondary rounded-lg border border-border">
+          <FileText size={48} className="mx-auto mb-4 text-text-tertiary" />
+          <p className="text-text-secondary">You haven't created any lessons for this subject yet.</p>
+          <p className="text-text-secondary mb-4">Get started by creating your first interactive lesson!</p>
           <Button
             onClick={onCreateLesson}
             className={`text-white ${getSubjectColor()}`}
@@ -64,7 +64,7 @@ const LessonsTab: React.FC<LessonsTabProps> = ({ lessons, onCreateLesson, onCopy
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-card-gap">
           {lessons.map(lesson => (
             <LessonCard
               key={lesson.id}

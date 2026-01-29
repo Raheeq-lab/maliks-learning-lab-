@@ -1157,29 +1157,31 @@ Task: ${prompt}`;
       <form onSubmit={handleSubmit}>
         <div className="space-y-8">
           {/* Basic Information */}
-          <Card>
+          {/* Basic Information */}
+          <Card className="bg-bg-card border-border">
             <CardHeader>
               <CardTitle>Lesson Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="title">Lesson Title</Label>
+                  <Label htmlFor="title" className="text-text-primary">Lesson Title</Label>
                   <Input
                     id="title"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="Enter lesson title"
+                    className="bg-bg-input border-border text-text-primary placeholder:text-text-tertiary"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="grade">Grade Level</Label>
+                  <Label htmlFor="grade" className="text-text-primary">Grade Level</Label>
                   <Select
                     value={selectedGrade.toString()}
                     onValueChange={(val) => setSelectedGrade(parseInt(val))}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-bg-input border-border text-text-primary">
                       <SelectValue placeholder="Select grade level" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1193,13 +1195,14 @@ Task: ${prompt}`;
                 </div>
 
                 <div className="md:col-span-2">
-                  <Label htmlFor="description">Description (Optional)</Label>
+                  <Label htmlFor="description" className="text-text-primary">Description (Optional)</Label>
                   <Textarea
                     id="description"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Briefly describe your lesson"
                     rows={3}
+                    className="bg-bg-input border-border text-text-primary placeholder:text-text-tertiary"
                   />
                 </div>
               </div>
@@ -1207,21 +1210,21 @@ Task: ${prompt}`;
           </Card>
 
           {/* Learning Type Selection */}
-          <Card>
+          <Card className="bg-bg-card border-border">
             <CardHeader>
               <CardTitle>Learning Type</CardTitle>
             </CardHeader>
             <CardContent>
               {initialData ? (
-                <div className="p-4 bg-gray-50 border rounded-lg flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-white border">
-                    {getLearningTypes().find(t => t.id === (selectedLearningType || initialData.learningType))?.icon || <BookOpen className="text-gray-500" />}
+                <div className="p-4 bg-bg-secondary border-border border rounded-lg flex items-center gap-3">
+                  <div className="p-2 rounded-full bg-bg-card border-border border">
+                    {getLearningTypes().find(t => t.id === (selectedLearningType || initialData.learningType))?.icon || <BookOpen className="text-text-tertiary" />}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">
+                    <h3 className="font-semibold text-text-primary">
                       {getLearningTypes().find(t => t.id === (selectedLearningType || initialData.learningType))?.title || "Custom Lesson"}
                     </h3>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-text-secondary">
                       {getLearningTypes().find(t => t.id === (selectedLearningType || initialData.learningType))?.description || "This lesson type cannot be changed once created."}
                     </p>
                   </div>
@@ -1232,8 +1235,8 @@ Task: ${prompt}`;
                     <div
                       key={type.id}
                       className={`p-4 border rounded-lg cursor-pointer transition-all ${selectedLearningType === type.id
-                        ? 'border-2 border-blue-500 bg-blue-50 shadow-md transform scale-[1.02]'
-                        : 'hover:bg-gray-50'
+                        ? 'border-2 border-focus-blue bg-blue-50 dark:bg-blue-900/20 shadow-md transform scale-[1.02]'
+                        : 'border-border hover:bg-bg-hover bg-bg-card'
                         }`}
                       onClick={() => handleLearningTypeChange(type.id)}
                     >
@@ -1252,7 +1255,7 @@ Task: ${prompt}`;
           </Card>
 
           {/* Content Blocks */}
-          <Card>
+          <Card className="bg-bg-card border-border">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Lesson Content</CardTitle>
               <div className="flex gap-2">
@@ -1306,7 +1309,7 @@ Task: ${prompt}`;
                   </div>
                 ) : (
                   contentBlocks.map((block, index) => (
-                    <div key={block.id} className="border rounded-md p-4 relative">
+                    <div key={block.id} className="border border-border rounded-md p-4 relative bg-bg-card shadow-sm">
                       <Button
                         type="button"
                         variant="ghost"

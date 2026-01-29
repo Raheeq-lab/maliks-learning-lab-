@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { Book, FileText, Users, BarChart, Laptop, BookText, Globe } from "lucide-react";
+import { Book, FileText, Users, BarChart, Laptop, BookText, Globe, Sparkles } from "lucide-react";
 import { Quiz, Lesson, StudentQuizResult, TeacherData } from '@/types/quiz';
 import QuizForm from '@/components/QuizForm';
 import LessonBuilder from '@/components/teacher/LessonBuilder';
@@ -70,7 +69,6 @@ const TeacherDashboard: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (quizzesError) throw quizzesError;
-      if (quizzesError) throw quizzesError;
 
       const mappedQuizzes = (quizzesData || []).map((q: any) => ({
         ...q,
@@ -84,12 +82,6 @@ const TeacherDashboard: React.FC = () => {
       setQuizzes(mappedQuizzes);
 
       // 2. Fetch Lessons (RLS will filter by created_by = user.id)
-      // 2. Fetch Lessons (RLS will filter by created_by = user.id)
-      // Note: DB seems to use 'createdat' based on user logs, but let's try to be safe.
-      // If the user ran the SQL migration I provided, the columns SHOULD be there.
-      // BUT, if the previous logs showed 'created_at' does not exist, then it means 'createdat' IS the column.
-      // I will revert to 'createdat' for ordering, BUT I will map "gradelevel" OR "grade_level" to the frontend.
-
       const { data: lessonsData, error: lessonsError } = await supabase
         .from('lessons')
         .select('*')
@@ -343,8 +335,6 @@ const TeacherDashboard: React.FC = () => {
     }
   };
 
-
-
   const handleCopyCode = (title: string) => {
     toast({
       title: "Code copied!",
@@ -354,18 +344,18 @@ const TeacherDashboard: React.FC = () => {
 
   const getSubjectIcon = () => {
     switch (selectedSubject) {
-      case "math": return <Book className="text-purple-500" />;
-      case "english": return <BookText className="text-green-500" />;
-      case "ict": return <Laptop className="text-orange-500" />;
-      default: return <Book className="text-purple-500" />;
+      case "math": return <Book className="text-math-purple" />;
+      case "english": return <BookText className="text-english-green" />;
+      case "ict": return <Laptop className="text-ict-orange" />;
+      default: return <Book className="text-focus-blue" />;
     }
   };
 
   if (authLoading || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center flex-col gap-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
-        <p className="text-gray-500">Loading your classroom...</p>
+      <div className="min-h-screen flex items-center justify-center flex-col gap-4 bg-bg-primary">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-focus-blue"></div>
+        <p className="text-text-secondary">Loading your classroom...</p>
       </div>
     );
   }
@@ -374,19 +364,21 @@ const TeacherDashboard: React.FC = () => {
   const filteredLessons = lessons.filter(lesson => lesson.subject === selectedSubject);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-bg-primary font-poppins">
       <DashboardHeader
         teacherName={user?.user_metadata?.full_name || user?.email || 'Teacher'}
         onLogout={handleLogout}
       />
 
-      <main className="flex-1 container mx-auto py-8 px-4">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Malik's Learning Lab</h1>
-          {/* Could add a refresh button here */}
+      <main className="flex-1 main-container py-5">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold text-text-primary flex items-center gap-2">
+            <Sparkles size={20} className="text-focus-blue" />
+            Malik's Learning Lab
+          </h1>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-6 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="w-full sm:w-1/2">
             <SubjectSelector
               selectedSubject={selectedSubject}
@@ -410,25 +402,41 @@ const TeacherDashboard: React.FC = () => {
               setActiveTab(val);
               localStorage.setItem("activeDashboardTab", val);
             }}
+            className="space-y-6"
           >
-            <TabsList className="mb-8 flex-wrap h-auto gap-2">
-              <TabsTrigger value="quizzes" className="flex items-center gap-2">
-                <Book size={16} />
+            <TabsList className="flex-wrap h-auto gap-1 bg-bg-secondary p-1 border border-border rounded-lg shadow-inner">
+              <TabsTrigger
+                value="quizzes"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm data-[state=active]:bg-bg-card data-[state=active]:text-text-primary data-[state=active]:shadow-sm text-text-secondary hover:text-text-primary transition-all rounded-md"
+              >
+                <Book size={14} />
                 <span>Quiz Zone</span>
               </TabsTrigger>
-              <TabsTrigger value="lessons" className="flex items-center gap-2">
-                <FileText size={16} />
+              <TabsTrigger
+                value="lessons"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm data-[state=active]:bg-bg-card data-[state=active]:text-text-primary data-[state=active]:shadow-sm text-text-secondary hover:text-text-primary transition-all rounded-md"
+              >
+                <FileText size={14} />
                 <span>Lesson Builder</span>
               </TabsTrigger>
-              <TabsTrigger value="library" className="flex items-center gap-2">
-                <Globe size={16} />
+              <TabsTrigger
+                value="library"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm data-[state=active]:bg-bg-card data-[state=active]:text-text-primary data-[state=active]:shadow-sm text-text-secondary hover:text-text-primary transition-all rounded-md"
+              >
+                <Globe size={14} />
                 <span>Public Library</span>
               </TabsTrigger>
-              <TabsTrigger value="performance" className="flex items-center gap-2">
-                <BarChart size={16} />
+              <TabsTrigger
+                value="performance"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm data-[state=active]:bg-bg-card data-[state=active]:text-text-primary data-[state=active]:shadow-sm text-text-secondary hover:text-text-primary transition-all rounded-md"
+              >
+                <BarChart size={14} />
                 <span>Performance</span>
               </TabsTrigger>
-              <TabsTrigger value="generate" className="flex items-center gap-2">
+              <TabsTrigger
+                value="generate"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm data-[state=active]:bg-bg-card data-[state=active]:text-text-primary data-[state=active]:shadow-sm text-text-secondary hover:text-text-primary transition-all rounded-md"
+              >
                 {getSubjectIcon()}
                 <span>Content Generator</span>
               </TabsTrigger>
@@ -527,4 +535,3 @@ const TeacherDashboard: React.FC = () => {
 };
 
 export default TeacherDashboard;
-

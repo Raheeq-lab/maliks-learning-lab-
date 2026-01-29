@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { Clock, CheckCircle, XCircle, Zap } from "lucide-react";
+import { Clock, CheckCircle, XCircle, Zap, ArrowRight, Award, ThumbsUp } from "lucide-react";
 import { StudentAnswer } from '@/types/quiz';
 import { BookOpen, BookText, Laptop } from "lucide-react";
 import PowerMeter from '@/components/PowerMeter';
@@ -119,42 +119,46 @@ const StudentQuiz: React.FC = () => {
     return () => clearInterval(timer);
   }, [isLoading, quizCompleted, currentQuestionIndex]);
 
-  // Get color based on subject
+  // Updated Color Psychology Theme Logic
   const getSubjectColor = () => {
     if (!quiz || !quiz.subject) return {};
 
     switch (quiz.subject) {
       case "math":
         return {
-          header: "bg-purple-100",
-          button: "bg-purple-600 hover:bg-purple-700",
-          selected: "border-purple-500 bg-purple-50",
-          text: "text-purple-500",
-          completed: "text-purple-600"
+          header: "bg-math-purple/10 border-b-math-purple",
+          button: "bg-math-purple hover:bg-purple-700",
+          selected: "border-math-purple bg-math-purple/10",
+          text: "text-math-purple",
+          border: "border-math-purple",
+          completed: "text-math-purple"
         };
       case "english":
         return {
-          header: "bg-green-100",
-          button: "bg-green-600 hover:bg-green-700",
-          selected: "border-green-500 bg-green-50",
-          text: "text-green-500",
-          completed: "text-green-600"
+          header: "bg-english-green/10 border-b-english-green",
+          button: "bg-english-green hover:bg-green-700",
+          selected: "border-english-green bg-english-green/10",
+          text: "text-english-green",
+          border: "border-english-green",
+          completed: "text-english-green"
         };
       case "ict":
         return {
-          header: "bg-orange-100",
-          button: "bg-orange-600 hover:bg-orange-700",
-          selected: "border-orange-500 bg-orange-50",
-          text: "text-orange-500",
-          completed: "text-orange-600"
+          header: "bg-ict-orange/10 border-b-ict-orange",
+          button: "bg-ict-orange hover:bg-orange-700",
+          selected: "border-ict-orange bg-ict-orange/10",
+          text: "text-ict-orange",
+          border: "border-ict-orange",
+          completed: "text-ict-orange"
         };
       default:
         return {
-          header: "bg-quiz-light",
-          button: "bg-quiz-purple",
-          selected: "border-quiz-purple bg-quiz-purple/10",
-          text: "text-quiz-purple",
-          completed: "text-quiz-purple"
+          header: "bg-bg-secondary border-b-gray-200",
+          button: "bg-focus-blue hover:bg-focus-blue-dark",
+          selected: "border-focus-blue bg-focus-blue-light",
+          text: "text-focus-blue",
+          border: "border-focus-blue",
+          completed: "text-focus-blue"
         };
     }
   };
@@ -165,14 +169,15 @@ const StudentQuiz: React.FC = () => {
     const colors = getSubjectColor();
 
     switch (quiz.subject) {
-      case "math": return <BookOpen size={16} className={colors.text} />;
-      case "english": return <BookText size={16} className={colors.text} />;
-      case "ict": return <Laptop size={16} className={colors.text} />;
-      default: return <BookOpen size={16} className={colors.text} />;
+      case "math": return <BookOpen size={20} className={colors.text} />;
+      case "english": return <BookText size={20} className={colors.text} />;
+      case "ict": return <Laptop size={20} className={colors.text} />;
+      default: return <BookOpen size={20} className={colors.text} />;
     }
   };
 
   const handleOptionSelect = (optionIndex: number) => {
+    if (showFeedback) return; // Prevent selecting while showing feedback
     setSelectedOption(optionIndex);
   };
 
@@ -199,7 +204,7 @@ const StudentQuiz: React.FC = () => {
     // Set feedback message
     const feedbackMsg = isCorrect
       ? `Correct! +10 Power! ${getMotivationMessage(newPower)}`
-      : `Incorrect! -5 Power. ${getMotivationMessage(newPower)}`;
+      : `Incorrect! That wasn't quite right. ${getMotivationMessage(newPower)}`;
 
     setFeedbackMessage(feedbackMsg);
     setShowFeedback(true);
@@ -243,7 +248,7 @@ const StudentQuiz: React.FC = () => {
         setSelectedOption(null);
         setTimeLeft(quiz.timeLimit || 30);
       }
-    }, 2000);
+    }, 2500); // Increased time slightly to allow reading feedback
   };
 
   const completeQuiz = async (finalAnswers: StudentAnswer[]) => {
@@ -290,16 +295,16 @@ const StudentQuiz: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-quiz-light p-4">
-        <Card className="w-full max-w-md shadow-lg">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-bg-primary p-4">
+        <Card className="w-full max-w-md shadow-lg bg-bg-card border border-gray-100">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl gradient-text">Loading Quiz...</CardTitle>
+            <CardTitle className="text-2xl text-focus-blue">Loading Quiz...</CardTitle>
           </CardHeader>
           <CardContent className="text-center py-8">
             <div className="animate-pulse flex flex-col items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-gray-300"></div>
-              <div className="h-4 w-3/4 bg-gray-300 rounded"></div>
-              <div className="h-4 w-1/2 bg-gray-300 rounded"></div>
+              <div className="w-16 h-16 rounded-full bg-bg-secondary"></div>
+              <div className="h-4 w-3/4 bg-bg-secondary rounded"></div>
+              <div className="h-4 w-1/2 bg-bg-secondary rounded"></div>
             </div>
           </CardContent>
         </Card>
@@ -311,42 +316,46 @@ const StudentQuiz: React.FC = () => {
 
   if (quizCompleted) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-quiz-light">
-        <Card className="w-full max-w-md shadow-lg">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl gradient-text">Quiz Completed!</CardTitle>
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-bg-primary">
+        <Card className="w-full max-w-lg shadow-xl border-t-8 border-focus-blue overflow-hidden bg-bg-card">
+          <CardHeader className="text-center bg-bg-secondary/30 pb-0 pt-8">
+            <div className="mx-auto w-20 h-20 bg-success-green/10 rounded-full flex items-center justify-center mb-4">
+              <Award size={40} className="text-success-green" />
+            </div>
+            <CardTitle className="text-2xl font-bold text-text-primary">Quiz Completed!</CardTitle>
+            <p className="text-text-secondary">Here is how you did, {studentData?.name}</p>
           </CardHeader>
-          <CardContent className="space-y-6 text-center">
-            <div className="py-6">
-              <div className={`text-6xl font-bold mb-2 ${colors.completed}`}>{score}/{quiz?.questions.length}</div>
-              <p className="text-gray-500">Your Score</p>
+          <CardContent className="space-y-8 text-center pt-6">
+            <div className="py-2">
+              <div className={`text-7xl font-bold mb-2 ${colors.completed}`}>{score}/{quiz?.questions.length}</div>
+              <p className="text-text-tertiary font-medium uppercase tracking-wide">Final Score</p>
             </div>
 
-            <div className="space-y-4">
-              <div className="p-4 rounded-lg bg-gray-50">
-                <p className="text-gray-600">Time taken: {formatTime(Math.floor((Date.now() - startTime) / 1000))}</p>
-                <p className="text-gray-600">Questions answered correctly: {score}</p>
-                <p className="text-gray-600">Accuracy: {Math.round((score / quiz?.questions.length) * 100)}%</p>
-                <div className="mt-4">
-                  <p className="text-gray-600 mb-2">Final Power Level:</p>
-                  <PowerMeter power={power} animate={false} />
-                </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 rounded-xl bg-bg-secondary border border-gray-100">
+                <p className="text-text-secondary text-sm mb-1">Time taken</p>
+                <p className="text-lg font-bold text-text-primary">{formatTime(Math.floor((Date.now() - startTime) / 1000))}</p>
               </div>
+              <div className="p-4 rounded-xl bg-bg-secondary border border-gray-100">
+                <p className="text-text-secondary text-sm mb-1">Accuracy</p>
+                <p className="text-lg font-bold text-text-primary">{Math.round((score / quiz?.questions.length) * 100)}%</p>
+              </div>
+            </div>
 
-              <div className="p-4 border rounded-lg">
-                <p className="font-semibold mb-2">Leaderboard Rank</p>
-                <div className="flex items-center justify-center gap-2 text-xl">
-                  <Zap size={24} className="text-yellow-500" />
-                  <span className="font-bold">
-                    {power >= 80 ? "Superstar!" : power >= 60 ? "Champion!" : power >= 40 ? "Rising Star!" : "Beginner"}
-                  </span>
-                </div>
-              </div>
+            <div className="bg-bg-primary p-4 rounded-xl border border-gray-200">
+              <p className="text-text-secondary mb-3 flex items-center justify-center gap-2">
+                <Zap size={16} className="text-warning-amber" fill="currentColor" /> Final Power Level
+              </p>
+              <PowerMeter power={power} animate={false} />
+            </div>
+
+            <div className="flex items-center justify-center gap-2 text-xl font-bold text-focus-blue-dark">
+              {power >= 80 ? "Superstar Status! 🌟" : power >= 60 ? "Champion! 🏆" : power >= 40 ? "Great Effort! 👍" : "Keep Practicing! 📚"}
             </div>
           </CardContent>
-          <CardFooter>
+          <CardFooter className="bg-bg-secondary/30 p-6">
             <Button
-              className={`w-full ${colors.button}`}
+              className={`w-full py-6 text-lg shadow-md transition-transform hover:scale-[1.02] ${colors.button} text-white`}
               onClick={() => navigate('/student-join')}
             >
               Join Another Quiz
@@ -360,11 +369,11 @@ const StudentQuiz: React.FC = () => {
   // Make sure we have a quiz and questions before trying to render
   if (!quiz || !quiz.questions || quiz.questions.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-quiz-light">
-        <div className="text-center p-8">
-          <p className="text-xl text-red-600">No questions found for this quiz.</p>
+      <div className="min-h-screen flex items-center justify-center bg-bg-primary">
+        <div className="text-center p-8 bg-white rounded-xl shadow-lg border border-red-100">
+          <p className="text-xl text-error-coral font-bold mb-4">No questions found for this quiz.</p>
           <Button
-            className="mt-4"
+            className="bg-focus-blue hover:bg-focus-blue-dark text-white"
             onClick={() => navigate('/student-join')}
           >
             Return to Join Page
@@ -375,96 +384,168 @@ const StudentQuiz: React.FC = () => {
   }
 
   const currentQuestion = quiz.questions[currentQuestionIndex];
+  const progressPercentage = ((currentQuestionIndex) / quiz.questions.length) * 100;
 
   return (
-    <div className="min-h-screen flex flex-col bg-quiz-light">
-      <header className={`shadow-sm p-4 ${colors.header}`}>
+    <div className="min-h-screen flex flex-col bg-bg-primary font-poppins">
+      <header className={`shadow-md px-6 py-4 bg-white sticky top-0 z-20 border-b-4 ${colors.header.split(" ").pop()}`}>
         <div className="container mx-auto flex justify-between items-center">
-          <div>
-            <h1 className={`text-xl font-semibold flex items-center gap-2 ${colors.text}`}>
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-lg ${colors.selected}`}>
               {getSubjectIcon()}
-              {quiz?.title}
-            </h1>
-            <p className="text-gray-500 text-sm">
-              Grade {quiz?.gradeLevel} • Question {currentQuestionIndex + 1} of {quiz?.questions.length}
-            </p>
+            </div>
+            <div>
+              <h1 className={`text-lg font-bold flex items-center gap-2 text-text-primary`}>
+                {quiz?.title}
+              </h1>
+              <div className="flex items-center gap-2 text-text-secondary text-sm">
+                <span className="font-medium bg-bg-secondary px-2 py-0.5 rounded text-xs uppercase">{quiz?.subject}</span>
+                <span>Grade {quiz?.gradeLevel}</span>
+              </div>
+            </div>
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-white/80 rounded-full shadow-sm">
-            <Clock size={16} className={colors.text} />
-            <span className="font-mono font-medium">{formatTime(timeLeft)}</span>
+
+          <div className="flex items-center gap-4">
+            <div className="text-right hidden sm:block">
+              <p className="text-xs text-text-tertiary font-bold uppercase tracking-wider">Question</p>
+              <p className="font-bold text-text-primary">{currentQuestionIndex + 1} <span className="text-text-tertiary text-sm font-normal">of {quiz?.questions.length}</span></p>
+            </div>
+            <div className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-inner border border-gray-100 ${timeLeft < 10 ? 'bg-error-coral-light' : 'bg-bg-secondary'}`}>
+              <Clock size={18} className={timeLeft < 10 ? "text-error-coral animate-pulse" : "text-text-secondary"} />
+              <span className={`font-mono font-bold text-lg ${timeLeft < 10 ? "text-error-coral" : "text-text-primary"}`}>{formatTime(timeLeft)}</span>
+            </div>
           </div>
+        </div>
+        {/* Progress Bar */}
+        <div className="absolute bottom-0 left-0 w-full h-1 bg-gray-100">
+          <div
+            className={`h-full transition-all duration-500 ease-out bg-gradient-to-r from-progress-start via-progress-middle to-progress-end`}
+            style={{ width: `${progressPercentage}%` }}
+          ></div>
         </div>
       </header>
 
-      <main className="flex-1 container mx-auto p-4 flex items-center justify-center">
-        <Card className="w-full max-w-3xl shadow-lg">
-          <CardHeader>
-            <div className="w-full mb-4">
-              <PowerMeter power={power} animate={isAnimating} showIcon={true} />
-            </div>
+      <main className="flex-1 container mx-auto p-4 md:p-8 flex flex-col items-center max-w-4xl">
 
+        {/* Power Meter floating above */}
+        <div className="w-full max-w-2xl mb-6">
+          <div className="bg-white p-3 rounded-full shadow-sm border border-gray-100 flex items-center justify-between gap-4">
+            <span className="ml-4 font-bold text-sm text-text-secondary uppercase">Power Level</span>
+            <div className="flex-1">
+              <PowerMeter power={power} animate={isAnimating} showIcon={false} />
+            </div>
+            <div className="mr-4 font-bold text-focus-blue">{power}%</div>
+          </div>
+        </div>
+
+        <Card className="w-full max-w-3xl shadow-xl border-0 overflow-hidden rounded-2xl bg-bg-card transition-all duration-300 relative">
+
+          {/* Accent Border Left */}
+          <div className={`absolute left-0 top-0 bottom-0 w-2 ${colors.button}`}></div>
+
+          <CardHeader className="pt-8 pb-4 px-8">
             {showFeedback && feedbackMessage && (
-              <div className={`p-3 rounded-lg mb-4 text-center animate-fade-in ${feedbackMessage.includes("Correct")
-                ? "bg-green-100 text-green-800 border border-green-200"
-                : "bg-red-100 text-red-800 border border-red-200"
+              <div className={`p-4 rounded-xl mb-6 text-center animate-bounce-subtle shadow-sm ${feedbackMessage.includes("Correct")
+                ? "bg-success-green-light border-2 border-success-green text-green-900"
+                : "bg-error-coral-light border-2 border-error-coral text-red-900"
                 }`}>
-                <div className="flex items-center justify-center gap-2">
+                <div className="flex items-center justify-center gap-3">
                   {feedbackMessage.includes("Correct")
-                    ? <CheckCircle size={18} className="text-green-600" />
-                    : <XCircle size={18} className="text-red-600" />
+                    ? <CheckCircle size={24} className="text-success-green fill-green-100" />
+                    : <XCircle size={24} className="text-error-coral fill-red-100" />
                   }
-                  <p className="font-medium">{feedbackMessage}</p>
+                  <p className="font-bold text-lg">{feedbackMessage}</p>
                 </div>
               </div>
             )}
 
-            <CardTitle className="text-xl">
-              {currentQuestion?.text}
-            </CardTitle>
+            <div className="flex items-start gap-4">
+              <span className={`hidden sm:flex h-8 w-8 items-center justify-center rounded-full bg-bg-secondary text-text-tertiary font-bold text-sm mt-1`}>
+                {currentQuestionIndex + 1}
+              </span>
+              <CardTitle className="text-2xl md:text-3xl font-bold text-text-primary leading-tight">
+                {currentQuestion?.text}
+              </CardTitle>
+            </div>
+
             {currentQuestion?.imageUrl && (
-              <div className="mt-4">
+              <div className="mt-6">
                 <img
                   src={currentQuestion.imageUrl}
                   alt="Question illustration"
-                  className="mx-auto max-h-60 rounded-md border border-gray-200"
+                  className="mx-auto max-h-80 rounded-xl border border-gray-100 shadow-sm"
                 />
               </div>
             )}
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
+
+          <CardContent className="px-8 pb-8">
+            <div className="grid grid-cols-1 gap-4 mt-4">
               {currentQuestion?.options.map((option, index) => (
                 <div
                   key={index}
                   onClick={() => handleOptionSelect(index)}
-                  className={`p-4 rounded-lg cursor-pointer border transition-colors ${selectedOption === index
-                    ? colors.selected
-                    : 'border-gray-200 hover:border-gray-300 bg-white'
-                    }`}
+                  className={`
+                    p-5 rounded-xl cursor-pointer border-2 transition-all duration-200 group relative overflow-hidden
+                    ${selectedOption === index
+                      ? `${colors.selected} shadow-md transform scale-[1.01]`
+                      : 'border-gray-100 hover:border-focus-blue-light hover:bg-bg-secondary bg-white'
+                    }
+                    ${showFeedback && selectedOption === index
+                      ? (feedbackMessage?.includes("Correct")
+                        ? "!border-success-green !bg-success-green-light"
+                        : "!border-error-coral !bg-error-coral-light")
+                      : ""}
+                  `}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-6 h-6 flex items-center justify-center rounded-full ${selectedOption === index ? colors.button + " text-white" : 'bg-gray-100'
-                      }`}>
+                  <div className="flex items-center gap-4 relative z-10">
+                    <div className={`
+                        w-10 h-10 flex items-center justify-center rounded-full border-2 text-lg font-bold transition-colors
+                        ${selectedOption === index
+                        ? `${colors.text} border-current bg-white`
+                        : 'bg-bg-secondary text-text-secondary border-transparent group-hover:bg-white group-hover:border-focus-blue-light group-hover:text-focus-blue'
+                      }
+                    `}>
                       {String.fromCharCode(65 + index)}
                     </div>
-                    <span>{option}</span>
+                    <span className={`text-lg font-medium ${selectedOption === index ? 'text-text-primary' : 'text-text-secondary group-hover:text-text-primary'}`}>
+                      {option}
+                    </span>
+
+                    {selectedOption === index && (
+                      <div className="ml-auto">
+                        {showFeedback ? (
+                          feedbackMessage?.includes("Correct")
+                            ? <CheckCircle className="text-success-green" fill="currentColor" />
+                            : <XCircle className="text-error-coral" fill="currentColor" />
+                        ) : (
+                          <div className={`w-4 h-4 rounded-full ${colors.button}`}></div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
             </div>
           </CardContent>
-          <CardFooter className="justify-between">
-            <div className="flex-1">
-              <p className="text-sm text-gray-500">
-                Student: {studentData?.name}
-              </p>
+          <CardFooter className="px-8 py-6 bg-bg-secondary/30 border-t border-gray-100 flex justify-between items-center">
+            <div className="flex items-center gap-2 text-sm text-text-secondary">
+              <div className="w-8 h-8 rounded-full bg-focus-blue-light text-focus-blue flex items-center justify-center font-bold">
+                {studentData?.name.charAt(0)}
+              </div>
+              <span className="font-medium">{studentData?.name}</span>
             </div>
+
             <Button
               onClick={handleNextQuestion}
               disabled={selectedOption === null || showFeedback}
-              className={colors.button}
+              className={`
+                px-8 py-6 text-lg font-bold shadow-lg transition-all hover:scale-105 hover:shadow-xl rounded-xl
+                ${colors.button} text-white disabled:opacity-50 disabled:cursor-not-allowed
+              `}
             >
-              {currentQuestionIndex === quiz?.questions.length - 1 ? "Finish" : "Next"}
+              {currentQuestionIndex === quiz?.questions.length - 1 ? "Finish Quiz" : "Next Question"}
+              <ArrowRight className="ml-2" size={20} />
             </Button>
           </CardFooter>
         </Card>

@@ -462,26 +462,25 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <Label>Text Content</Label>
+                <Label className="text-text-primary">Text Content</Label>
               </div>
               <Button
                 type="button"
                 onClick={() => handleRemoveContent(phase, content.id)}
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 text-red-500"
+                className="h-8 w-8 p-0 text-error-coral hover:text-error-coral-dark hover:bg-error-coral/10"
               >
                 <Trash2 size={16} />
               </Button>
             </div>
-
-
 
             <Textarea
               value={content.content}
               onChange={(e) => handleContentChange(phase, content.id, "content", e.target.value)}
               placeholder={`Enter content for the ${lessonStructure[phase].title} phase...`}
               rows={4}
+              className="bg-bg-input border-border text-text-primary placeholder:text-text-tertiary focus-visible:ring-focus-blue"
             />
           </div>
         );
@@ -490,13 +489,13 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
         return (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <Label>Image</Label>
+              <Label className="text-text-primary">Image</Label>
               <Button
                 type="button"
                 onClick={() => handleRemoveContent(phase, content.id)}
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 text-red-500"
+                className="h-8 w-8 p-0 text-error-coral hover:text-error-coral-dark hover:bg-error-coral/10"
               >
                 <Trash2 size={16} />
               </Button>
@@ -514,7 +513,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                 type="button"
                 variant="outline"
                 onClick={() => imageInputRefs.current[content.id]?.click()}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 border-border text-text-primary hover:bg-bg-secondary"
               >
                 <Upload size={16} />
                 Upload Image
@@ -524,7 +523,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                   type="button"
                   variant="ghost"
                   onClick={() => removeImage(phase, content.id)}
-                  className="text-red-500"
+                  className="text-error-coral hover:text-error-coral-dark"
                 >
                   <X size={16} className="mr-1" /> Remove
                 </Button>
@@ -536,7 +535,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                 <img
                   src={content.imageUrl}
                   alt={content.content || "Lesson image"}
-                  className="max-h-40 rounded border border-gray-200"
+                  className="max-h-40 rounded border border-border"
                 />
               </div>
             )}
@@ -545,6 +544,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
               value={content.content}
               onChange={(e) => handleContentChange(phase, content.id, "content", e.target.value)}
               placeholder="Image caption (optional)"
+              className="bg-bg-input border-border text-text-primary placeholder:text-text-tertiary focus-visible:ring-focus-blue"
             />
           </div>
         );
@@ -553,13 +553,13 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
         return (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <Label>Video</Label>
+              <Label className="text-text-primary">Video</Label>
               <Button
                 type="button"
                 onClick={() => handleRemoveContent(phase, content.id)}
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 text-red-500"
+                className="h-8 w-8 p-0 text-error-coral hover:text-error-coral-dark hover:bg-error-coral/10"
               >
                 <Trash2 size={16} />
               </Button>
@@ -577,7 +577,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                 type="button"
                 variant="outline"
                 onClick={() => videoInputRefs.current[content.id]?.click()}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 border-border text-text-primary hover:bg-bg-secondary"
               >
                 <Upload size={16} />
                 Upload Video
@@ -587,7 +587,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                   type="button"
                   variant="ghost"
                   onClick={() => removeVideo(phase, content.id)}
-                  className="text-red-500"
+                  className="text-error-coral hover:text-error-coral-dark"
                 >
                   <X size={16} className="mr-1" /> Remove
                 </Button>
@@ -595,9 +595,9 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
             </div>
 
             {content.videoUrl && (
-              <div className="mt-2 p-2 border rounded bg-slate-50 flex items-center gap-2">
-                <Play size={16} className="text-blue-500" />
-                <span className="text-sm truncate max-w-[200px]">{content.fileName || "Video file uploaded"}</span>
+              <div className="mt-2 p-2 border border-border rounded bg-bg-secondary flex items-center gap-2">
+                <Play size={16} className="text-focus-blue" />
+                <span className="text-sm truncate max-w-[200px] text-text-secondary">{content.fileName || "Video file uploaded"}</span>
               </div>
             )}
 
@@ -605,6 +605,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
               value={content.content}
               onChange={(e) => handleContentChange(phase, content.id, "content", e.target.value)}
               placeholder="Video title or description"
+              className="bg-bg-input border-border text-text-primary placeholder:text-text-tertiary focus-visible:ring-focus-blue"
             />
           </div>
         );
@@ -613,13 +614,13 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
         return (
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <Label>Quick Quiz Question</Label>
+              <Label className="text-text-primary">Quick Quiz Question</Label>
               <Button
                 type="button"
                 onClick={() => handleRemoveContent(phase, content.id)}
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 text-red-500"
+                className="h-8 w-8 p-0 text-error-coral hover:text-error-coral-dark hover:bg-error-coral/10"
               >
                 <Trash2 size={16} />
               </Button>
@@ -629,14 +630,15 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
               onChange={(e) => handleContentChange(phase, content.id, "content", e.target.value)}
               placeholder="Enter quiz question"
               rows={2}
+              className="bg-bg-input border-border text-text-primary placeholder:text-text-tertiary focus-visible:ring-focus-blue"
             />
 
             {/* Simple quiz options - could be expanded for more complex quizzes */}
             <div className="space-y-2">
-              <Label>Options (first one will be correct)</Label>
+              <Label className="text-text-secondary">Options (first one will be correct)</Label>
               {["A", "B", "C", "D"].map((option, idx) => (
                 <div key={idx} className="flex gap-2 items-center">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-bg-secondary border border-border flex items-center justify-center font-bold text-text-primary">
                     {option}
                   </div>
                   <Input
@@ -656,6 +658,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
 
                       handleContentChange(phase, content.id, "quizQuestions", quizQuestions);
                     }}
+                    className="bg-bg-input border-border text-text-primary placeholder:text-text-tertiary focus-visible:ring-focus-blue"
                   />
                 </div>
               ))}
@@ -668,34 +671,33 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <Label>Activity</Label>
+                <Label className="text-text-primary">Activity</Label>
               </div>
               <Button
                 type="button"
                 onClick={() => handleRemoveContent(phase, content.id)}
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 text-red-500"
+                className="h-8 w-8 p-0 text-error-coral hover:text-error-coral-dark hover:bg-error-coral/10"
               >
                 <Trash2 size={16} />
               </Button>
             </div>
-
-
 
             <Textarea
               value={content.content}
               onChange={(e) => handleContentChange(phase, content.id, "content", e.target.value)}
               placeholder="Describe the activity"
               rows={3}
+              className="bg-bg-input border-border text-text-primary placeholder:text-text-tertiary focus-visible:ring-focus-blue"
             />
             <div className="pt-2">
-              <Label>AI Tool Assistance (optional)</Label>
+              <Label className="text-text-secondary">AI Tool Assistance (optional)</Label>
               <Select
                 value={content.aiToolUsed || "none"}
                 onValueChange={(value) => handleContentChange(phase, content.id, "aiToolUsed", value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="bg-bg-input border-border text-text-primary">
                   <SelectValue placeholder="Select an AI tool to help" />
                 </SelectTrigger>
                 <SelectContent>
@@ -713,13 +715,13 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
         return (
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <Label>Resource Link</Label>
+              <Label className="text-text-primary">Resource Link</Label>
               <Button
                 type="button"
                 onClick={() => handleRemoveContent(phase, content.id)}
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 text-red-500"
+                className="h-8 w-8 p-0 text-error-coral hover:text-error-coral-dark hover:bg-error-coral/10"
               >
                 <Trash2 size={16} />
               </Button>
@@ -728,11 +730,13 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
               value={content.content}
               onChange={(e) => handleContentChange(phase, content.id, "content", e.target.value)}
               placeholder="Resource title or description"
+              className="bg-bg-input border-border text-text-primary placeholder:text-text-tertiary focus-visible:ring-focus-blue"
             />
             <Input
               value={content.resourceUrl || ''}
               onChange={(e) => handleContentChange(phase, content.id, "resourceUrl", e.target.value)}
               placeholder="Resource URL or reference"
+              className="bg-bg-input border-border text-text-primary placeholder:text-text-tertiary focus-visible:ring-focus-blue"
             />
           </div>
         );
@@ -741,13 +745,13 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
         return (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <Label>Document (PDF, Word, PPT)</Label>
+              <Label className="text-text-primary">Document (PDF, Word, PPT)</Label>
               <Button
                 type="button"
                 onClick={() => handleRemoveContent(phase, content.id)}
                 variant="ghost"
                 size="sm"
-                className="h-8 w-8 p-0 text-red-500"
+                className="h-8 w-8 p-0 text-error-coral hover:text-error-coral-dark hover:bg-error-coral/10"
               >
                 <Trash2 size={16} />
               </Button>
@@ -765,7 +769,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                 type="button"
                 variant="outline"
                 onClick={() => fileInputRefs.current[content.id]?.click()}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 border-border text-text-primary hover:bg-bg-secondary"
               >
                 <Upload size={16} />
                 Upload Document
@@ -775,7 +779,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                   type="button"
                   variant="ghost"
                   onClick={() => removeFile(phase, content.id)}
-                  className="text-red-500"
+                  className="text-error-coral hover:text-error-coral-dark"
                 >
                   <X size={16} className="mr-1" /> Remove
                 </Button>
@@ -783,10 +787,10 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
             </div>
 
             {content.fileUrl && (
-              <div className="mt-2 p-3 border rounded bg-slate-50 flex items-center gap-3">
-                <File className="text-blue-500" size={24} />
+              <div className="mt-2 p-3 border border-border rounded bg-bg-secondary flex items-center gap-3">
+                <File className="text-focus-blue" size={24} />
                 <div className="flex-1 overflow-hidden">
-                  <p className="font-medium truncate text-sm">{content.fileName || 'Document'}</p>
+                  <p className="font-medium truncate text-sm text-text-primary">{content.fileName || 'Document'}</p>
                 </div>
               </div>
             )}
@@ -795,6 +799,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
               value={content.content}
               onChange={(e) => handleContentChange(phase, content.id, "content", e.target.value)}
               placeholder="Document description"
+              className="bg-bg-input border-border text-text-primary placeholder:text-text-tertiary focus-visible:ring-focus-blue"
             />
           </div>
         );
@@ -1050,31 +1055,31 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
           <StudentPreview />
         </div>
       ) : (
-        <Card className="border-2 border-blue-100 shadow-md">
+        <Card className="border-2 border-border shadow-md bg-bg-card">
           <CardHeader>
-            <CardTitle>Create a 40-Minute Scaffolded Lesson</CardTitle>
+            <CardTitle className="text-text-primary">Create a 40-Minute Scaffolded Lesson</CardTitle>
           </CardHeader>
 
           <CardContent className="space-y-6">
             <div>
-              <Label className="text-lg font-bold mb-4 block">Learning Type</Label>
+              <Label className="text-lg font-bold mb-4 block text-text-primary">Learning Type</Label>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {getLearningTypes(subject).map((type) => (
                   <div
                     key={type.id}
                     className={`p-4 border rounded-lg cursor-pointer transition-all ${selectedLearningType === type.id
-                      ? 'border-2 border-blue-500 bg-blue-50 shadow-md transform scale-[1.02]'
-                      : 'hover:bg-gray-50'
+                      ? 'border-2 border-focus-blue bg-focus-blue/10 shadow-md transform scale-[1.02]'
+                      : 'hover:bg-bg-secondary border-border'
                       }`}
                     onClick={() => setSelectedLearningType(type.id)}
                   >
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="p-2 rounded-full bg-gray-100">
+                      <div className="p-2 rounded-full bg-bg-secondary text-text-primary">
                         {type.icon}
                       </div>
-                      <h3 className="font-semibold">{type.title}</h3>
+                      <h3 className="font-semibold text-text-primary">{type.title}</h3>
                     </div>
-                    <p className="text-sm text-gray-500">{type.description}</p>
+                    <p className="text-sm text-text-secondary">{type.description}</p>
                   </div>
                 ))}
               </div>
@@ -1082,17 +1087,18 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="title">Lesson Title</Label>
+                <Label htmlFor="title" className="text-text-primary">Lesson Title</Label>
                 <Input
                   id="title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g., Introduction to Fractions"
+                  className="bg-bg-input border-border text-text-primary placeholder:text-text-tertiary focus-visible:ring-focus-blue"
                 />
               </div>
 
               <div>
-                <Label htmlFor="topic">Topic</Label>
+                <Label htmlFor="topic" className="text-text-primary">Topic</Label>
                 <div className="relative">
                   <Input
                     id="topic"
@@ -1100,6 +1106,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                     value={topic}
                     onChange={(e) => setTopic(e.target.value)}
                     placeholder={`e.g., ${topicSuggestions[0] || "Enter topic"}`}
+                    className="bg-bg-input border-border text-text-primary placeholder:text-text-tertiary focus-visible:ring-focus-blue"
                   />
                   <datalist id="topicSuggestions">
                     {topicSuggestions.map((topic, i) => (
@@ -1110,13 +1117,14 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
               </div>
 
               <div>
-                <Label htmlFor="description">Description (Optional)</Label>
+                <Label htmlFor="description" className="text-text-primary">Description (Optional)</Label>
                 <Textarea
                   id="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Brief description of the lesson"
                   rows={2}
+                  className="bg-bg-input border-border text-text-primary placeholder:text-text-tertiary focus-visible:ring-focus-blue"
                 />
               </div>
 
@@ -1177,12 +1185,12 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                 <TabsContent value="engage" className="space-y-4">
                   <div className="flex justify-between items-center">
                     <div>
-                      <h3 className="text-lg font-medium">Engage Phase</h3>
-                      <p className="text-sm text-gray-500">Hook students and activate prior knowledge</p>
+                      <h3 className="text-lg font-medium text-text-primary">Engage Phase</h3>
+                      <p className="text-sm text-text-secondary">Hook students and activate prior knowledge</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="flex items-center">
-                        <Label htmlFor="engageTime" className="mr-2 text-sm">Minutes:</Label>
+                        <Label htmlFor="engageTime" className="mr-2 text-sm text-text-secondary">Minutes:</Label>
                         <Input
                           id="engageTime"
                           type="number"
@@ -1190,14 +1198,14 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                           max="15"
                           value={lessonStructure.engage.timeInMinutes}
                           onChange={(e) => handlePhaseTimeChange("engage", parseInt(e.target.value) || 5)}
-                          className="w-16 h-8 px-2 py-1"
+                          className="w-16 h-8 px-2 py-1 bg-bg-input border-border text-text-primary"
                         />
                       </div>
                       <Button
                         onClick={() => setShowPreview(true)}
                         variant="outline"
                         size="sm"
-                        className="flex items-center gap-1"
+                        className="flex items-center gap-1 border-border text-text-primary hover:bg-bg-secondary"
                       >
                         <Eye size={16} />
                         <span>Preview</span>
@@ -1206,7 +1214,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                   </div>
 
                   {lessonStructure.engage.content.map((content, index) => (
-                    <div key={content.id} className="bg-white rounded-md border p-4 shadow-sm">
+                    <div key={content.id} className="bg-bg-card rounded-md border border-border p-4 shadow-sm">
                       {renderContentBlock("engage", content, index)}
                     </div>
                   ))}
@@ -1216,7 +1224,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                       onClick={() => handleAddContent("engage", "text")}
                       variant="outline"
                       size="sm"
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-1 border-border text-text-primary hover:bg-bg-secondary"
                     >
                       <Plus size={16} />
                       <span>Add Text</span>
@@ -1225,7 +1233,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                       onClick={() => handleAddContent("engage", "image")}
                       variant="outline"
                       size="sm"
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-1 border-border text-text-primary hover:bg-bg-secondary"
                     >
                       <Plus size={16} />
                       <span>Add Image</span>
@@ -1234,7 +1242,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                       onClick={() => handleAddContent("engage", "video")}
                       variant="outline"
                       size="sm"
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-1 border-border text-text-primary hover:bg-bg-secondary"
                     >
                       <Plus size={16} />
                       <span>Add Video</span>
@@ -1243,7 +1251,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                       onClick={() => handleAddContent("engage", "activity")}
                       variant="outline"
                       size="sm"
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-1 border-border text-text-primary hover:bg-bg-secondary"
                     >
                       <Plus size={16} />
                       <span>Add Activity</span>
@@ -1252,7 +1260,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                       onClick={() => handleAddContent("engage", "file")}
                       variant="outline"
                       size="sm"
-                      className="flex items-center gap-1"
+                      className="flex items-center gap-1 border-border text-text-primary hover:bg-bg-secondary"
                     >
                       <Plus size={16} />
                       <span>Add File</span>
@@ -1292,7 +1300,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                   </div>
 
                   {lessonStructure.model.content.map((content, index) => (
-                    <div key={content.id} className="bg-white rounded-md border p-4 shadow-sm">
+                    <div key={content.id} className="bg-bg-card rounded-md border border-border p-4 shadow-sm">
                       {renderContentBlock("model", content, index)}
                     </div>
                   ))}
@@ -1379,7 +1387,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                   </div>
 
                   {lessonStructure.guidedPractice.content.map((content, index) => (
-                    <div key={content.id} className="bg-white rounded-md border p-4 shadow-sm">
+                    <div key={content.id} className="bg-bg-card rounded-md border border-border p-4 shadow-sm">
                       {renderContentBlock("guidedPractice", content, index)}
                     </div>
                   ))}
@@ -1456,7 +1464,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                   </div>
 
                   {lessonStructure.independentPractice.content.map((content, index) => (
-                    <div key={content.id} className="bg-white rounded-md border p-4 shadow-sm">
+                    <div key={content.id} className="bg-bg-card rounded-md border border-border p-4 shadow-sm">
                       {renderContentBlock("independentPractice", content, index)}
                     </div>
                   ))}
@@ -1533,7 +1541,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                   </div>
 
                   {lessonStructure.reflect.content.map((content, index) => (
-                    <div key={content.id} className="bg-white rounded-md border p-4 shadow-sm">
+                    <div key={content.id} className="bg-bg-card rounded-md border border-border p-4 shadow-sm">
                       {renderContentBlock("reflect", content, index)}
                     </div>
                   ))}
@@ -1579,7 +1587,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                 </TabsContent>
               </Tabs>
             </div>
-          </CardContent>
+          </CardContent >
 
           <CardFooter className="border-t p-4 flex justify-between items-center gap-2">
             <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
@@ -1609,9 +1617,9 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
               </Button>
             </div>
           </CardFooter>
-        </Card>
+        </Card >
       )}
-    </div>
+    </div >
   );
 };
 

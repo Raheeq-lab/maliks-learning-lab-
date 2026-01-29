@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -37,7 +37,7 @@ const ActivitySection: React.FC<ActivitySectionProps> = ({ activity, onChange, i
           value={activity.activityType}
           onValueChange={handleActivityTypeChange}
         >
-          <SelectTrigger>
+          <SelectTrigger className="bg-bg-input border-border text-text-primary">
             <SelectValue placeholder="Select activity type" />
           </SelectTrigger>
           <SelectContent>
@@ -51,7 +51,7 @@ const ActivitySection: React.FC<ActivitySectionProps> = ({ activity, onChange, i
 
       <div className="flex flex-wrap gap-4 mt-4 mb-2">
         <div className="flex items-center space-x-2">
-          <Switch 
+          <Switch
             id={`team-mode-${index}`}
             checked={activity.teamMode.enabled || false}
             onCheckedChange={(checked) => {
@@ -66,9 +66,9 @@ const ActivitySection: React.FC<ActivitySectionProps> = ({ activity, onChange, i
           />
           <Label htmlFor={`team-mode-${index}`}>Team Mode</Label>
         </div>
-        
+
         <div className="flex items-center space-x-2">
-          <Switch 
+          <Switch
             id={`scoring-${index}`}
             checked={activity.scoring.enabled || false}
             onCheckedChange={(checked) => {
@@ -88,7 +88,7 @@ const ActivitySection: React.FC<ActivitySectionProps> = ({ activity, onChange, i
       {activity.scoring.enabled && (
         <div>
           <Label>Scoring Type</Label>
-          <RadioGroup 
+          <RadioGroup
             value={activity.scoring.type || "points"}
             onValueChange={(value) => {
               onChange({

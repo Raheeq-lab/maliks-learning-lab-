@@ -18,33 +18,39 @@ interface QuizzesTabProps {
 const QuizzesTab: React.FC<QuizzesTabProps> = ({ quizzes, onCreateQuiz, onCopyCode, onEditQuiz, onDeleteQuiz, onTogglePublic, subject = "math" }) => {
   const getSubjectIcon = () => {
     switch (subject) {
-      case "math": return <BookOpen size={18} className="text-purple-500" />;
-      case "english": return <BookText size={18} className="text-green-500" />;
-      case "ict": return <Laptop size={18} className="text-orange-500" />;
-      default: return <BookOpen size={18} className="text-purple-500" />;
+      case "math": return <BookOpen size={20} className="text-math-purple" />;
+      case "english": return <BookText size={20} className="text-english-green" />;
+      case "ict": return <Laptop size={20} className="text-ict-orange" />;
+      default: return <BookOpen size={20} className="text-math-purple" />;
     }
   };
 
   const getSubjectColor = () => {
     switch (subject) {
-      case "math": return "bg-purple-600 hover:bg-purple-700";
-      case "english": return "bg-green-600 hover:bg-green-700";
-      case "ict": return "bg-orange-600 hover:bg-orange-700";
-      default: return "bg-purple-600 hover:bg-purple-700";
+      case "math": return "bg-math-purple hover:bg-math-purple/90 shadow-purple-200";
+      case "english": return "bg-english-green hover:bg-english-green/90 shadow-green-200";
+      case "ict": return "bg-ict-orange hover:bg-ict-orange/90 shadow-orange-200";
+      default: return "bg-focus-blue hover:bg-focus-blue-dark shadow-blue-200";
     }
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold flex items-center gap-2">
-          {getSubjectIcon()}
-          <span>My {subject.charAt(0).toUpperCase() + subject.slice(1)} Quizzes</span>
-        </h2>
+    <div className="space-y-8 animate-fade-in">
+      <div className="flex justify-between items-center bg-bg-card p-4 rounded-xl border border-border shadow-sm">
+        <div>
+          <h2 className="text-2xl font-bold flex items-center gap-3 text-text-primary">
+            <div className={`p-2 rounded-lg bg-bg-secondary ${subject === 'math' ? 'text-math-purple' : subject === 'english' ? 'text-english-green' : 'text-ict-orange'
+              }`}>
+              {getSubjectIcon()}
+            </div>
+            <span>My {subject.charAt(0).toUpperCase() + subject.slice(1)} Quizzes</span>
+          </h2>
+          <p className="text-text-secondary ml-[3.25rem] text-sm">Manage and organize your class assessments</p>
+        </div>
         <div className="flex gap-2">
           <Button
             onClick={onCreateQuiz}
-            className={`text-white ${getSubjectColor()}`}
+            className={`text-white transition-all transform hover:scale-105 shadow-lg ${getSubjectColor()}`}
           >
             Create New Quiz
           </Button>
@@ -52,19 +58,25 @@ const QuizzesTab: React.FC<QuizzesTabProps> = ({ quizzes, onCreateQuiz, onCopyCo
       </div>
 
       {quizzes.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
-          <Book size={48} className="mx-auto mb-4 text-gray-400" />
-          <p className="text-gray-500">You haven't created any quizzes for this subject yet.</p>
-          <p className="text-gray-500 mb-4">Get started by creating your first quiz!</p>
+        <div className="text-center py-16 bg-bg-card rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center">
+          <div className={`p-4 rounded-full bg-bg-secondary mb-4 ${subject === 'math' ? 'text-math-purple' : subject === 'english' ? 'text-english-green' : 'text-ict-orange'
+            }`}>
+            <Book size={48} />
+          </div>
+          <h3 className="text-xl font-bold text-text-primary mb-2">No Quizzes Yet</h3>
+          <p className="text-text-secondary max-w-md mx-auto mb-8">
+            You haven't created any {subject} quizzes. Start by creating your first interactive quiz for your students!
+          </p>
           <Button
             onClick={onCreateQuiz}
-            className={`text-white ${getSubjectColor()}`}
+            size="lg"
+            className={`text-white rounded-full px-8 py-6 text-lg ${getSubjectColor()}`}
           >
-            Create New Quiz
+            Create First Quiz
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-card-gap">
           {quizzes.map(quiz => (
             <AccessCodeCard
               key={quiz.id}

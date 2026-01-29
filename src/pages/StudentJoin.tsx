@@ -101,42 +101,52 @@ const StudentJoin: React.FC = () => {
 
   const getSubjectIcon = () => {
     switch (selectedSubject) {
-      case "math": return <BookOpen size={24} className="text-purple-500" />;
-      case "english": return <BookText size={24} className="text-green-500" />;
-      case "ict": return <Laptop size={24} className="text-orange-500" />;
-      default: return <BookOpen size={24} className="text-purple-500" />;
+      case "math": return <BookOpen size={28} className="text-purple-400 drop-shadow-[0_0_8px_rgba(192,132,252,0.5)]" />;
+      case "english": return <BookText size={28} className="text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.5)]" />;
+      case "ict": return <Laptop size={28} className="text-orange-400 drop-shadow-[0_0_8px_rgba(251,146,60,0.5)]" />;
+      default: return <BookOpen size={28} className="text-blue-400 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)]" />;
     }
   };
 
   const getSubjectColor = () => {
     switch (selectedSubject) {
-      case "math": return "bg-purple-600 hover:bg-purple-700";
-      case "english": return "bg-green-600 hover:bg-green-700";
-      case "ict": return "bg-orange-600 hover:bg-orange-700";
-      default: return "bg-purple-600 hover:bg-purple-700";
+      case "math": return "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-purple-900/20";
+      case "english": return "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-900/20";
+      case "ict": return "bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 shadow-orange-900/20";
+      default: return "bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 shadow-blue-900/20";
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-bg-primary font-poppins relative overflow-hidden">
+      {/* Background Gradients */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div className="absolute top-[10%] left-[20%] w-[40%] h-[40%] rounded-full bg-purple-600/10 blur-[120px]" />
+        <div className="absolute bottom-[10%] right-[20%] w-[40%] h-[40%] rounded-full bg-blue-600/10 blur-[120px]" />
+      </div>
+
       <NavBar />
 
-      <main className="flex-1 flex items-center justify-center bg-gray-50 p-4">
-        <Card className="w-full max-w-md shadow-lg">
-          <CardHeader className="text-center">
-            <div className="flex justify-center mb-4">
-              {getSubjectIcon()}
+      <main className="flex-1 flex items-center justify-center p-4 relative z-10">
+        <Card className="w-full max-w-md shadow-2xl bg-bg-card/60 backdrop-blur-xl border-white/10 overflow-hidden">
+          <div className={`h-1.5 w-full ${getSubjectColor().split(' ')[0]} ${getSubjectColor().split(' ')[1]} ${getSubjectColor().split(' ')[2]}`} />
+
+          <CardHeader className="text-center pb-2">
+            <div className="flex justify-center mb-6">
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/10 shadow-inner">
+                {getSubjectIcon()}
+              </div>
             </div>
-            <CardTitle className="text-2xl gradient-text">Join a Quiz</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-3xl font-bold text-white tracking-tight">Join a Quiz</CardTitle>
+            <CardDescription className="text-gray-400 text-base mt-2">
               Enter your name and the access code to join
             </CardDescription>
           </CardHeader>
 
           <form onSubmit={handleJoin}>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6 pt-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Your Name</Label>
+                <Label htmlFor="name" className="text-gray-300 font-medium ml-1">Your Name</Label>
                 <Input
                   id="name"
                   placeholder="Enter your full name"
@@ -144,27 +154,28 @@ const StudentJoin: React.FC = () => {
                   onChange={(e) => setName(e.target.value)}
                   required
                   autoFocus
+                  className="bg-bg-input/50 border-white/10 focus:border-purple-500/50 focus:ring-purple-500/20 h-12 rounded-xl text-white placeholder:text-gray-500 transition-all hover:bg-bg-input/70"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="accessCode">Access Code</Label>
+                <Label htmlFor="accessCode" className="text-gray-300 font-medium ml-1">Access Code</Label>
                 <Input
                   id="accessCode"
-                  placeholder="Enter 6-digit code (e.g., ABC123)"
+                  placeholder="ABC123"
                   value={accessCode}
                   onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
                   required
                   maxLength={6}
-                  className="tracking-widest text-center uppercase font-mono"
+                  className="tracking-[0.5em] text-center uppercase font-mono text-xl bg-bg-input/50 border-white/10 focus:border-purple-500/50 focus:ring-purple-500/20 h-14 rounded-xl text-white placeholder:text-gray-600 transition-all hover:bg-bg-input/70 placeholder:tracking-normal placeholder:font-sans placeholder:text-base"
                 />
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 text-center mt-2">
                   The 6-letter code provided by your teacher
                 </p>
               </div>
 
-              <div className="space-y-2 pt-4">
-                <Label>Preferred Subject</Label>
+              <div className="space-y-3 pt-2">
+                <Label className="text-gray-300 font-medium ml-1">Preferred Subject</Label>
                 <SubjectSelector
                   selectedSubject={selectedSubject}
                   onChange={setSelectedSubject}
@@ -172,13 +183,20 @@ const StudentJoin: React.FC = () => {
               </div>
             </CardContent>
 
-            <CardFooter className="flex-col gap-4">
+            <CardFooter className="flex-col gap-4 pb-8 pt-2">
               <Button
                 type="submit"
-                className={`w-full ${getSubjectColor()}`}
+                className={`w-full h-12 text-lg font-bold text-white shadow-lg border-none transition-all hover:scale-[1.02] active:scale-[0.98] rounded-xl ${getSubjectColor()}`}
                 disabled={isJoining}
               >
-                {isJoining ? 'Joining...' : 'Join Now'}
+                {isJoining ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Joining...
+                  </>
+                ) : (
+                  'Join Quiz'
+                )}
               </Button>
             </CardFooter>
           </form>

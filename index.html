@@ -22,6 +22,18 @@
   <meta name="twitter:title" content="Malik's Learning Lab | Interactive Learning" />
   <meta name="twitter:description" content="Engaging educational content for schools." />
   <meta name="twitter:image" content="https://maliks-learning-lab.vercel.app/placeholder.svg" />
+  <script>
+    (function () {
+      const theme = localStorage.getItem('theme') ||
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    })();
+  </script>
 </head>
 
 <body>

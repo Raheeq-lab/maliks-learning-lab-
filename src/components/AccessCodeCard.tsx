@@ -46,85 +46,86 @@ const AccessCodeCard: React.FC<AccessCodeCardProps> = ({
   // Get color based on subject
   const getSubjectColor = () => {
     switch (subject) {
-      case "math": return "border-l-purple-500 bg-gradient-to-br from-white to-purple-50";
-      case "english": return "border-l-green-500 bg-gradient-to-br from-white to-green-50";
-      case "ict": return "border-l-orange-500 bg-gradient-to-br from-white to-orange-50";
-      default: return "border-l-purple-500 bg-gradient-to-br from-white to-purple-50";
+      case "math": return "border-l-math-purple bg-gradient-to-br from-white to-purple-50 dark:from-bg-card dark:to-math-purple/10";
+      case "english": return "border-l-english-green bg-gradient-to-br from-white to-green-50 dark:from-bg-card dark:to-english-green/10";
+      case "ict": return "border-l-ict-orange bg-gradient-to-br from-white to-orange-50 dark:from-bg-card dark:to-ict-orange/10";
+      default: return "border-l-focus-blue bg-gradient-to-br from-white to-purple-50 dark:from-bg-card dark:to-focus-blue/10";
     }
   };
 
   // Get icon color based on subject
   const getIconColor = () => {
     switch (subject) {
-      case "math": return "text-purple-500";
-      case "english": return "text-green-500";
-      case "ict": return "text-orange-500";
-      default: return "text-purple-500";
+      case "math": return "text-math-purple";
+      case "english": return "text-english-green";
+      case "ict": return "text-ict-orange";
+      default: return "text-focus-blue";
     }
   };
 
   return (
-    <Card className={`border-l-4 ${getSubjectColor()} shadow-sm hover:shadow-md transition-shadow`}>
-      <CardHeader className="pb-2">
+    <Card className={`border-l-4 ${getSubjectColor()} shadow-sm hover:shadow-md transition-shadow border-t-0 border-b-0 border-r-0`}>
+      <CardHeader className="pb-2 p-card-padding">
         <div className="flex justify-between items-start gap-2">
-          <CardTitle className="text-lg leading-tight">{title}</CardTitle>
+          <CardTitle className="text-lg leading-tight text-text-primary tracking-tight font-semibold">{title}</CardTitle>
           <div className="flex flex-col items-end gap-1">
             {isPublic ? (
-              <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-200 border-none">
+              <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 border-none text-[10px] px-1.5 h-5">
                 <Globe size={10} className="mr-1" /> Public
               </Badge>
             ) : (
-              <Badge variant="outline" className="text-gray-500 border-gray-200">
+              <Badge variant="outline" className="text-text-secondary border-border text-[10px] px-1.5 h-5">
                 <Lock size={10} className="mr-1" /> Private
               </Badge>
             )}
           </div>
         </div>
-        <CardDescription>Access Code</CardDescription>
+        <CardDescription className="text-xs text-text-secondary uppercase tracking-wide font-medium">Access Code</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="flex flex-col gap-4">
+      <CardContent className="p-card-padding pt-0 pb-3">
+        <div className="flex flex-col gap-3">
           <div className="flex items-center justify-center">
-            <div className="bg-gray-100 border border-gray-300 rounded-md font-mono text-xl tracking-wider px-4 py-2">
+            <div className="bg-bg-code border-2 border-dashed border-border/60 rounded-lg font-mono text-xl tracking-[0.2em] px-6 py-1.5 text-text-primary font-bold w-full text-center">
               {accessCode ? accessCode.toUpperCase() : '------'}
             </div>
           </div>
 
           {onTogglePublic && (
-            <div className="flex items-center justify-center gap-2">
+            <div className="flex items-center justify-between gap-2 px-1">
+              <Label htmlFor={`public-mode-${accessCode}`} className="text-xs text-text-secondary cursor-pointer font-normal">
+                {isPublic ? "Visible to Everyone" : "Private Dashboard Only"}
+              </Label>
               <Switch
                 checked={isPublic}
                 onCheckedChange={onTogglePublic}
                 id={`public-mode-${accessCode}`}
+                className="scale-75 origin-right"
               />
-              <Label htmlFor={`public-mode-${accessCode}`} className="text-xs text-gray-500 cursor-pointer">
-                {isPublic ? "Visible in Library" : "Private Dashboard Only"}
-              </Label>
             </div>
           )}
         </div>
       </CardContent>
-      <CardFooter className="flex flex-col gap-2 pt-0 w-full">
+      <CardFooter className="flex flex-col gap-2 p-card-padding pt-0 w-full">
         <div className="flex gap-2 w-full">
           {onEdit && (
             <Button
               variant="outline"
               size="sm"
-              className="flex-1 gap-2"
+              className="flex-1 gap-1.5 h-9 text-xs font-semibold border-border text-text-primary hover:bg-bg-secondary"
               onClick={onEdit}
             >
-              <Edit size={16} />
+              <Edit size={14} />
               Edit
             </Button>
           )}
           <Button
             variant="ghost"
             size="sm"
-            className={`flex-1 gap-2 ${getIconColor()}`}
+            className={`flex-1 gap-1.5 h-9 text-xs font-semibold ${getIconColor()} hover:bg-bg-secondary bg-bg-secondary/30`}
             onClick={handleCopy}
             disabled={!accessCode}
           >
-            <Copy size={16} />
+            <Copy size={14} />
             {copied ? "Copied!" : "Code"}
           </Button>
         </div>
@@ -132,10 +133,10 @@ const AccessCodeCard: React.FC<AccessCodeCardProps> = ({
           <Button
             variant="ghost"
             size="sm"
-            className="w-full gap-2 text-red-500 hover:text-red-700 hover:bg-red-50"
+            className="w-full gap-1.5 h-8 text-xs font-medium text-error-coral hover:text-error-coral-dark hover:bg-error-coral/10 -mt-1"
             onClick={onDelete}
           >
-            <Trash2 size={16} />
+            <Trash2 size={14} />
             Delete
           </Button>
         )}
