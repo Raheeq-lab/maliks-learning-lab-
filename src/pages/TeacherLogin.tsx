@@ -113,7 +113,7 @@ const TeacherLogin: React.FC = () => {
                                                         type="email"
                                                         placeholder="teacher@school.edu"
                                                         {...field}
-                                                        className="bg-bg-input/50 border-white/10 focus:border-purple-500/50 focus:ring-purple-500/20 h-12 rounded-xl text-white placeholder:text-gray-500 transition-all hover:bg-bg-input/70"
+                                                        className="bg-bg-input/50 border-white/10 focus:border-purple-500/50 focus:ring-purple-500/20 h-12 rounded-xl text-text-primary placeholder:text-gray-500 transition-all hover:bg-bg-input/70"
                                                     />
                                                 </FormControl>
                                                 <FormMessage className="text-red-400" />
@@ -132,7 +132,7 @@ const TeacherLogin: React.FC = () => {
                                                         type="password"
                                                         placeholder="••••••••"
                                                         {...field}
-                                                        className="bg-bg-input/50 border-white/10 focus:border-purple-500/50 focus:ring-purple-500/20 h-12 rounded-xl text-white placeholder:text-gray-500 transition-all hover:bg-bg-input/70"
+                                                        className="bg-bg-input/50 border-white/10 focus:border-purple-500/50 focus:ring-purple-500/20 h-12 rounded-xl text-text-primary placeholder:text-gray-500 transition-all hover:bg-bg-input/70"
                                                     />
                                                 </FormControl>
                                                 <FormMessage className="text-red-400" />
