@@ -312,7 +312,23 @@ const StudentQuiz: React.FC = () => {
       </header>
 
       <main className="flex-1 container mx-auto p-4 md:p-8 flex flex-col items-center max-w-4xl">
-        <div className="w-full max-w-2xl mb-6">
+        <div className="w-full max-w-2xl mb-6 space-y-2">
+          <div className="flex justify-between items-end px-2">
+            <div className="flex gap-4">
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase font-bold text-success-green tracking-wider">Correct</span>
+                <span className="text-2xl font-black text-text-primary leading-none">{score}</span>
+              </div>
+              <div className="flex flex-col border-l border-border pl-4">
+                <span className="text-[10px] uppercase font-bold text-error-coral tracking-wider">Wrong</span>
+                <span className="text-2xl font-black text-text-primary leading-none">{answers.filter(a => !a.isCorrect).length}</span>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className="text-[10px] uppercase font-bold text-text-tertiary tracking-wider">Progress</span>
+              <p className="text-sm font-bold text-text-secondary">{currentQuestionIndex + 1} / {quiz?.questions.length}</p>
+            </div>
+          </div>
           <PowerMeter power={power} animate={isAnimating} />
         </div>
 
@@ -331,26 +347,31 @@ const StudentQuiz: React.FC = () => {
                 let feedbackClass = "border-border hover:bg-bg-secondary";
                 if (showFeedback) {
                   if (isCorrect) {
-                    feedbackClass = "border-success-green bg-success-green/10 text-success-green shadow-[0_0_15px_rgba(34,197,94,0.3)] ring-2 ring-success-green/20";
+                    feedbackClass = "border-success-green bg-success-green text-white shadow-lg scale-[1.02] z-10";
                   } else if (isSelected && !isCorrect) {
-                    feedbackClass = "border-error-coral bg-error-coral/10 text-error-coral shadow-[0_0_15px_rgba(239,68,68,0.3)] ring-2 ring-error-coral/20";
+                    feedbackClass = "border-error-coral bg-error-coral text-white shadow-lg scale-[1.02] z-10";
                   } else {
-                    feedbackClass = "border-border opacity-50";
+                    feedbackClass = "border-border opacity-40 grayscale-[0.5]";
                   }
                 } else if (isSelected) {
-                  feedbackClass = `${colors.selected} border-current`;
+                  feedbackClass = `${colors.selected.split(' ')[0]} border-current ring-4 ring-current/10`;
                 }
 
                 return (
                   <div
                     key={index}
                     onClick={() => handleOptionSelect(index)}
-                    className={`p-5 rounded-xl cursor-pointer border-2 transition-all duration-300 transform ${feedbackClass} ${!showFeedback && 'hover:scale-[1.02] active:scale-[0.98]'}`}
+                    className={`p-6 rounded-2xl cursor-pointer border-2 transition-all duration-300 transform ${feedbackClass} ${!showFeedback && 'hover:scale-[1.01] active:scale-[0.99]'}`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-lg font-semibold">{option}</span>
-                      {showFeedback && isCorrect && <CheckCircle className="text-success-green animate-in zoom-in duration-300" size={24} />}
-                      {showFeedback && isSelected && !isCorrect && <XCircle className="text-error-coral animate-in zoom-in duration-300" size={24} />}
+                      <div className="flex items-center gap-4">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 ${isSelected ? 'bg-white text-current' : 'bg-bg-secondary text-text-tertiary'}`}>
+                          {String.fromCharCode(65 + index)}
+                        </div>
+                        <span className="text-lg font-bold">{option}</span>
+                      </div>
+                      {showFeedback && isCorrect && <CheckCircle className="text-white animate-in zoom-in duration-300" size={28} fill="currentColor" />}
+                      {showFeedback && isSelected && !isCorrect && <XCircle className="text-white animate-in zoom-in duration-300" size={28} fill="currentColor" />}
                     </div>
                   </div>
                 );
