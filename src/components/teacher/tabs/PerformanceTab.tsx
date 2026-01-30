@@ -248,141 +248,106 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
 
                 {selectedQuizId ? (
                   <div className="space-y-6">
-                    {/* Live Session Controls */}
-                    <div className="bg-bg-secondary/40 p-4 rounded-xl border border-border flex flex-wrap items-center justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${selectedQuiz?.is_live_session ? 'bg-success-green/20 text-success-green' : 'bg-bg-secondary text-text-tertiary'}`}>
-                          <Radio size={20} className={selectedQuiz?.is_live_session ? 'animate-pulse' : ''} />
-                        </div>
-                        <div>
-                          <p className="font-bold text-text-primary flex items-center gap-2">
-                            Live Session Mode
-                            {selectedQuiz?.is_live_session && (
-                              <span className="flex h-2 w-2 rounded-full bg-success-green"></span>
-                            )}
-                          </p>
-                          <p className="text-xs text-text-secondary">Students wait for your signal to start</p>
-                        </div>
-                        <Switch
-                          checked={selectedQuiz?.is_live_session || false}
-                          onCheckedChange={async (checked) => {
-                            setIsUpdating(true);
-                            const { error } = await supabase
-                              .from('quizzes')
-                              .update({
-                                is_live_session: checked,
-                                live_status: checked ? 'waiting' : 'idle'
-                              })
-                              .eq('id', selectedQuizId);
-
-                            if (error) {
-                              toast({
-                                title: "Error",
-                                description: "Failed to update quiz settings.",
-                                variant: "destructive"
-                              });
-                            } else {
-                              toast({
-                                title: checked ? "Live Session Enabled" : "Live Session Disabled",
-                                description: checked ? "Students will now wait for you to start the quiz." : "Students can start the quiz normally."
-                              });
-                            }
-                            setIsUpdating(false);
-                          }}
-                          disabled={isUpdating}
-                        />
-                      </div>
-
-                      {selectedQuiz?.is_live_session && (
-                        <div className="flex items-center gap-3">
-                          <div className="flex flex-col items-end">
-                            <div className="flex items-center gap-2 text-sm font-medium text-text-secondary">
-                              <Users size={16} />
-                              {liveResults.length} Students Joined
-                            </div>
-                            <p className="text-xs text-text-tertiary">
-                              {selectedQuiz.live_status === 'waiting' ? 'Ready to begin' : 'Session active'}
-                            </p>
+                    {/* Live Session Controls Section */}
+                    <div className="bg-bg-card border-4 border-focus-blue/20 p-6 rounded-2xl shadow-inner space-y-6">
+                      <div className="flex flex-wrap items-center justify-between gap-6">
+                        {/* Session Toggle */}
+                        <div className="flex items-center gap-4 bg-bg-secondary/50 p-3 rounded-xl border border-border">
+                          <div className={`p-2 rounded-lg ${selectedQuiz?.is_live_session ? 'bg-success-green/20 text-success-green' : 'bg-bg-secondary text-text-tertiary'}`}>
+                            <Radio size={24} className={selectedQuiz?.is_live_session ? 'animate-pulse' : ''} />
                           </div>
+                          <div>
+                            <p className="font-bold text-text-primary text-sm flex items-center gap-2">
+                              Live Session Mode
+                              {selectedQuiz?.is_live_session && (
+                                <span className="flex h-2 w-2 rounded-full bg-success-green animate-ping"></span>
+                              )}
+                            </p>
+                            <p className="text-[10px] text-text-tertiary uppercase font-bold">Synchronized Start</p>
+                          </div>
+                          <Switch
+                            checked={selectedQuiz?.is_live_session || false}
+                            onCheckedChange={async (checked) => {
+                              setIsUpdating(true);
+                              const { error } = await supabase
+                                .from('quizzes')
+                                .update({
+                                  is_live_session: checked,
+                                  live_status: checked ? 'waiting' : 'idle'
+                                })
+                                .eq('id', selectedQuizId);
 
-                          {selectedQuiz.live_status === 'waiting' ? (
-                            <Button
-                              onClick={async () => {
-                                setIsUpdating(true);
-                                const { error } = await supabase
-                                  .from('quizzes')
-                                  .update({ live_status: 'active' })
-                                  .eq('id', selectedQuizId);
+                              if (error) {
+                                toast({ title: "Error", description: "Failed to update settings.", variant: "destructive" });
+                              } else {
+                                toast({ title: checked ? "Mode Enabled" : "Mode Disabled" });
+                              }
+                              setIsUpdating(false);
+                            }}
+                            disabled={isUpdating}
+                          />
+                        </div>
 
-                                if (error) {
-                                  toast({ title: "Error", description: "Failed to start quiz.", variant: "destructive" });
-                                } else {
-                                  toast({ title: "Quiz Started!", description: "All joined students have been signaled to start." });
-                                }
-                                setIsUpdating(false);
-                              }}
-                              className="bg-focus-blue hover:bg-focus-blue/90 text-white gap-2 px-6"
-                              disabled={isUpdating || liveResults.length === 0}
-                            >
-                              <Play size={18} fill="currentColor" />
-                              START QUIZ FOR ALL
-                            </Button>
+                        {/* Start/Reset Buttons */}
+                        {selectedQuiz?.is_live_session && (
+                          <div className="flex items-center gap-4">
+                            <div className="text-right hidden sm:block px-4 border-r border-border">
+                              <p className="text-xs font-bold text-text-tertiary uppercase">{liveResults.length} Students</p>
+                              <p className="text-xs text-text-secondary">{selectedQuiz.live_status === 'waiting' ? 'Ready to Start' : 'Running'}</p>
+                            </div>
+
+                            {selectedQuiz.live_status === 'waiting' ? (
+                              <Button
+                                onClick={async () => {
+                                  setIsUpdating(true);
+                                  await supabase.from('quizzes').update({ live_status: 'active' }).eq('id', selectedQuizId);
+                                  setIsUpdating(false);
+                                  toast({ title: "Quiz Started!" });
+                                }}
+                                className="bg-focus-blue hover:bg-focus-blue-dark text-white font-bold h-12 px-8 rounded-xl shadow-lg animate-bounce-subtle"
+                                disabled={isUpdating || liveResults.length === 0}
+                              >
+                                <Play size={20} className="mr-2" fill="currentColor" />
+                                START QUIZ NOW
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                onClick={async () => {
+                                  setIsUpdating(true);
+                                  await supabase.from('quizzes').update({ live_status: 'waiting' }).eq('id', selectedQuizId);
+                                  setIsUpdating(false);
+                                }}
+                                className="h-12 px-6 border-error-coral text-error-coral hover:bg-error-coral/10 font-bold rounded-xl"
+                                disabled={isUpdating}
+                              >
+                                <PauseCircle size={20} className="mr-2" />
+                                RESET TO WAITING
+                              </Button>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Cleanup Section */}
+                        <div className="flex items-center gap-3 ml-auto">
+                          {showClearConfirm ? (
+                            <div className="flex items-center gap-2 bg-error-coral/10 p-2 rounded-lg border border-error-coral animate-in fade-in slide-in-from-right-2">
+                              <span className="text-xs font-bold text-error-coral">Delete previous results?</span>
+                              <Button size="sm" variant="destructive" onClick={handleClearResults} disabled={isUpdating}>Delete</Button>
+                              <Button size="sm" variant="ghost" onClick={() => setShowClearConfirm(false)} disabled={isUpdating}>Exit</Button>
+                            </div>
                           ) : (
                             <Button
-                              variant="outline"
-                              onClick={async () => {
-                                setIsUpdating(true);
-                                await supabase
-                                  .from('quizzes')
-                                  .update({ live_status: 'waiting' })
-                                  .eq('id', selectedQuizId);
-                                setIsUpdating(false);
-                              }}
-                              className="gap-2 border-error-coral text-error-coral hover:bg-error-coral/10"
+                              variant="ghost"
+                              className="text-text-tertiary hover:text-error-coral hover:bg-error-coral/10 flex flex-col h-auto py-2 px-3"
+                              onClick={() => setShowClearConfirm(true)}
+                              disabled={isUpdating}
                             >
-                              <PauseCircle size={18} />
-                              RESET TO WAITING
+                              <Trash2 size={20} />
+                              <span className="text-[10px] font-bold mt-1 uppercase">Clear Data</span>
                             </Button>
                           )}
                         </div>
-                      )}
-
-
-                      <div className="flex items-center gap-2 border-l border-border pl-4 ml-2">
-                        {showClearConfirm ? (
-                          <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-2 duration-300">
-                            <p className="text-xs font-bold text-error-coral">Delete results?</p>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              className="h-8 px-3 text-xs"
-                              onClick={handleClearResults}
-                              disabled={isUpdating}
-                            >
-                              Confirm
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-8 px-3 text-xs"
-                              onClick={() => setShowClearConfirm(false)}
-                              disabled={isUpdating}
-                            >
-                              Cancel
-                            </Button>
-                          </div>
-                        ) : (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-text-tertiary hover:text-error-coral hover:bg-error-coral/10 gap-1.5 transition-colors"
-                            onClick={() => setShowClearConfirm(true)}
-                            disabled={!selectedQuizId || isUpdating}
-                          >
-                            <Trash2 size={16} />
-                            <span className="text-xs font-medium">Clear Data</span>
-                          </Button>
-                        )}
                       </div>
                     </div>
 
