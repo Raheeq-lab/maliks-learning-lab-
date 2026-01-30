@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { Clock, CheckCircle, XCircle, Zap, ArrowRight, Award, Users, BookOpen, BookText, Laptop } from "lucide-react";
+import { Clock, CheckCircle, XCircle, Zap, ArrowRight, Award, Users, BookOpen, BookText, Laptop, PauseCircle } from "lucide-react";
 import { StudentAnswer } from '@/types/quiz';
 import PowerMeter from '@/components/PowerMeter';
 import { supabase } from '@/lib/supabase';
@@ -29,6 +29,7 @@ const StudentQuiz: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [resultId, setResultId] = useState<string | null>(null);
   const [startTime] = useState(Date.now());
+  const [sessionTerminated, setSessionTerminated] = useState(false);
 
   // Power meter state
   const [power, setPower] = useState(50);
@@ -105,6 +106,9 @@ const StudentQuiz: React.FC = () => {
           setQuiz(prev => ({ ...prev, live_status: payload.new.live_status }));
           if (payload.new.live_status === 'active') {
             toast({ title: "Quiz Started!", description: "The teacher has started the quiz. Good luck!" });
+          } else if (payload.new.live_status === 'idle') {
+            setSessionTerminated(true);
+            toast({ title: "Session Ended", description: "The teacher has ended this live session.", variant: "destructive" });
           }
         })
       .subscribe();
@@ -114,7 +118,7 @@ const StudentQuiz: React.FC = () => {
 
   // 3. Timer effect
   useEffect(() => {
-    if (isLoading || quizCompleted || (quiz?.is_live_session && quiz?.live_status === 'waiting')) return;
+    if (isLoading || quizCompleted || sessionTerminated || (quiz?.is_live_session && quiz?.live_status === 'waiting')) return;
 
     const timer = setInterval(() => {
       setTimeLeft(prev => {
@@ -231,6 +235,30 @@ const StudentQuiz: React.FC = () => {
           </CardContent>
           <CardFooter className="pb-10 pt-4 flex justify-center text-sm text-text-tertiary">
             <Users size={14} className="mr-2" /> Stay on this page to join the race
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
+
+  if (sessionTerminated) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-bg-primary p-4">
+        <Card className="w-full max-w-xl shadow-2xl bg-bg-card border-t-8 border-error-coral overflow-hidden">
+          <CardHeader className="text-center pt-10">
+            <div className="mx-auto w-24 h-24 bg-error-coral/10 rounded-full flex items-center justify-center mb-6">
+              <PauseCircle size={48} className="text-error-coral" />
+            </div>
+            <CardTitle className="text-3xl font-bold text-text-primary mb-2">Session Ended</CardTitle>
+            <p className="text-text-secondary text-lg">The teacher has ended this live session.</p>
+          </CardHeader>
+          <CardContent className="text-center py-6 px-10">
+            <p className="text-text-secondary">Your progress has been saved, but the live race is no longer active.</p>
+          </CardContent>
+          <CardFooter className="pb-10 pt-4 flex justify-center">
+            <Button onClick={() => navigate('/student-join')} className="bg-bg-secondary text-text-primary hover:bg-bg-secondary/80 px-8 py-6 rounded-xl font-bold">
+              Return Home
+            </Button>
           </CardFooter>
         </Card>
       </div>
