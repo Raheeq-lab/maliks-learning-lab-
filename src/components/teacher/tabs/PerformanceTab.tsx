@@ -3,8 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import LeaderboardComponent from '@/components/LeaderboardComponent';
-import { Quiz, LeaderboardEntry } from '@/types/quiz';
+import { Quiz } from '@/types/quiz';
 import { BarChart, BookOpen, BookText, Laptop, Zap } from 'lucide-react';
 import LiveRaceView from '@/components/teacher/LiveRaceView';
 import { supabase } from '@/lib/supabase';
@@ -13,7 +12,6 @@ interface PerformanceTabProps {
   quizzes: Quiz[];
   getTotalStudents: () => number;
   getTotalCompletions: () => number;
-  getLeaderboardEntries: (quizId: string) => LeaderboardEntry[];
   findQuizById: (id: string) => Quiz | undefined;
   subject?: "math" | "english" | "ict";
 }
@@ -22,7 +20,6 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
   quizzes,
   getTotalStudents,
   getTotalCompletions,
-  getLeaderboardEntries,
   findQuizById,
   subject = "math"
 }) => {
@@ -89,7 +86,6 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
   });
 
   const selectedQuiz = filteredQuizzes.find(q => q.id === selectedQuizId);
-  const leaderboard = selectedQuizId ? getLeaderboardEntries(selectedQuizId) : [];
 
   // Get color based on subject
   const getSubjectColor = () => {
@@ -181,14 +177,12 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
         </Card>
       </div>
 
-      <Tabs defaultValue="leaderboard" className="space-y-4">
+      <Tabs defaultValue="live-race" className="space-y-4">
         <TabsList>
-          <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
           <TabsTrigger value="live-race" className="flex items-center gap-1.5">
             <Zap size={14} className="text-focus-blue" />
             Live Race
           </TabsTrigger>
-          <TabsTrigger value="analytics">Detailed Analytics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="live-race">
@@ -235,65 +229,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
           </Card>
         </TabsContent>
 
-        <TabsContent value="leaderboard">
-          <Card>
-            <CardHeader>
-              <CardTitle>Quiz Leaderboard</CardTitle>
-              <CardDescription>View top performers for each quiz</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium mb-1 block">Select Quiz</label>
-                  <Select value={selectedQuizId} onValueChange={setSelectedQuizId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a quiz" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filteredQuizzes.map(quiz => (
-                        <SelectItem key={quiz.id} value={quiz.id}>{quiz.title} (Grade {quiz.gradeLevel})</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
 
-                {selectedQuizId && leaderboard.length > 0 ? (
-                  <LeaderboardComponent
-                    entries={leaderboard}
-                    quizTitle={selectedQuiz?.title || "Quiz"}
-                  />
-                ) : selectedQuizId ? (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500">No results for this quiz yet.</p>
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <div className="flex items-center justify-center mb-2">
-                      {getSubjectIcon()}
-                    </div>
-                    <p className="text-gray-500">Select a quiz to view its leaderboard.</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="analytics">
-          <Card>
-            <CardHeader>
-              <CardTitle>Detailed Analytics</CardTitle>
-              <CardDescription>Insights into student performance</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[400px] flex items-center justify-center">
-              <div className="text-center">
-                <BarChart size={48} className="mx-auto mb-4 text-gray-400" />
-                <p className="text-gray-500">Detailed analytics coming soon!</p>
-                <p className="text-sm text-gray-400">This feature is under development.</p>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
     </div>
   );

@@ -477,7 +477,6 @@ const TeacherDashboard: React.FC = () => {
                 quizzes={quizzes}
                 getTotalStudents={() => getTotalStudents(results)}
                 getTotalCompletions={() => getTotalCompletions(results)}
-                getLeaderboardEntries={(quizId) => getLeaderboardEntries(results, quizId)}
                 findQuizById={(id) => findQuizById(quizzes, id)}
                 subject={selectedSubject}
               />
