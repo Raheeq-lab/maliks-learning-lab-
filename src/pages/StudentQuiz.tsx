@@ -370,7 +370,7 @@ const StudentQuiz: React.FC = () => {
   if (!quiz || !quiz.questions || quiz.questions.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-bg-primary">
-        <div className="text-center p-8 bg-white rounded-xl shadow-lg border border-red-100">
+        <div className="text-center p-8 bg-bg-card rounded-xl shadow-lg border border-error-coral/20">
           <p className="text-xl text-error-coral font-bold mb-4">No questions found for this quiz.</p>
           <Button
             className="bg-focus-blue hover:bg-focus-blue-dark text-white"
@@ -388,7 +388,7 @@ const StudentQuiz: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-bg-primary font-poppins">
-      <header className={`shadow-md px-6 py-4 bg-white sticky top-0 z-20 border-b-4 ${colors.header.split(" ").pop()}`}>
+      <header className={`shadow-md px-6 py-4 bg-bg-card/80 backdrop-blur-md sticky top-0 z-20 border-b-4 ${colors.header.split(" ").pop()}`}>
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-lg ${colors.selected}`}>
@@ -410,7 +410,7 @@ const StudentQuiz: React.FC = () => {
               <p className="text-xs text-text-tertiary font-bold uppercase tracking-wider">Question</p>
               <p className="font-bold text-text-primary">{currentQuestionIndex + 1} <span className="text-text-tertiary text-sm font-normal">of {quiz?.questions.length}</span></p>
             </div>
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-inner border border-gray-100 ${timeLeft < 10 ? 'bg-error-coral-light' : 'bg-bg-secondary'}`}>
+            <div className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-inner border border-border ${timeLeft < 10 ? 'bg-error-coral/10' : 'bg-bg-secondary/50'}`}>
               <Clock size={18} className={timeLeft < 10 ? "text-error-coral animate-pulse" : "text-text-secondary"} />
               <span className={`font-mono font-bold text-lg ${timeLeft < 10 ? "text-error-coral" : "text-text-primary"}`}>{formatTime(timeLeft)}</span>
             </div>
@@ -429,7 +429,7 @@ const StudentQuiz: React.FC = () => {
 
         {/* Power Meter floating above */}
         <div className="w-full max-w-2xl mb-6">
-          <div className="bg-white p-3 rounded-full shadow-sm border border-gray-100 flex items-center justify-between gap-4">
+          <div className="bg-bg-card/60 backdrop-blur-md p-3 rounded-full shadow-sm border border-border flex items-center justify-between gap-4">
             <span className="ml-4 font-bold text-sm text-text-secondary uppercase">Power Level</span>
             <div className="flex-1">
               <PowerMeter power={power} animate={isAnimating} showIcon={false} />
@@ -438,7 +438,7 @@ const StudentQuiz: React.FC = () => {
           </div>
         </div>
 
-        <Card className="w-full max-w-3xl shadow-xl border-0 overflow-hidden rounded-2xl bg-bg-card transition-all duration-300 relative">
+        <Card className="w-full max-w-3xl shadow-xl border-0 overflow-hidden rounded-2xl bg-bg-card/80 backdrop-blur-xl transition-all duration-300 relative border border-white/5">
 
           {/* Accent Border Left */}
           <div className={`absolute left-0 top-0 bottom-0 w-2 ${colors.button}`}></div>
@@ -473,7 +473,7 @@ const StudentQuiz: React.FC = () => {
                 <img
                   src={currentQuestion.imageUrl}
                   alt="Question illustration"
-                  className="mx-auto max-h-80 rounded-xl border border-gray-100 shadow-sm"
+                  className="mx-auto max-h-80 rounded-xl border border-border shadow-sm"
                 />
               </div>
             )}
@@ -489,7 +489,7 @@ const StudentQuiz: React.FC = () => {
                     p-5 rounded-xl cursor-pointer border-2 transition-all duration-200 group relative overflow-hidden
                     ${selectedOption === index
                       ? `${colors.selected} shadow-md transform scale-[1.01]`
-                      : 'border-gray-100 hover:border-focus-blue-light hover:bg-bg-secondary bg-white'
+                      : 'border-border hover:border-focus-blue-light hover:bg-bg-secondary/50 bg-bg-secondary/20'
                     }
                     ${showFeedback && selectedOption === index
                       ? (feedbackMessage?.includes("Correct")
@@ -502,8 +502,8 @@ const StudentQuiz: React.FC = () => {
                     <div className={`
                         w-10 h-10 flex items-center justify-center rounded-full border-2 text-lg font-bold transition-colors
                         ${selectedOption === index
-                        ? `${colors.text} border-current bg-white`
-                        : 'bg-bg-secondary text-text-secondary border-transparent group-hover:bg-white group-hover:border-focus-blue-light group-hover:text-focus-blue'
+                        ? `${colors.text} border-current bg-bg-card`
+                        : 'bg-bg-secondary/80 text-text-secondary border-transparent group-hover:bg-bg-card group-hover:border-focus-blue-light group-hover:text-focus-blue'
                       }
                     `}>
                       {String.fromCharCode(65 + index)}
@@ -528,7 +528,7 @@ const StudentQuiz: React.FC = () => {
               ))}
             </div>
           </CardContent>
-          <CardFooter className="px-8 py-6 bg-bg-secondary/30 border-t border-gray-100 flex justify-between items-center">
+          <CardFooter className="px-8 py-6 bg-bg-secondary/20 border-t border-border flex justify-between items-center">
             <div className="flex items-center gap-2 text-sm text-text-secondary">
               <div className="w-8 h-8 rounded-full bg-focus-blue-light text-focus-blue flex items-center justify-center font-bold">
                 {studentData?.name.charAt(0)}
