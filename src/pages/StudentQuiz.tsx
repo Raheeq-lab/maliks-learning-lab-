@@ -150,6 +150,11 @@ const StudentQuiz: React.FC = () => {
     }
   };
 
+  const handleOptionSelect = (index: number) => {
+    if (showFeedback) return;
+    setSelectedOption(index);
+  };
+
   const handleNextQuestion = () => {
     if (!quiz) return;
     const currentQuestion = quiz.questions[currentQuestionIndex];
