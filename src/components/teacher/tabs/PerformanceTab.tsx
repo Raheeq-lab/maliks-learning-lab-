@@ -88,8 +88,8 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
     return matchesSubject && matchesGrade;
   });
 
+  const selectedQuiz = filteredQuizzes.find(q => q.id === selectedQuizId);
   const leaderboard = selectedQuizId ? getLeaderboardEntries(selectedQuizId) : [];
-  const selectedQuiz = selectedQuizId ? findQuizById(selectedQuizId) : undefined;
 
   // Get color based on subject
   const getSubjectColor = () => {

@@ -104,12 +104,11 @@ const StudentQuiz: React.FC = () => {
           }])
           .select()
           .single();
-
         if (!resultError && resultData) {
           console.log("Live race result initialized:", resultData.id);
           setResultId(resultData.id);
         } else if (resultError) {
-          console.error("Error creating live race result:", resultError);
+          console.error("Error creating live race result:", resultError.message || resultError);
         }
       } catch (error) {
         console.error("Error loading quiz:", error);
