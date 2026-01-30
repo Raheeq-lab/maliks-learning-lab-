@@ -137,8 +137,8 @@ const StudentJoin: React.FC = () => {
                 {getSubjectIcon()}
               </div>
             </div>
-            <CardTitle className="text-3xl font-bold text-foreground tracking-tight">Join a Quiz</CardTitle>
-            <CardDescription className="text-muted-foreground text-base mt-2">
+            <CardTitle className="text-3xl font-bold text-white tracking-tight">Join a Quiz</CardTitle>
+            <CardDescription className="text-white/70 text-base mt-2">
               Enter your name and the access code to join
             </CardDescription>
           </CardHeader>
@@ -146,7 +146,7 @@ const StudentJoin: React.FC = () => {
           <form onSubmit={handleJoin}>
             <CardContent className="space-y-6 pt-4">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-foreground/80 font-medium ml-1">Your Name</Label>
+                <Label htmlFor="name" className="text-white font-medium ml-1">Your Name</Label>
                 <Input
                   id="name"
                   placeholder="Enter your full name"
@@ -154,12 +154,12 @@ const StudentJoin: React.FC = () => {
                   onChange={(e) => setName(e.target.value)}
                   required
                   autoFocus
-                  className="bg-bg-input/50 border-input focus:border-purple-500/50 focus:ring-purple-500/20 h-12 rounded-xl text-foreground placeholder:text-muted-foreground transition-all hover:bg-bg-input/70"
+                  className="bg-white border-white/20 focus:border-purple-500/50 focus:ring-purple-500/20 h-12 rounded-xl text-black placeholder:text-gray-400 transition-all hover:bg-white/90"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="accessCode" className="text-foreground/80 font-medium ml-1">Access Code</Label>
+                <Label htmlFor="accessCode" className="text-white font-medium ml-1">Access Code</Label>
                 <Input
                   id="accessCode"
                   placeholder="ABC123"
@@ -167,15 +167,15 @@ const StudentJoin: React.FC = () => {
                   onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
                   required
                   maxLength={6}
-                  className="tracking-[0.5em] text-center uppercase font-mono text-xl bg-bg-input/50 border-input focus:border-purple-500/50 focus:ring-purple-500/20 h-14 rounded-xl text-foreground placeholder:text-muted-foreground transition-all hover:bg-bg-input/70 placeholder:tracking-normal placeholder:font-sans placeholder:text-base"
+                  className="tracking-[0.5em] text-center uppercase font-mono text-xl bg-white border-white/20 focus:border-purple-500/50 focus:ring-purple-500/20 h-14 rounded-xl text-black placeholder:text-gray-400 transition-all hover:bg-white/90 placeholder:tracking-normal placeholder:font-sans placeholder:text-base"
                 />
-                <p className="text-xs text-muted-foreground text-center mt-2">
+                <p className="text-xs text-white/60 text-center mt-2">
                   The 6-letter code provided by your teacher
                 </p>
               </div>
 
               <div className="space-y-3 pt-2">
-                <Label className="text-foreground/80 font-medium ml-1">Preferred Subject</Label>
+                <Label className="text-white font-medium ml-1">Preferred Subject</Label>
                 <SubjectSelector
                   selectedSubject={selectedSubject}
                   onChange={setSelectedSubject}
