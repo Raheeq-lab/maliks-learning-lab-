@@ -157,10 +157,10 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
         <div className="flex items-center gap-3">
           <div className={`p-2 rounded-lg bg-bg-secondary ${subject === 'math' ? 'text-math-purple' : subject === 'english' ? 'text-english-green' : 'text-ict-orange'
             }`}>
-            <BarChart size={24} />
+            <Radio size={24} />
           </div>
           <h2 className="text-2xl font-bold text-text-primary">
-            {subject.charAt(0).toUpperCase() + subject.slice(1)} Performance Analytics
+            Live Performance Dashboard
           </h2>
         </div>
         <div className="w-[180px]">
@@ -176,41 +176,6 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
             </SelectContent>
           </Select>
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="border-none shadow-lg relative overflow-hidden group">
-          <div className={`absolute inset-0 opacity-10 ${subject === 'math' ? 'bg-math-purple' : subject === 'english' ? 'bg-english-green' : 'bg-ict-orange'
-            }`}></div>
-          <CardHeader className="pb-2 relative z-10">
-            <CardTitle className="text-4xl font-bold text-text-primary">{getTotalStudents()}</CardTitle>
-            <CardDescription className="font-medium text-text-secondary">Total Students</CardDescription>
-          </CardHeader>
-          <div className={`h-1.5 w-full absolute bottom-0 left-0 ${subject === 'math' ? 'bg-math-purple' : subject === 'english' ? 'bg-english-green' : 'bg-ict-orange'
-            }`}></div>
-        </Card>
-
-        <Card className="border-none shadow-lg relative overflow-hidden group">
-          <div className={`absolute inset-0 opacity-10 ${subject === 'math' ? 'bg-math-purple' : subject === 'english' ? 'bg-english-green' : 'bg-ict-orange'
-            }`}></div>
-          <CardHeader className="pb-2 relative z-10">
-            <CardTitle className="text-4xl font-bold text-text-primary">{getTotalCompletions()}</CardTitle>
-            <CardDescription className="font-medium text-text-secondary">Total Quiz Completions</CardDescription>
-          </CardHeader>
-          <div className={`h-1.5 w-full absolute bottom-0 left-0 ${subject === 'math' ? 'bg-math-purple' : subject === 'english' ? 'bg-english-green' : 'bg-ict-orange'
-            }`}></div>
-        </Card>
-
-        <Card className="border-none shadow-lg relative overflow-hidden group">
-          <div className={`absolute inset-0 opacity-10 ${subject === 'math' ? 'bg-math-purple' : subject === 'english' ? 'bg-english-green' : 'bg-ict-orange'
-            }`}></div>
-          <CardHeader className="pb-2 relative z-10">
-            <CardTitle className="text-4xl font-bold text-text-primary">{filteredQuizzes.length}</CardTitle>
-            <CardDescription className="font-medium text-text-secondary">Total {subject.charAt(0).toUpperCase() + subject.slice(1)} Quizzes</CardDescription>
-          </CardHeader>
-          <div className={`h-1.5 w-full absolute bottom-0 left-0 ${subject === 'math' ? 'bg-math-purple' : subject === 'english' ? 'bg-english-green' : 'bg-ict-orange'
-            }`}></div>
-        </Card>
       </div>
 
       <Tabs defaultValue="live-race" className="space-y-4">
