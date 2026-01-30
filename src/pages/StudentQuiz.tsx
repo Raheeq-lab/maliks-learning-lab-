@@ -85,7 +85,7 @@ const StudentQuiz: React.FC = () => {
         }
 
         setQuiz(quizData);
-        setTimeLeft(quizData.timeLimit || 30); // Default 30 seconds per question if not specified
+        setTimeLeft(quizData.time_limit || 30); // Use time_limit from database
         setIsLoading(false);
       } catch (error) {
         console.error("Error loading quiz:", error);
@@ -222,7 +222,7 @@ const StudentQuiz: React.FC = () => {
       questionId: currentQuestion.id,
       selectedOptionIndex: selectedOption,
       isCorrect: isCorrect,
-      timeTaken: quiz.timeLimit - timeLeft
+      timeTaken: (quiz.time_limit || 30) - timeLeft
     };
 
     const updatedAnswers = [...answers, answer];
@@ -246,7 +246,7 @@ const StudentQuiz: React.FC = () => {
         // Move to next question
         setCurrentQuestionIndex(prev => prev + 1);
         setSelectedOption(null);
-        setTimeLeft(quiz.timeLimit || 30);
+        setTimeLeft(quiz.time_limit || 30);
       }
     }, 2500); // Increased time slightly to allow reading feedback
   };
