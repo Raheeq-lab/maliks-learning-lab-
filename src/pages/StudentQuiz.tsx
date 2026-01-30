@@ -106,7 +106,10 @@ const StudentQuiz: React.FC = () => {
           .single();
 
         if (!resultError && resultData) {
+          console.log("Live race result initialized:", resultData.id);
           setResultId(resultData.id);
+        } else if (resultError) {
+          console.error("Error creating live race result:", resultError);
         }
       } catch (error) {
         console.error("Error loading quiz:", error);
@@ -266,6 +269,7 @@ const StudentQuiz: React.FC = () => {
         .eq('id', resultId)
         .then(({ error }) => {
           if (error) console.error("Error updating progress:", error);
+          else console.log("Progress updated for question:", currentQuestionIndex + 1);
         });
     }
 

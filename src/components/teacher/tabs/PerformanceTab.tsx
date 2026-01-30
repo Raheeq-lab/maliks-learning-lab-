@@ -64,6 +64,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
           filter: `quiz_id=eq.${selectedQuizId}`
         },
         (payload) => {
+          console.log("Realtime event received:", payload.eventType, payload.new);
           if (payload.eventType === 'INSERT') {
             setLiveResults(prev => [payload.new, ...prev]);
           } else if (payload.eventType === 'UPDATE') {
