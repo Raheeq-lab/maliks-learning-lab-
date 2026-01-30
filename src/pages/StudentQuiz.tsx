@@ -324,11 +324,37 @@ const StudentQuiz: React.FC = () => {
           </CardHeader>
           <CardContent className="px-8 pb-8">
             <div className="grid grid-cols-1 gap-4 mt-4">
-              {currentQuestion?.options.map((option: string, index: number) => (
-                <div key={index} onClick={() => handleOptionSelect(index)} className={`p-5 rounded-xl cursor-pointer border-2 transition-all ${selectedOption === index ? `${colors.selected} border-current` : 'border-border hover:bg-bg-secondary'}`}>
-                  <span className="text-lg font-medium">{option}</span>
-                </div>
-              ))}
+              {currentQuestion?.options.map((option: string, index: number) => {
+                const isCorrect = index === currentQuestion.correctOptionIndex;
+                const isSelected = selectedOption === index;
+
+                let feedbackClass = "border-border hover:bg-bg-secondary";
+                if (showFeedback) {
+                  if (isCorrect) {
+                    feedbackClass = "border-success-green bg-success-green/10 text-success-green shadow-[0_0_15px_rgba(34,197,94,0.3)] ring-2 ring-success-green/20";
+                  } else if (isSelected && !isCorrect) {
+                    feedbackClass = "border-error-coral bg-error-coral/10 text-error-coral shadow-[0_0_15px_rgba(239,68,68,0.3)] ring-2 ring-error-coral/20";
+                  } else {
+                    feedbackClass = "border-border opacity-50";
+                  }
+                } else if (isSelected) {
+                  feedbackClass = `${colors.selected} border-current`;
+                }
+
+                return (
+                  <div
+                    key={index}
+                    onClick={() => handleOptionSelect(index)}
+                    className={`p-5 rounded-xl cursor-pointer border-2 transition-all duration-300 transform ${feedbackClass} ${!showFeedback && 'hover:scale-[1.02] active:scale-[0.98]'}`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-lg font-semibold">{option}</span>
+                      {showFeedback && isCorrect && <CheckCircle className="text-success-green animate-in zoom-in duration-300" size={24} />}
+                      {showFeedback && isSelected && !isCorrect && <XCircle className="text-error-coral animate-in zoom-in duration-300" size={24} />}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </CardContent>
           <CardFooter className="px-8 py-6 border-t flex justify-between items-center">
