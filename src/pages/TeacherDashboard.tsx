@@ -344,6 +344,77 @@ const TeacherDashboard: React.FC = () => {
     });
   };
 
+  const handleToggleLiveQuiz = async (quiz: Quiz) => {
+    try {
+      const newLiveStatus = !quiz.is_live_session;
+
+      // Optimistic update
+      setQuizzes(prev => prev.map(q =>
+        q.id === quiz.id ? { ...q, is_live_session: newLiveStatus, live_status: newLiveStatus ? 'waiting' : 'idle' } : q
+      ));
+
+      const { error } = await supabase
+        .from('quizzes')
+        .update({
+          is_live_session: newLiveStatus,
+          live_status: newLiveStatus ? 'waiting' : 'idle'
+        })
+        .eq('id', quiz.id);
+
+      if (error) {
+        // Revert on error
+        setQuizzes(prev => prev.map(q =>
+          q.id === quiz.id ? { ...q, is_live_session: quiz.is_live_session, live_status: quiz.live_status } : q
+        ));
+        throw error;
+      }
+
+      toast({
+        title: newLiveStatus ? "Live Session Mode Enabled" : "Live Session Mode Disabled",
+        description: newLiveStatus ? "Students will now wait for you to start the quiz." : "Students can start the quiz normally."
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error updating live mode",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleStartLiveQuiz = async (quiz: Quiz) => {
+    try {
+      // Optimistic update
+      setQuizzes(prev => prev.map(q =>
+        q.id === quiz.id ? { ...q, live_status: 'active' } : q
+      ));
+
+      const { error } = await supabase
+        .from('quizzes')
+        .update({ live_status: 'active' })
+        .eq('id', quiz.id);
+
+      if (error) {
+        // Revert on error
+        setQuizzes(prev => prev.map(q =>
+          q.id === quiz.id ? { ...q, live_status: 'waiting' } : q
+        ));
+        throw error;
+      }
+
+      toast({
+        title: "Quiz Started!",
+        description: "All joined students have been signaled to start."
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error starting quiz",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
   const getSubjectIcon = () => {
     switch (selectedSubject) {
       case "math": return <Book className="text-math-purple" />;
@@ -444,6 +515,8 @@ const TeacherDashboard: React.FC = () => {
                 onEditQuiz={(q) => { setEditingQuiz(q); setShowQuizForm(true); }}
                 onDeleteQuiz={handleDeleteQuiz}
                 onTogglePublic={handleTogglePublicQuiz}
+                onToggleLive={handleToggleLiveQuiz}
+                onStartQuiz={handleStartLiveQuiz}
                 subject={selectedSubject}
               />
             </TabsContent>

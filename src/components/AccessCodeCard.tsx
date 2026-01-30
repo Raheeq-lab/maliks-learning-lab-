@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Copy, Edit, Trash2, Globe, Lock } from "lucide-react";
+import { Copy, Edit, Trash2, Globe, Lock, Radio, Zap } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,10 @@ interface AccessCodeCardProps {
   onEdit?: () => void;
   onDelete?: () => void;
   onTogglePublic?: () => void;
+  onToggleLive?: () => void;
+  onStartQuiz?: () => void;
+  isLiveSession?: boolean;
+  liveStatus?: 'idle' | 'waiting' | 'active';
   subject?: "math" | "english" | "ict";
 }
 
@@ -26,6 +30,10 @@ const AccessCodeCard: React.FC<AccessCodeCardProps> = ({
   onEdit,
   onDelete,
   onTogglePublic,
+  onToggleLive,
+  onStartQuiz,
+  isLiveSession = false,
+  liveStatus = 'idle',
   subject = "math"
 }) => {
   const [copied, setCopied] = useState(false);
@@ -103,6 +111,23 @@ const AccessCodeCard: React.FC<AccessCodeCardProps> = ({
               />
             </div>
           )}
+
+          {onToggleLive && (
+            <div className="flex items-center justify-between gap-2 px-1">
+              <div className="flex items-center gap-1.5">
+                <Radio size={12} className={isLiveSession ? "text-success-green animate-pulse" : "text-text-tertiary"} />
+                <Label htmlFor={`live-mode-${accessCode}`} className="text-xs text-text-secondary cursor-pointer font-normal">
+                  Live Session Mode
+                </Label>
+              </div>
+              <Switch
+                checked={isLiveSession}
+                onCheckedChange={onToggleLive}
+                id={`live-mode-${accessCode}`}
+                className="scale-75 origin-right"
+              />
+            </div>
+          )}
         </div>
       </CardContent>
       <CardFooter className="flex flex-col gap-2 p-card-padding pt-0 w-full">
@@ -138,6 +163,16 @@ const AccessCodeCard: React.FC<AccessCodeCardProps> = ({
           >
             <Trash2 size={14} />
             Delete
+          </Button>
+        )}
+
+        {isLiveSession && liveStatus === 'waiting' && onStartQuiz && (
+          <Button
+            className="w-full mt-1 bg-focus-blue hover:bg-focus-blue-dark text-white font-bold h-10 gap-2 shadow-md animate-bounce-subtle"
+            onClick={onStartQuiz}
+          >
+            <Zap size={16} fill="currentColor" />
+            START LIVE QUIZ
           </Button>
         )}
       </CardFooter>

@@ -15,10 +15,12 @@ interface QuizzesTabProps {
   onEditQuiz: (quiz: Quiz) => void;
   onDeleteQuiz: (quizId: string) => void;
   onTogglePublic?: (quiz: Quiz) => void;
+  onToggleLive?: (quiz: Quiz) => void;
+  onStartQuiz?: (quiz: Quiz) => void;
   subject?: "math" | "english" | "ict";
 }
 
-const QuizzesTab: React.FC<QuizzesTabProps> = ({ quizzes, onCreateQuiz, onCopyCode, onEditQuiz, onDeleteQuiz, onTogglePublic, subject = "math" }) => {
+const QuizzesTab: React.FC<QuizzesTabProps> = ({ quizzes, onCreateQuiz, onCopyCode, onEditQuiz, onDeleteQuiz, onTogglePublic, onToggleLive, onStartQuiz, subject = "math" }) => {
   const [filterGrade, setFilterGrade] = React.useState<string>("all");
 
   const getSubjectIcon = () => {
@@ -111,6 +113,10 @@ const QuizzesTab: React.FC<QuizzesTabProps> = ({ quizzes, onCreateQuiz, onCopyCo
               onEdit={() => onEditQuiz(quiz)}
               onDelete={() => onDeleteQuiz(quiz.id)}
               onTogglePublic={() => onTogglePublic && onTogglePublic(quiz)}
+              onToggleLive={() => onToggleLive && onToggleLive(quiz)}
+              onStartQuiz={() => onStartQuiz && onStartQuiz(quiz)}
+              isLiveSession={quiz.is_live_session}
+              liveStatus={quiz.live_status}
               subject={quiz.subject}
             />
           ))}
