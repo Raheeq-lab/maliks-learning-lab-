@@ -154,7 +154,7 @@ const StudentJoin: React.FC = () => {
                   onChange={(e) => setName(e.target.value)}
                   required
                   autoFocus
-                  className="bg-white border-white/20 focus:border-purple-500/50 focus:ring-purple-500/20 h-12 rounded-xl text-black placeholder:text-gray-400 transition-all hover:bg-white/90"
+                  className="!bg-white border-white/20 focus:border-purple-500/50 focus:ring-purple-500/20 h-12 rounded-xl !text-black placeholder:text-gray-400 transition-all hover:bg-white/90"
                 />
               </div>
 
@@ -167,7 +167,7 @@ const StudentJoin: React.FC = () => {
                   onChange={(e) => setAccessCode(e.target.value.toUpperCase())}
                   required
                   maxLength={6}
-                  className="tracking-[0.5em] text-center uppercase font-mono text-xl bg-white border-white/20 focus:border-purple-500/50 focus:ring-purple-500/20 h-14 rounded-xl text-black placeholder:text-gray-400 transition-all hover:bg-white/90 placeholder:tracking-normal placeholder:font-sans placeholder:text-base"
+                  className="tracking-[0.5em] text-center uppercase font-mono text-xl !bg-white border-white/20 focus:border-purple-500/50 focus:ring-purple-500/20 h-14 rounded-xl !text-black placeholder:text-gray-400 transition-all hover:bg-white/90 placeholder:tracking-normal placeholder:font-sans placeholder:text-base"
                 />
                 <p className="text-xs text-white/60 text-center mt-2">
                   The 6-letter code provided by your teacher
