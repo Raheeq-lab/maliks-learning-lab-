@@ -5,7 +5,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import LeaderboardComponent from '@/components/LeaderboardComponent';
 import { Quiz, LeaderboardEntry } from '@/types/quiz';
-import { BarChart, BookOpen, BookText, Laptop } from 'lucide-react';
+import { BarChart, BookOpen, BookText, Laptop, Zap } from 'lucide-react';
+import LiveRaceView from '@/components/teacher/LiveRaceView';
+import { supabase } from '@/lib/supabase';
 
 interface PerformanceTabProps {
   quizzes: Quiz[];
@@ -26,6 +28,57 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
 }) => {
   const [selectedQuizId, setSelectedQuizId] = useState<string>("");
   const [filterGrade, setFilterGrade] = useState<string>("all");
+  const [liveResults, setLiveResults] = useState<any[]>([]);
+
+  // Subscribe to live results when a quiz is selected
+  React.useEffect(() => {
+    if (!selectedQuizId) {
+      setLiveResults([]);
+      return;
+    }
+
+    // 1. Fetch initial results for this quiz
+    const fetchInitialResults = async () => {
+      const { data, error } = await supabase
+        .from('quiz_results')
+        .select('*')
+        .eq('quiz_id', selectedQuizId)
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        setLiveResults(data);
+      }
+    };
+
+    fetchInitialResults();
+
+    // 2. Set up realtime subscription
+    const channel = supabase
+      .channel(`live-quiz-${selectedQuizId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'quiz_results',
+          filter: `quiz_id=eq.${selectedQuizId}`
+        },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setLiveResults(prev => [payload.new, ...prev]);
+          } else if (payload.eventType === 'UPDATE') {
+            setLiveResults(prev => prev.map(r => r.id === payload.new.id ? payload.new : r));
+          } else if (payload.eventType === 'DELETE') {
+            setLiveResults(prev => prev.filter(r => r.id === payload.old.id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [selectedQuizId]);
 
   // Filter quizzes by selected subject AND grade
   const filteredQuizzes = quizzes.filter(quiz => {
@@ -130,8 +183,56 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
       <Tabs defaultValue="leaderboard" className="space-y-4">
         <TabsList>
           <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
+          <TabsTrigger value="live-race" className="flex items-center gap-1.5">
+            <Zap size={14} className="text-focus-blue" />
+            Live Race
+          </TabsTrigger>
           <TabsTrigger value="analytics">Detailed Analytics</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="live-race">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Zap size={20} className="text-focus-blue" />
+                Live Student Progress
+              </CardTitle>
+              <CardDescription>Watch your students race through the quiz in real-time</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div className="max-w-md">
+                  <label className="text-sm font-medium mb-1 block">Select Active Quiz</label>
+                  <Select value={selectedQuizId} onValueChange={setSelectedQuizId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a quiz to watch" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {filteredQuizzes.map(quiz => (
+                        <SelectItem key={quiz.id} value={quiz.id}>{quiz.title} (Grade {quiz.gradeLevel})</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {selectedQuizId ? (
+                  <LiveRaceView
+                    students={liveResults}
+                    quizTitle={selectedQuiz?.title || "Live Race"}
+                  />
+                ) : (
+                  <div className="text-center py-16 bg-bg-secondary/20 rounded-xl border-2 border-dashed border-border">
+                    <Zap size={48} className="mx-auto mb-4 text-text-tertiary" />
+                    <h3 className="text-lg font-bold text-text-primary">Ready to Race?</h3>
+                    <p className="text-text-secondary max-w-sm mx-auto">
+                      Select a quiz above to see your students' progress as they answer questions live!
+                    </p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         <TabsContent value="leaderboard">
           <Card>

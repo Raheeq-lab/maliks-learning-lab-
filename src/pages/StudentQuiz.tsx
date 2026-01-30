@@ -28,6 +28,7 @@ const StudentQuiz: React.FC = () => {
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [score, setScore] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [resultId, setResultId] = useState<string | null>(null);
   const [startTime] = useState(Date.now());
 
   // Power meter state
@@ -87,6 +88,26 @@ const StudentQuiz: React.FC = () => {
         setQuiz(quizData);
         setTimeLeft(quizData.time_limit || 30); // Use time_limit from database
         setIsLoading(false);
+
+        // 3. Create initial quiz result for live tracking
+        const { data: resultData, error: resultError } = await supabase
+          .from('quiz_results')
+          .insert([{
+            student_name: student.name || "Unknown Student",
+            quiz_id: quizData.id,
+            score: 0,
+            total_questions: quizData.questions.length,
+            time_taken: 0,
+            current_question: 0,
+            status: 'in-progress',
+            answers: []
+          }])
+          .select()
+          .single();
+
+        if (!resultError && resultData) {
+          setResultId(resultData.id);
+        }
       } catch (error) {
         console.error("Error loading quiz:", error);
         toast({
@@ -233,6 +254,21 @@ const StudentQuiz: React.FC = () => {
       setScore(prev => prev + 1);
     }
 
+    // Report progress to Supabase for Live Race
+    if (resultId) {
+      supabase
+        .from('quiz_results')
+        .update({
+          score: updatedAnswers.filter(a => a.isCorrect).length,
+          current_question: currentQuestionIndex + 1,
+          answers: updatedAnswers
+        })
+        .eq('id', resultId)
+        .then(({ error }) => {
+          if (error) console.error("Error updating progress:", error);
+        });
+    }
+
     // Hide feedback after 2 seconds
     setTimeout(() => {
       setShowFeedback(false);
@@ -257,34 +293,49 @@ const StudentQuiz: React.FC = () => {
     const totalTimeTaken = Math.floor((Date.now() - startTime) / 1000);
 
     try {
-      // Submit results to Supabase
-      const { error } = await supabase
-        .from('quiz_results')
-        .insert([{
-          student_name: studentData?.name || "Unknown Student",
-          quiz_id: quiz.id,
-          score: finalAnswers.filter(a => a.isCorrect).length,
-          total_questions: quiz.questions.length,
-          time_taken: totalTimeTaken,
-          answers: finalAnswers
-        }]);
+      // Finalize results in Supabase
+      if (resultId) {
+        const { error } = await supabase
+          .from('quiz_results')
+          .update({
+            score: finalAnswers.filter(a => a.isCorrect).length,
+            time_taken: totalTimeTaken,
+            status: 'completed',
+            answers: finalAnswers
+          })
+          .eq('id', resultId);
 
-      if (error) {
-        console.error("Error submitting results:", error);
-        toast({
-          title: "Warning",
-          description: "Could not save results to server. Please show your score to the teacher.",
-          variant: "destructive",
-        });
+        if (error) throw error;
       } else {
-        toast({
-          title: "Quiz completed!",
-          description: "Your results have been submitted.",
-        });
+        // Fallback: Insert new if somehow resultId is missing
+        const { error } = await supabase
+          .from('quiz_results')
+          .insert([{
+            student_name: studentData?.name || "Unknown Student",
+            quiz_id: quiz.id,
+            score: finalAnswers.filter(a => a.isCorrect).length,
+            total_questions: quiz.questions.length,
+            time_taken: totalTimeTaken,
+            status: 'completed',
+            answers: finalAnswers
+          }]);
+
+        if (error) throw error;
       }
+
+      toast({
+        title: "Quiz completed!",
+        description: "Your results have been submitted.",
+      });
     } catch (err) {
       console.error("Error in completeQuiz:", err);
+      toast({
+        title: "Warning",
+        description: "Could not save results to server. Please show your score to the teacher.",
+        variant: "destructive",
+      });
     }
+
   };
 
   const formatTime = (seconds: number): string => {
