@@ -1033,34 +1033,34 @@ const LessonRunnable: React.FC = () => {
 
                                                         {/* Section 2: Notice & Wonder */}
                                                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
-                                                            <h3 className="text-xl font-bold text-[#FF6B35] flex items-center gap-2">
-                                                                <span className="bg-[#FF6B35] text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
+                                                            <h3 className="text-xl font-bold text-[#FF6B35] dark:text-orange-400 flex items-center gap-2">
+                                                                <span className="bg-[#FF6B35] dark:bg-orange-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
                                                                 Step 2: What do you Notice? What do you Wonder?
                                                             </h3>
                                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                                 <div className="space-y-2">
                                                                     <label className="font-bold text-text-primary">Students: Type your observations here:</label>
-                                                                    <textarea className="w-full p-4 rounded-lg bg-gray-50 border border-border focus:border-[#FF6B35] h-32 resize-none transition-all" placeholder="I notice..." />
+                                                                    <textarea className="w-full p-4 rounded-lg bg-bg-secondary border border-border focus:border-[#FF6B35] focus:dark:border-orange-500 h-32 resize-none transition-all text-text-primary placeholder:text-text-tertiary" placeholder="I notice..." />
                                                                 </div>
                                                                 <div className="space-y-2">
                                                                     <label className="font-bold text-text-primary">Students: What questions does this raise?</label>
-                                                                    <textarea className="w-full p-4 rounded-lg bg-gray-50 border border-border focus:border-[#FF6B35] h-32 resize-none transition-all" placeholder="I wonder..." />
+                                                                    <textarea className="w-full p-4 rounded-lg bg-bg-secondary border border-border focus:border-[#FF6B35] focus:dark:border-orange-500 h-32 resize-none transition-all text-text-primary placeholder:text-text-tertiary" placeholder="I wonder..." />
                                                                 </div>
                                                             </div>
                                                         </div>
 
                                                         {/* Section 3: Personal Connection */}
                                                         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
-                                                            <h3 className="text-xl font-bold text-[#FF6B35] flex items-center gap-2">
-                                                                <span className="bg-[#FF6B35] text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">3</span>
+                                                            <h3 className="text-xl font-bold text-[#FF6B35] dark:text-orange-400 flex items-center gap-2">
+                                                                <span className="bg-[#FF6B35] dark:bg-orange-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">3</span>
                                                                 Step 3: Personal Connection Poll
                                                             </h3>
                                                             <p className="text-lg font-medium text-text-primary">"{content.universalEngage?.pollQuestion || "How does this relate to your experience?"}"</p>
                                                             <div className="space-y-3">
                                                                 {(content.universalEngage?.pollOptions || ["I've seen something like this before", "This reminds me of...", "This is completely new to me"]).map((option, idx) => (
-                                                                    <div key={idx} className="relative p-4 rounded-lg border border-gray-200 hover:border-[#FF6B35] cursor-pointer group bg-gray-50 hover:bg-[#FF6B35]/5 transition-all">
+                                                                    <div key={idx} className="relative p-4 rounded-lg border border-border hover:border-[#FF6B35] dark:hover:border-orange-500 cursor-pointer group bg-bg-secondary hover:bg-[#FF6B35]/5 dark:hover:bg-orange-500/10 transition-all">
                                                                         <div className="flex justify-between relative z-10">
-                                                                            <span className="font-medium text-text-primary group-hover:text-[#FF6B35] transition-colors">{option}</span>
+                                                                            <span className="font-medium text-text-primary group-hover:text-[#FF6B35] dark:group-hover:text-orange-400 transition-colors">{option}</span>
                                                                         </div>
                                                                     </div>
                                                                 ))}
@@ -1069,32 +1069,32 @@ const LessonRunnable: React.FC = () => {
 
                                                         {/* Section 4: Prediction */}
                                                         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
-                                                            <h3 className="text-xl font-bold text-[#FF6B35] flex items-center gap-2">
-                                                                <span className="bg-[#FF6B35] text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">4</span>
+                                                            <h3 className="text-xl font-bold text-[#FF6B35] dark:text-orange-400 flex items-center gap-2">
+                                                                <span className="bg-[#FF6B35] dark:bg-orange-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">4</span>
                                                                 Step 4: Make a Prediction
                                                             </h3>
                                                             <div className="space-y-2">
                                                                 <label className="font-bold text-text-primary flex items-center gap-2">
-                                                                    <Sparkles size={16} className="text-[#FF6B35]" />
+                                                                    <Sparkles size={16} className="text-[#FF6B35] dark:text-orange-400" />
                                                                     Based on this image and our discussion, predict what we'll learn today:
                                                                 </label>
-                                                                <textarea className="w-full p-4 rounded-lg bg-gray-50 border border-border focus:border-[#FF6B35] h-24 resize-none transition-all" placeholder="My prediction is..." />
+                                                                <textarea className="w-full p-4 rounded-lg bg-bg-secondary border border-border focus:border-[#FF6B35] focus:dark:border-orange-500 h-24 resize-none transition-all text-text-primary placeholder:text-text-tertiary" placeholder="My prediction is..." />
                                                             </div>
                                                         </div>
 
                                                         {/* Section 5: Question Harvest */}
                                                         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-400">
-                                                            <h3 className="text-xl font-bold text-[#FF6B35] flex items-center gap-2">
-                                                                <span className="bg-[#FF6B35] text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">5</span>
+                                                            <h3 className="text-xl font-bold text-[#FF6B35] dark:text-orange-400 flex items-center gap-2">
+                                                                <span className="bg-[#FF6B35] dark:bg-orange-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">5</span>
                                                                 Step 5: Your Burning Question
                                                             </h3>
-                                                            <div className="bg-[#FF6B35]/5 p-6 rounded-xl border border-[#FF6B35]/20">
+                                                            <div className="bg-[#FF6B35]/5 dark:bg-orange-500/10 p-6 rounded-xl border border-[#FF6B35]/20 dark:border-orange-500/20">
                                                                 <label className="font-bold text-lg text-text-primary block mb-3">What's the one question you most want answered today?</label>
                                                                 <div className="flex gap-2">
-                                                                    <input className="flex-1 p-4 rounded-lg border border-border focus:border-[#FF6B35] outline-none shadow-sm" placeholder="My burning question..." />
-                                                                    <Button className="bg-[#FF6B35] hover:bg-[#E55A25] text-white h-auto px-6 font-bold">Ask!</Button>
+                                                                    <input className="flex-1 p-4 rounded-lg border border-border focus:border-[#FF6B35] focus:dark:border-orange-500 outline-none shadow-sm bg-bg-secondary text-text-primary placeholder:text-text-tertiary" placeholder="My burning question..." />
+                                                                    <Button className="bg-[#FF6B35] hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-700 text-white h-auto px-6 font-bold shadow-md">Ask!</Button>
                                                                 </div>
-                                                                <p className="text-sm text-[#FF6B35] mt-3 font-medium italic">"These questions will guide our lesson!"</p>
+                                                                <p className="text-sm text-[#FF6B35] dark:text-orange-400 mt-3 font-medium italic">"These questions will guide our lesson!"</p>
                                                             </div>
                                                         </div>
                                                     </div>
