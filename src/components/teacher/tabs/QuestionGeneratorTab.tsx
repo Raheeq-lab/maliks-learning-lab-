@@ -191,7 +191,7 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Header Section */}
-      <div className={`relative overflow-hidden flex items-center justify-between p-6 rounded-2xl border border-white/10 shadow-xl ${getGlowColor()}`}>
+      <div className={`relative overflow-hidden flex items-center justify-between p-6 rounded-2xl border border-border/10 shadow-xl ${getGlowColor()}`}>
         {/* Dynamic Background Gradient */}
         <div className={`absolute inset-0 bg-gradient-to-br ${getSubjectGradient()} opacity-[0.08] pointer-events-none`} />
 
@@ -200,13 +200,13 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
             <Sparkles size={24} className="animate-pulse-slow" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-white tracking-tight">AI Content Generator</h2>
-            <p className="text-sm text-gray-400 font-medium">Create custom quizzes and lessons in seconds</p>
+            <h2 className="text-2xl font-bold text-text-primary tracking-tight">AI Content Generator</h2>
+            <p className="text-sm text-text-secondary font-medium">Create custom quizzes and lessons in seconds</p>
           </div>
         </div>
 
-        <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-white/80 bg-white/5 px-3 py-1.5 rounded-full border border-white/10 backdrop-blur-md">
-          <BrainCircuit size={14} className="text-purple-400" />
+        <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-text-secondary bg-bg-secondary/50 px-3 py-1.5 rounded-full border border-border backdrop-blur-md">
+          <BrainCircuit size={14} className="text-math-purple" />
           <span>Powered by Gemini 1.5 Flash</span>
         </div>
       </div>
@@ -217,9 +217,9 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
         {/* Accent Line */}
         <div className={`h-1.5 w-full bg-gradient-to-r ${getSubjectGradient()}`}></div>
 
-        <CardHeader className="bg-white/5 border-b border-white/5 pb-6">
-          <CardTitle className="text-xl text-white">Generate New Content</CardTitle>
-          <p className="text-sm text-gray-400">
+        <CardHeader className="bg-bg-secondary/10 border-b border-border/40 pb-6">
+          <CardTitle className="text-xl text-text-primary">Generate New Content</CardTitle>
+          <p className="text-sm text-text-secondary">
             Create high-quality {subject} materials aligned with Grade {selectedGrade || "?"} curriculum.
           </p>
 
@@ -228,19 +228,19 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
             setGeneratedQuestions([]);
             setError(null);
           }} className="w-full mt-6">
-            <TabsList className="grid w-full grid-cols-2 bg-black/40 p-1 border border-white/10 rounded-xl h-auto">
+            <TabsList className="grid w-full grid-cols-2 bg-bg-secondary/50 p-1 border border-border rounded-xl h-auto">
               <TabsTrigger
                 value="quiz"
-                className="flex items-center justify-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-bg-card data-[state=active]:to-bg-secondary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border-white/5 text-gray-400 hover:text-white transition-all rounded-lg py-3 font-medium"
+                className="flex items-center justify-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-bg-card data-[state=active]:to-bg-secondary data-[state=active]:text-text-primary data-[state=active]:shadow-lg data-[state=active]:border-border/50 text-text-tertiary hover:text-text-primary transition-all rounded-lg py-3 font-medium"
               >
-                <CheckSquare size={18} className={activeTab === 'quiz' ? 'text-purple-400' : ''} />
+                <CheckSquare size={18} className={activeTab === 'quiz' ? 'text-math-purple' : ''} />
                 Generate Quiz
               </TabsTrigger>
               <TabsTrigger
                 value="lesson"
-                className="flex items-center justify-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-bg-card data-[state=active]:to-bg-secondary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:border-white/5 text-gray-400 hover:text-white transition-all rounded-lg py-3 font-medium"
+                className="flex items-center justify-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-bg-card data-[state=active]:to-bg-secondary data-[state=active]:text-text-primary data-[state=active]:shadow-lg data-[state=active]:border-border/50 text-text-tertiary hover:text-text-primary transition-all rounded-lg py-3 font-medium"
               >
-                <FileText size={18} className={activeTab === 'lesson' ? 'text-blue-400' : ''} />
+                <FileText size={18} className={activeTab === 'lesson' ? 'text-english-green' : ''} />
                 Generate Lesson
               </TabsTrigger>
             </TabsList>
@@ -261,30 +261,30 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
             <div className="space-y-6 animate-in slide-in-from-bottom-2 duration-300">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label className="text-gray-300 font-medium ml-1">Grade Level</Label>
+                  <Label className="text-text-secondary font-medium ml-1">Grade Level</Label>
                   <Select value={selectedGrade} onValueChange={setSelectedGrade}>
-                    <SelectTrigger className="bg-bg-input/50 border-white/10 hover:border-white/20 focus:ring-2 focus:ring-purple-500/30 h-12 transition-all rounded-xl text-white">
+                    <SelectTrigger className="bg-bg-input/50 border-border hover:border-border/60 focus:ring-2 focus:ring-math-purple/30 h-12 transition-all rounded-xl text-text-primary">
                       <SelectValue placeholder="Select Grade" />
                     </SelectTrigger>
-                    <SelectContent className="bg-bg-card border-white/10 text-white">
+                    <SelectContent className="bg-bg-card border-border text-text-primary">
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map(g => (
-                        <SelectItem key={g} value={g.toString()} className="focus:bg-white/10 focus:text-white">Grade {g}</SelectItem>
+                        <SelectItem key={g} value={g.toString()} className="focus:bg-bg-secondary focus:text-text-primary">Grade {g}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 {activeTab === 'quiz' && (
                   <div className="space-y-2">
-                    <Label className="text-gray-300 font-medium ml-1">Number of Questions</Label>
+                    <Label className="text-text-secondary font-medium ml-1">Number of Questions</Label>
                     <Select value={numQuestions} onValueChange={setNumQuestions}>
-                      <SelectTrigger className="bg-bg-input/50 border-white/10 hover:border-white/20 focus:ring-2 focus:ring-purple-500/30 h-12 transition-all rounded-xl text-white">
+                      <SelectTrigger className="bg-bg-input/50 border-border hover:border-border/60 focus:ring-2 focus:ring-math-purple/30 h-12 transition-all rounded-xl text-text-primary">
                         <SelectValue placeholder="5" />
                       </SelectTrigger>
-                      <SelectContent className="bg-bg-card border-white/10 text-white">
-                        <SelectItem value="5" className="focus:bg-white/10 focus:text-white">5 Questions</SelectItem>
-                        <SelectItem value="10" className="focus:bg-white/10 focus:text-white">10 Questions</SelectItem>
-                        <SelectItem value="15" className="focus:bg-white/10 focus:text-white">15 Questions</SelectItem>
-                        <SelectItem value="20" className="focus:bg-white/10 focus:text-white">20 Questions</SelectItem>
+                      <SelectContent className="bg-bg-card border-border text-text-primary">
+                        <SelectItem value="5" className="focus:bg-bg-secondary focus:text-text-primary">5 Questions</SelectItem>
+                        <SelectItem value="10" className="focus:bg-bg-secondary focus:text-text-primary">10 Questions</SelectItem>
+                        <SelectItem value="15" className="focus:bg-bg-secondary focus:text-text-primary">15 Questions</SelectItem>
+                        <SelectItem value="20" className="focus:bg-bg-secondary focus:text-text-primary">20 Questions</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -292,7 +292,7 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="topic" className="text-gray-300 font-medium ml-1">Topic / Learning Objective</Label>
+                <Label htmlFor="topic" className="text-text-secondary font-medium ml-1">Topic / Learning Objective</Label>
                 <div className="relative group">
                   <div className={`absolute -inset-0.5 bg-gradient-to-r ${getSubjectGradient()} rounded-xl blur opacity-30 group-hover:opacity-60 transition duration-500 group-focus-within:opacity-100`}></div>
                   <Input
@@ -300,21 +300,21 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
                     value={customTopic}
                     onChange={e => setCustomTopic(e.target.value)}
                     placeholder={`e.g. ${subject === 'math' ? 'Linear Equations' : subject === 'english' ? 'Shakespeare Sonnets' : 'Network Security'}`}
-                    className="relative bg-bg-card border-white/10 focus:border-transparent focus:ring-0 h-12 rounded-xl text-white placeholder:text-gray-500"
+                    className="relative bg-bg-card border-border focus:border-transparent focus:ring-0 h-12 rounded-xl text-text-primary placeholder:text-text-tertiary"
                   />
                 </div>
               </div>
 
               {activeTab === 'lesson' && (
                 <div className="space-y-2">
-                  <Label className="text-gray-300 font-medium ml-1">Learning Type</Label>
+                  <Label className="text-text-secondary font-medium ml-1">Learning Type</Label>
                   <Select value={learningType} onValueChange={setLearningType}>
-                    <SelectTrigger className="bg-bg-input/50 border-white/10 hover:border-white/20 focus:ring-2 focus:ring-purple-500/30 h-12 transition-all rounded-xl text-white">
+                    <SelectTrigger className="bg-bg-input/50 border-border hover:border-border/60 focus:ring-2 focus:ring-math-purple/30 h-12 transition-all rounded-xl text-text-primary">
                       <SelectValue placeholder="Select Learning Type" />
                     </SelectTrigger>
-                    <SelectContent className="bg-bg-card border-white/10 text-white">
+                    <SelectContent className="bg-bg-card border-border text-text-primary">
                       {getLearningTypes(subject).map((type: any) => (
-                        <SelectItem key={type.id} value={type.id} className="focus:bg-white/10 focus:text-white">
+                        <SelectItem key={type.id} value={type.id} className="focus:bg-bg-secondary focus:text-text-primary">
                           {type.title}
                         </SelectItem>
                       ))}
@@ -351,16 +351,16 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
           ) : (
             /* Results Display */
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="flex justify-between items-center pb-2 border-b border-white/10">
-                <h3 className="font-bold text-xl text-white flex items-center gap-2">
-                  <CheckSquare size={20} className="text-green-400" />
-                  Generated Questions <span className="text-gray-500 text-sm font-normal ml-2">({generatedQuestions.length})</span>
+              <div className="flex justify-between items-center pb-2 border-b border-border">
+                <h3 className="font-bold text-xl text-text-primary flex items-center gap-2">
+                  <CheckSquare size={20} className="text-success-green" />
+                  Generated Questions <span className="text-text-tertiary text-sm font-normal ml-2">({generatedQuestions.length})</span>
                 </h3>
                 <div className="flex gap-3">
-                  <Button variant="outline" onClick={() => setGeneratedQuestions([])} className="border-white/10 text-gray-300 hover:bg-white/5 hover:text-white">
+                  <Button variant="outline" onClick={() => setGeneratedQuestions([])} className="border-border text-text-secondary hover:bg-bg-secondary hover:text-text-primary">
                     <RefreshCw className="mr-2 h-4 w-4" /> Regenerate
                   </Button>
-                  <Button onClick={handleAddToQuiz} className="bg-green-600 hover:bg-green-500 text-white shadow-lg shadow-green-900/20 border-none transition-all hover:scale-105">
+                  <Button onClick={handleAddToQuiz} className="bg-success-green hover:bg-success-green-dark text-white shadow-lg shadow-success-green/20 border-none transition-all hover:scale-105">
                     <Plus className="mr-2 h-4 w-4" /> Add to Quiz
                   </Button>
                 </div>
@@ -368,12 +368,12 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
 
               <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
                 {generatedQuestions.map((q, idx) => (
-                  <Card key={idx} className={`group border-l-4 bg-bg-card/40 border-y border-r border-white/5 hover:bg-white/5 transition-all duration-300 ${subject === 'math' ? 'border-l-purple-500' :
-                    subject === 'english' ? 'border-l-emerald-500' :
-                      'border-l-orange-500'
+                  <Card key={idx} className={`group border-l-4 bg-bg-card border-y border-r border-border hover:bg-bg-secondary/30 transition-all duration-300 ${subject === 'math' ? 'border-l-math-purple' :
+                    subject === 'english' ? 'border-l-english-green' :
+                      'border-l-ict-orange'
                     }`}>
                     <CardHeader className="pb-3 pt-4">
-                      <CardTitle className="text-base flex gap-3 text-white leading-relaxed">
+                      <CardTitle className="text-base flex gap-3 text-text-primary leading-relaxed">
                         <span className={`flex max-h-6 items-center justify-center px-2 py-0.5 rounded text-xs font-bold whitespace-nowrap ${getSubjectLightBg()}`}>
                           Q{idx + 1}
                         </span>
@@ -387,19 +387,19 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
                           <div
                             key={optIdx}
                             className={`p-3.5 rounded-lg border flex items-center justify-between transition-all duration-300 ${isCorrect
-                              ? 'bg-green-500/10 border-green-500/30 text-green-200 shadow-[0_0_15px_rgba(34,197,94,0.1)]'
-                              : 'bg-black/20 border-white/5 text-gray-300 group-hover:border-white/10'
+                              ? 'bg-success-green/10 border-success-green/30 text-success-green shadow-[0_0_15px_rgba(34,197,94,0.1)]'
+                              : 'bg-bg-secondary/50 border-border text-text-secondary group-hover:border-border/60'
                               }`}
                           >
-                            <span>{opt}</span>
-                            {isCorrect && <Check className="h-4 w-4 text-green-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]" />}
+                            <span className="font-medium">{opt}</span>
+                            {isCorrect && <Check className="h-4 w-4 text-success-green drop-shadow-[0_0_8px_rgba(34,197,94,0.5)]" />}
                           </div>
                         );
                       })}
                     </CardContent>
                     <CardFooter className="pt-0 pb-4 px-6">
-                      <div className="w-full mt-2 p-3 rounded-lg bg-blue-500/5 border border-blue-500/10 text-sm text-blue-200/80">
-                        <p className="flex gap-2 items-start"><span className="font-semibold text-blue-200 shrink-0">Explanation:</span> {q.explanation}</p>
+                      <div className="w-full mt-2 p-3 rounded-lg bg-focus-blue/5 border border-focus-blue/10 text-sm text-text-secondary">
+                        <p className="flex gap-2 items-start"><span className="font-semibold text-focus-blue shrink-0">Explanation:</span> {q.explanation}</p>
                       </div>
                     </CardFooter>
                   </Card>
