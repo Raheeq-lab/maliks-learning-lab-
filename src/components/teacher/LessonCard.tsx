@@ -89,10 +89,6 @@ const LessonCard: React.FC<LessonCardProps> = ({
             </CardHeader>
 
             <CardContent className="space-y-3 p-card-padding pt-0 pb-3">
-                <div className="bg-bg-secondary/50 rounded-md p-2 flex items-center justify-between border border-border/50">
-                    <span className="text-xs text-text-secondary font-mono">CODE:</span>
-                    <span className="text-sm font-bold font-mono tracking-wider text-text-primary">{accessCode}</span>
-                </div>
                 {!isPublic && (
                     <div className="text-center">
                         <p className="text-[10px] text-text-tertiary italic">Private Dashboard Only</p>
