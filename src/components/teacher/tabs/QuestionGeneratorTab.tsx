@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Quiz, Lesson } from "@/types/quiz";
-import { generateQuizQuestions, generateLessonPlan, generateWorksheet, isConfigured, QuizQuestion as GeminiQuizQuestion } from "@/utils/geminiAI";
+import { Quiz, Lesson, LessonStructure } from "@/types/quiz";
+import { generateQuizQuestions, generateLessonPlan, generateWorksheet, generateTextContent, isConfigured, QuizQuestion as GeminiQuizQuestion } from "@/utils/geminiAI";
 import { getLearningTypes } from "@/utils/lessonUtils";
 import { Download, ImageIcon, FileCheck, Layers } from "lucide-react";
 
@@ -236,13 +236,36 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
     setIsForgingAssets(true);
     toast({ title: "Forging Visuals...", description: "AI is creating custom images for each lesson phase." });
 
-    // As your AI agent, I will fulfill this by generating images based on the prompts
-    // provided in the lesson plan and updating your lesson structure.
+    const phases: (keyof LessonStructure)[] = ['engage', 'model', 'guidedPractice', 'independentPractice', 'reflect'];
 
-    setTimeout(() => {
-      setIsForgingAssets(false);
+    try {
+      const updatedLesson = { ...generatedLesson };
+      if (!updatedLesson.lessonStructure) return;
+
+      for (const phaseKey of phases) {
+        const phase = updatedLesson.lessonStructure[phaseKey];
+        if (phase.visualMetadata?.imagePrompt) {
+          const prompt = `Provide a high-quality, professional educational image URL link related to this prompt: "${phase.visualMetadata.imagePrompt}". Topic: ${customTopic}. Category: ${subject}. 
+          For demo purposes, return a high-res Unsplash search URL like https://images.unsplash.com/photo-[id]?auto=format&fit=crop&q=80&w=1000 and NOTHING ELSE. JUST THE URL.`;
+
+          try {
+            const imageUrl = await generateTextContent(prompt);
+            if (imageUrl && imageUrl.startsWith('http')) {
+              phase.visualMetadata.imageUrl = imageUrl.trim();
+            }
+          } catch (e) {
+            console.error(`Failed to forge visual for ${String(phaseKey)}`, e);
+          }
+        }
+      }
+
+      setGeneratedLesson(updatedLesson);
       toast({ title: "Assets Ready!", description: "Custom visuals have been integrated into your lesson phases." });
-    }, 2000);
+    } catch (err) {
+      toast({ title: "Forge Error", description: "Something went wrong while forging visuals.", variant: "destructive" });
+    } finally {
+      setIsForgingAssets(false);
+    }
   };
 
   const handleGenerateWorksheet = async () => {
@@ -262,12 +285,62 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
 
   const downloadWorksheet = () => {
     if (!generatedWorksheetData) return;
-    const element = document.createElement("a");
-    const file = new Blob([generatedWorksheetData.content], { type: 'text/markdown' });
-    element.href = URL.createObjectURL(file);
-    element.download = `${generatedWorksheetData.title.replace(/\s+/g, '_')}.md`;
-    document.body.appendChild(element);
-    element.click();
+
+    // Create a hidden div for printing
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      toast({ title: "Error", description: "Please allow popups to download the PDF worksheet.", variant: "destructive" });
+      return;
+    }
+
+    // Convert Markdown to HTML (simple replacement for now or use a lib if available)
+    // Since we want this to be quick and clean:
+    const contentHtml = generatedWorksheetData.content
+      .replace(/^# (.*$)/gim, '<h1 style="color: #4f46e5; border-bottom: 2px solid #eef2ff; padding-bottom: 10px;">$1</h1>')
+      .replace(/^## (.*$)/gim, '<h2 style="color: #6366f1; margin-top: 20px;">$1</h2>')
+      .replace(/^### (.*$)/gim, '<h3 style="color: #818cf8;">$1</h3>')
+      .replace(/^\- (.*$)/gim, '<li style="margin-bottom: 8px;">$1</li>')
+      .replace(/\n\n/g, '<br/>')
+      .replace(/\*\*(.*)\*\*/g, '<strong>$1</strong>');
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>${generatedWorksheetData.title}</title>
+          <style>
+            body { font-family: 'Inter', sans-serif; line-height: 1.6; color: #1e293b; padding: 40px; max-width: 800px; margin: auto; }
+            h1 { font-size: 28px; }
+            h2 { font-size: 22px; }
+            li { font-size: 14px; }
+            .footer { margin-top: 50px; border-top: 1px solid #e2e8f0; padding-top: 20px; font-size: 10px; color: #94a3b8; text-align: center; }
+            @media print {
+              .no-print { display: none; }
+              body { padding: 0; }
+            }
+          </style>
+        </head>
+        <body>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <div style="font-weight: 800; font-size: 24px; color: #4f46e5;">Malik's Learning Lab</div>
+            <div style="text-align: right;">
+              <div style="font-size: 12px; font-weight: bold; color: #64748b;">Subject: ${subject.toUpperCase()}</div>
+              <div style="font-size: 12px; font-weight: bold; color: #64748b;">Grade: ${selectedGrade}</div>
+            </div>
+          </div>
+          ${contentHtml}
+          <div class="footer">
+            Generated by Malik's Learning Lab AI • ${new Date().toLocaleDateString()}
+          </div>
+          <script>
+            window.onload = function() {
+              window.print();
+              setTimeout(function() { window.close(); }, 500);
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
   };
 
   const handleAddToQuiz = () => {

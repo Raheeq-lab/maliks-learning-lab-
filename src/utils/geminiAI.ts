@@ -100,7 +100,10 @@ export interface LessonPlan {
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 const MODELS = [
-    { model: "gemini-flash-latest", version: "v1beta" }
+    { model: "gemini-1.5-flash", version: "v1beta" },
+    { model: "gemini-1.5-flash", version: "v1" },
+    { model: "gemini-1.5-flash-latest", version: "v1beta" },
+    { model: "gemini-1.5-pro", version: "v1beta" }
 ];
 
 /**
@@ -389,36 +392,39 @@ export const generateWorksheet = async (
 };
 
 export const generateTextContent = async (prompt: string): Promise<string> => {
-    const fullPrompt = `You are a helpful assistant for teachers.Generate clear, educational content based on the user's request. 
-  Do not wrap in JSON.Just provide the text content directly.
+    const fullPrompt = `You are a helpful assistant for teachers. Generate clear, educational content based on the user's request. 
+  Do not wrap in JSON. Just provide the text content directly.
   
-  User Request: ${prompt} `;
+  User Request: ${prompt}`;
 
-    try {
-        const result = await callGeminiAPI(fullPrompt);
-        // If callGeminiAPI returns an object/JSON, try to extract text if possible, 
-        // or just return the string if it managed to parse it as such (though callGeminiAPI tries to parse JSON).
-        // Since callGeminiAPI expects JSON, we should probably adjust the prompt in callGeminiAPI 
-        // OR stick to the existing pattern where we ask for JSON with a "content" field.
-        // For safety, let's just ask for a simple JSON wrapper.
+    let lastError = null;
 
-        return typeof result === 'string' ? result : JSON.stringify(result);
-    } catch (e) {
-        // If JSON parse fails in callGeminiAPI, it might throw. 
-        // We should probably allow callGeminiAPI to return raw text if JSON parse fails? 
-        // For now, let's implement a direct fetch here to avoid the JSON strictness of callGeminiAPI
-        // or just use a simple wrapper.
+    for (const { model, version } of MODELS) {
+        try {
+            const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+            const response = await fetch(`https://generativelanguage.googleapis.com/${version}/models/${model}:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: fullPrompt }] }],
+                    generationConfig: { temperature: 0.7 }
+                })
+            });
 
-        // Quick fix: Re-implement simple text fetch here to avoid breaking the strict JSON logic of callGeminiAPI
-        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-        });
-        const data = await response.json();
-        return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error?.message || `Status ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+        } catch (error: any) {
+            console.warn(`[Gemini API] generateTextContent failed with model ${model}:`, error.message);
+            lastError = error;
+        }
     }
+
+    throw new Error(`Failed to generate text content. Last error: ${lastError?.message || "Unknown error"}`);
 };
 
 export const isConfigured = (): boolean => {
