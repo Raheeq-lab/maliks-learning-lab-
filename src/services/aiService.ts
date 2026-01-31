@@ -10,6 +10,12 @@ export interface GenerationResponse {
     error?: string;
 }
 
+export interface PhaseVisuals {
+    visualTheme: string;
+    animations: string;
+    researchNote: string;
+}
+
 const SYSTEM_PROMPT_QUIZ = `You are a helpful assistant for teachers. Generate a quiz in JSON format based on the user's request. 
 The JSON should follow this structure exactly:
 {
@@ -43,15 +49,25 @@ The JSON should follow this structure exactly:
 }
 Do not include markdown formatting (like \`\`\`json) in the response, just the raw JSON.`;
 
+const SYSTEM_PROMPT_PHASE_VISUALS = `You are an EXPERT EDUCATIONAL DESIGNER. Generate visual and pedagogical metadata for a lesson phase in JSON format.
+The JSON should follow this structure exactly:
+{
+  "visualTheme": "description of cinematic visual style",
+  "animations": "description of motion effects",
+  "researchNote": "pedagogical strategy or research insight for this phase"
+}
+Do not include markdown formatting, just raw JSON.`;
+
 export const generateContent = async (
     config: AIConfig,
     prompt: string,
-    type: 'quiz' | 'lesson' | 'text'  // Added 'text'
+    type: 'quiz' | 'lesson' | 'text' | 'phase-visuals' // Added phase-visuals
 ): Promise<GenerationResponse> => {
     try {
         let systemPrompt = '';
         if (type === 'quiz') systemPrompt = SYSTEM_PROMPT_QUIZ;
         else if (type === 'lesson') systemPrompt = SYSTEM_PROMPT_LESSON;
+        else if (type === 'phase-visuals') systemPrompt = SYSTEM_PROMPT_PHASE_VISUALS;
         else systemPrompt = "You are a helpful assistant for teachers. Generate clear, educational content based on the user's request. Do not wrap in JSON. Just provide the text content directly.";
 
         const fullPrompt = `${systemPrompt}\n\nUser Request: ${prompt}`;

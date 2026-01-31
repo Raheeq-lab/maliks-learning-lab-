@@ -353,6 +353,73 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
     setGeneratingPhase(null);
   };
 
+  const handleForgePhaseVisuals = async (phase: keyof LessonStructure) => {
+    const apiKey = localStorage.getItem('aiApiKey') || import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) {
+      toast({
+        title: "API Key Required",
+        description: "Please configure your API key first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setGeneratingPhase(`forge-${phase}`);
+
+    const config: AIConfig = {
+      provider: 'gemini',
+      apiKey
+    };
+
+    const phaseTitle = lessonStructure[phase].title;
+    const forgePrompt = `Generate cinematic visual metadata and pedagogical approach for the "${phaseTitle}" phase of a ${subject} lesson on "${topic || title}".
+    Current phase content: ${lessonStructure[phase].content.map(c => c.content).join(' ')}`;
+
+    const response = await generateContent(config, forgePrompt, 'phase-visuals');
+
+    if (response.error) {
+      toast({
+        title: "Forge Failed",
+        description: response.error,
+        variant: "destructive",
+      });
+    } else {
+      try {
+        const visuals = JSON.parse(response.content);
+
+        setLessonStructure(prev => ({
+          ...prev,
+          [phase]: {
+            ...prev[phase],
+            visualMetadata: {
+              ...prev[phase].visualMetadata,
+              visualTheme: visuals.visualTheme,
+              animations: visuals.animations,
+              [phase === 'engage' ? 'researchHook' :
+                phase === 'model' ? 'researchContent' :
+                  phase === 'guidedPractice' ? 'researchStrategy' :
+                    phase === 'independentPractice' ? 'researchPractice' :
+                      'researchReflection']: visuals.researchNote
+            }
+          }
+        }));
+
+        toast({
+          title: "Visuals Forged!",
+          description: `Applied high-fidelity design to the ${phaseTitle} phase.`,
+        });
+      } catch (e) {
+        toast({
+          title: "Format Error",
+          description: "AI returned invalid JSON. Try again.",
+          variant: "destructive",
+        });
+      }
+    }
+
+    setGeneratingPhase(null);
+  };
+
   const handleImageUpload = (phase: keyof LessonStructure, contentId: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -557,6 +624,36 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
               >
                 <Upload size={16} />
                 Upload Image
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={async () => {
+                  const apiKey = localStorage.getItem('aiApiKey') || import.meta.env.VITE_GEMINI_API_KEY;
+                  if (!apiKey) {
+                    toast({ title: "API Key Required", description: "Please configure your API key.", variant: "destructive" });
+                    return;
+                  }
+                  setGeneratingPhase(content.id);
+                  const config: AIConfig = { provider: 'gemini', apiKey };
+                  const imagePrompt = `Educational illustration for a ${subject} lesson on "${topic || title}". Phase: ${lessonStructure[phase].title}. Context: ${content.content || "General"}`;
+                  // In a real app, this would call a DALL-E/Imagen API.
+                  // For now, we simulate by getting a styled prompt and potentially a placeholder or real URL if hooked up.
+                  const response = await generateContent(config, `Provide a high-quality, professional educational image URL link related to "${imagePrompt}". For demo purposes, you can return a high-res Unsplash search URL like https://images.unsplash.com/photo-[id]?auto=format&fit=crop&q=80&w=1000 or similar. Just return the URL.`, 'text');
+
+                  if (response.content.startsWith('http')) {
+                    handleContentChange(phase, content.id, "imageUrl", response.content);
+                    toast({ title: "Image Generated!", description: "Synced high-fidelity visual asset." });
+                  } else {
+                    toast({ title: "Forge Failed", description: "AI could not provide a valid image link.", variant: "destructive" });
+                  }
+                  setGeneratingPhase(null);
+                }}
+                disabled={generatingPhase === content.id}
+                className="flex items-center gap-2 border-math-purple text-math-purple hover:bg-math-purple/10"
+              >
+                {generatingPhase === content.id ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                AI Forge Image
               </Button>
               {content.imageUrl && (
                 <Button
@@ -844,8 +941,227 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
           </div>
         );
 
-      default:
-        return null;
+      case "poll":
+        return (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <Label className="text-text-primary">Interactive Poll</Label>
+              <Button type="button" onClick={() => handleRemoveContent(phase, content.id)} variant="ghost" size="sm" className="h-8 w-8 p-0 text-error-coral">
+                <Trash2 size={16} />
+              </Button>
+            </div>
+            <Input
+              value={content.content}
+              onChange={(e) => handleContentChange(phase, content.id, "content", e.target.value)}
+              placeholder="Ask a question..."
+              className="bg-bg-input border-border"
+            />
+            <div className="space-y-2">
+              <Label className="text-xs text-text-secondary uppercase">Options</Label>
+              {(content.pollOptions || ["", ""]).map((opt, i) => (
+                <div key={i} className="flex gap-2">
+                  <Input
+                    value={opt}
+                    onChange={(e) => {
+                      const newOpts = [...(content.pollOptions || ["", ""])];
+                      newOpts[i] = e.target.value;
+                      handleContentChange(phase, content.id, "pollOptions", newOpts);
+                    }}
+                    placeholder={`Option ${i + 1}`}
+                    className="bg-bg-input border-border"
+                  />
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      const newOpts = (content.pollOptions || ["", ""]).filter((_, idx) => idx !== i);
+                      handleContentChange(phase, content.id, "pollOptions", newOpts);
+                    }}
+                  >
+                    <X size={14} />
+                  </Button>
+                </div>
+              ))}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleContentChange(phase, content.id, "pollOptions", [...(content.pollOptions || ["", ""]), ""])}
+                className="w-full border-dashed"
+              >
+                <Plus size={14} className="mr-2" /> Add Option
+              </Button>
+            </div>
+          </div>
+        );
+
+      case "brainstorm":
+        return (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <Label className="text-text-primary">Brainstorm Board</Label>
+              <Button type="button" onClick={() => handleRemoveContent(phase, content.id)} variant="ghost" size="sm" className="h-8 w-8 p-0 text-error-coral">
+                <Trash2 size={16} />
+              </Button>
+            </div>
+            <Textarea
+              value={content.content}
+              onChange={(e) => handleContentChange(phase, content.id, "content", e.target.value)}
+              placeholder="Brainstorming prompt..."
+              rows={3}
+              className="bg-bg-input border-border"
+            />
+          </div>
+        );
+
+      case "flashcards":
+        return (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <Label className="text-text-primary">Flashcards</Label>
+              <Button type="button" onClick={() => handleRemoveContent(phase, content.id)} variant="ghost" size="sm" className="h-8 w-8 p-0 text-error-coral">
+                <Trash2 size={16} />
+              </Button>
+            </div>
+            <div className="space-y-4">
+              {(content.flashcards || [{ id: '1', front: '', back: '' }]).map((card, i) => (
+                <div key={card.id} className="p-3 border rounded-lg bg-bg-secondary/50 space-y-2">
+                  <Input
+                    value={card.front}
+                    onChange={(e) => {
+                      const newCards = [...(content.flashcards || [])];
+                      newCards[i] = { ...card, front: e.target.value };
+                      handleContentChange(phase, content.id, "flashcards", newCards);
+                    }}
+                    placeholder="Front (Term)"
+                    className="bg-bg-input border-border"
+                  />
+                  <Input
+                    value={card.back}
+                    onChange={(e) => {
+                      const newCards = [...(content.flashcards || [])];
+                      newCards[i] = { ...card, back: e.target.value };
+                      handleContentChange(phase, content.id, "flashcards", newCards);
+                    }}
+                    placeholder="Back (Definition)"
+                    className="bg-bg-input border-border"
+                  />
+                </div>
+              ))}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleContentChange(phase, content.id, "flashcards", [...(content.flashcards || []), { id: Date.now().toString(), front: '', back: '' }])}
+                className="w-full border-dashed"
+              >
+                <Plus size={14} className="mr-2" /> Add Card
+              </Button>
+            </div>
+          </div>
+        );
+
+      case "steps":
+        return (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <Label className="text-text-primary">Step-by-Step Guide</Label>
+              <Button type="button" onClick={() => handleRemoveContent(phase, content.id)} variant="ghost" size="sm" className="h-8 w-8 p-0 text-error-coral">
+                <Trash2 size={16} />
+              </Button>
+            </div>
+            <div className="space-y-4">
+              {(content.steps || [{ title: '', content: '' }]).map((step, i) => (
+                <div key={i} className="p-3 border rounded-lg bg-bg-secondary/50 space-y-2">
+                  <Input
+                    value={step.title}
+                    onChange={(e) => {
+                      const newSteps = [...(content.steps || [])];
+                      newSteps[i] = { ...step, title: e.target.value };
+                      handleContentChange(phase, content.id, "steps", newSteps);
+                    }}
+                    placeholder={`Step ${i + 1} Title`}
+                    className="bg-bg-input border-border"
+                  />
+                  <Textarea
+                    value={step.content}
+                    onChange={(e) => {
+                      const newSteps = [...(content.steps || [])];
+                      newSteps[i] = { ...step, content: e.target.value };
+                      handleContentChange(phase, content.id, "steps", newSteps);
+                    }}
+                    placeholder="Detailed explanation..."
+                    className="bg-bg-input border-border"
+                  />
+                </div>
+              ))}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleContentChange(phase, content.id, "steps", [...(content.steps || []), { title: '', content: '' }])}
+                className="w-full border-dashed"
+              >
+                <Plus size={14} className="mr-2" /> Add Step
+              </Button>
+            </div>
+          </div>
+        );
+
+      case "scaffolded":
+        return (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <Label className="text-text-primary">Scaffolded Question Set</Label>
+              <Button type="button" onClick={() => handleRemoveContent(phase, content.id)} variant="ghost" size="sm" className="h-8 w-8 p-0 text-error-coral">
+                <Trash2 size={16} />
+              </Button>
+            </div>
+            <div className="space-y-4">
+              {(content.scaffoldedLevels || [
+                { level: 1, question: '', hint: '', answer: '' },
+                { level: 2, question: '', hint: '', answer: '' },
+                { level: 3, question: '', hint: '', answer: '' }
+              ]).map((lvl, i) => (
+                <div key={lvl.level} className="p-3 border rounded-lg bg-bg-secondary/50 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-[10px] font-bold uppercase text-math-purple">Level {lvl.level}</Label>
+                  </div>
+                  <Textarea
+                    value={lvl.question}
+                    onChange={(e) => {
+                      const newLvls = [...(content.scaffoldedLevels || [])];
+                      newLvls[i] = { ...lvl, question: e.target.value };
+                      handleContentChange(phase, content.id, "scaffoldedLevels", newLvls);
+                    }}
+                    placeholder="Question..."
+                    className="bg-bg-input border-border"
+                  />
+                  <Input
+                    value={lvl.hint}
+                    onChange={(e) => {
+                      const newLvls = [...(content.scaffoldedLevels || [])];
+                      newLvls[i] = { ...lvl, hint: e.target.value };
+                      handleContentChange(phase, content.id, "scaffoldedLevels", newLvls);
+                    }}
+                    placeholder="Scaffolded hint..."
+                    className="bg-bg-input border-border"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      case "exit-ticket":
+        return (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <Label className="text-text-primary">3-2-1 Exit Ticket</Label>
+              <Button type="button" onClick={() => handleRemoveContent(phase, content.id)} variant="ghost" size="sm" className="h-8 w-8 p-0 text-error-coral">
+                <Trash2 size={16} />
+              </Button>
+            </div>
+            <p className="text-xs text-text-secondary italic">Standardized reflection: 3 Learnings, 2 Questions, 1 Big Insight.</p>
+          </div>
+        );
     }
   };
 
@@ -866,7 +1182,21 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
     const metadata = lessonStructure[phase].visualMetadata || {};
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-bg-secondary/30 p-4 rounded-xl border border-border/50 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-bg-secondary/30 p-4 rounded-xl border border-border/50 mb-6 relative group">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => handleForgePhaseVisuals(phase)}
+          disabled={generatingPhase === `forge-${phase}`}
+          className="absolute -top-3 -right-3 shadow-lg bg-white border-math-purple hover:bg-math-purple/10 text-math-purple z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+        >
+          {generatingPhase === `forge-${phase}` ? (
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          ) : (
+            <Wand2 className="h-4 w-4 mr-2" />
+          )}
+          Magic Forge
+        </Button>
         <div className="space-y-4">
           <div className="space-y-1.5">
             <Label className="text-[10px] font-bold uppercase text-math-purple flex items-center gap-1.5">

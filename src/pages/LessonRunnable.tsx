@@ -370,45 +370,61 @@ const LessonRunnable: React.FC = () => {
                         <CardContent className="p-0">
                             {/* Phase-Level Metadata & Research Insights */}
                             {currentPhaseData?.visualMetadata && (
-                                <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {/* Visual Theme Callout */}
-                                        <div className="bg-bg-card p-4 rounded-xl border border-border shadow-sm flex items-start gap-3">
-                                            <div className="bg-math-purple/10 p-2 rounded-lg text-math-purple">
-                                                <Sparkles size={20} />
+                                <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {/* Visual Theme Alert */}
+                                    {currentPhaseData.visualMetadata.visualTheme && (
+                                        <div className="p-6 rounded-3xl bg-gradient-to-br from-math-purple/10 via-math-purple/5 to-transparent border border-math-purple/20 relative overflow-hidden group">
+                                            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                                <Sparkles className="w-20 h-20 text-math-purple" />
                                             </div>
-                                            <div>
-                                                <h4 className="text-xs font-bold uppercase text-math-purple tracking-widest mb-1">Active Visual Theme</h4>
-                                                <p className="text-sm font-semibold text-text-primary capitalize">
-                                                    {currentPhaseData.visualMetadata.visualTheme || "Classic Lab Layout"}
-                                                </p>
-                                                {currentPhaseData.visualMetadata.animations && (
-                                                    <div className="mt-2 flex items-center gap-1.5 text-[10px] text-text-tertiary">
-                                                        <Zap size={10} className="text-warning-amber" />
-                                                        <span>FX: {currentPhaseData.visualMetadata.animations}</span>
-                                                    </div>
-                                                )}
+                                            <div className="relative z-10 flex items-start gap-4">
+                                                <div className="p-3 rounded-2xl bg-math-purple/20 text-math-purple animate-pulse">
+                                                    <Sparkles className="w-6 h-6" />
+                                                </div>
+                                                <div>
+                                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-math-purple/60 mb-1 block">Phase Visual Identity</span>
+                                                    <p className="text-xl font-medium tracking-tight leading-snug italic text-math-purple">
+                                                        "{currentPhaseData.visualMetadata.visualTheme}"
+                                                    </p>
+                                                    {currentPhaseData.visualMetadata.animations && (
+                                                        <div className="mt-2 flex items-center gap-2 text-xs font-bold text-math-purple/50">
+                                                            <Zap className="w-3 h-3" />
+                                                            {currentPhaseData.visualMetadata.animations}
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
+                                    )}
 
-                                        {/* Pedagogical Research Insight */}
-                                        <div className="bg-bg-card p-4 rounded-xl border border-focus-blue/30 shadow-sm flex items-start gap-3 border-l-4 border-l-focus-blue">
-                                            <div className="bg-focus-blue/10 p-2 rounded-lg text-focus-blue">
-                                                <BrainCircuit size={20} />
+                                    {/* Pedagogical Research Note */}
+                                    {(currentPhaseData.visualMetadata.researchHook ||
+                                        currentPhaseData.visualMetadata.researchContent ||
+                                        currentPhaseData.visualMetadata.researchStrategy ||
+                                        currentPhaseData.visualMetadata.researchPractice ||
+                                        currentPhaseData.visualMetadata.researchReflection) && (
+                                            <div className="p-6 rounded-3xl bg-gradient-to-br from-focus-blue/10 via-focus-blue/5 to-transparent border border-focus-blue/20 relative overflow-hidden group">
+                                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                                    <BrainCircuit className="w-20 h-20 text-focus-blue" />
+                                                </div>
+                                                <div className="relative z-10 flex items-start gap-4">
+                                                    <div className="p-3 rounded-2xl bg-focus-blue/20 text-focus-blue">
+                                                        <Brain className="w-6 h-6" />
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-focus-blue/60 mb-1 block">Pedagogical Research Insight</span>
+                                                        <p className="text-lg font-semibold tracking-tight leading-relaxed text-text-primary">
+                                                            {currentPhaseData.visualMetadata.researchHook ||
+                                                                currentPhaseData.visualMetadata.researchContent ||
+                                                                currentPhaseData.visualMetadata.researchStrategy ||
+                                                                currentPhaseData.visualMetadata.researchPractice ||
+                                                                currentPhaseData.visualMetadata.researchReflection ||
+                                                                "Standard pedagogical delivery."}
+                                                        </p>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h4 className="text-xs font-bold uppercase text-focus-blue tracking-widest mb-1">Phase Research Insight</h4>
-                                                <p className="text-sm text-text-secondary italic leading-relaxed">
-                                                    {currentPhaseData.visualMetadata.researchHook ||
-                                                        currentPhaseData.visualMetadata.researchContent ||
-                                                        currentPhaseData.visualMetadata.researchStrategy ||
-                                                        currentPhaseData.visualMetadata.researchPractice ||
-                                                        currentPhaseData.visualMetadata.researchReflection ||
-                                                        "Standard pedagogical delivery."}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
+                                        )}
                                 </div>
                             )}
 
