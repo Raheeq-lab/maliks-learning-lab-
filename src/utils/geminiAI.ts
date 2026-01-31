@@ -100,9 +100,9 @@ export interface LessonPlan {
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 const MODELS = [
+    { model: "gemini-2.5-flash-preview-09-2025", version: "v1beta" },
+    { model: "gemini-3-flash-preview", version: "v1beta" },
     { model: "gemini-1.5-flash", version: "v1beta" },
-    { model: "gemini-1.5-flash", version: "v1" },
-    { model: "gemini-1.5-flash-latest", version: "v1beta" },
     { model: "gemini-1.5-pro", version: "v1beta" }
 ];
 
