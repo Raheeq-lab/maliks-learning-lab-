@@ -46,6 +46,7 @@ export interface LessonPlanPhase {
     exitTicket?: string;
     realWorldConnection?: string;
     takeawayGraphic?: string;
+    imagePrompt?: string; // New: Prompt for image generation
 }
 
 export interface LessonPlan {
@@ -271,6 +272,7 @@ export const generateLessonPlan = async (
           "misconceptionAddressed": "how to tackle a misconception early",
           "animations": "opening animation description",
           "audio": "opening sound theme",
+          "imagePrompt": "A detailed, cinemagraphic prompt for an AI image generator describing a visual for this phase (exclude LaTeX)",
           "activities": ["List of activities with visual descriptions"]
         },
         "learn": {
@@ -280,6 +282,7 @@ export const generateLessonPlan = async (
           "researchInsight": "e.g., Chunking, multimodal presentation",
           "interactiveLearning": "student manipulation of concepts",
           "checkForUnderstanding": "visual feedback system",
+          "imagePrompt": "A detailed, cinemagraphic prompt for an AI image generator describing the instructional visual (exclude LaTeX)",
           "activities": ["List of activities with visual descriptions"]
         },
         "practiceTogether": {
@@ -289,6 +292,7 @@ export const generateLessonPlan = async (
           "differentiation": "how roles help mixed-ability groups",
           "progressVisualization": "how groups see progress",
           "celebration": "positive reinforcement animation",
+          "imagePrompt": "A detailed prompt for a collaborative activity visual (exclude LaTeX)",
           "activities": ["List of activities with visual descriptions"]
         },
         "tryItYourself": {
@@ -298,6 +302,7 @@ export const generateLessonPlan = async (
           "scaffoldingSystem": "gradual release visual cues",
           "selfAssessment": "visual self-check methods",
           "errorRecovery": "constructive mistake handling",
+          "imagePrompt": "A detailed prompt for the independent practice visual (exclude LaTeX)",
           "activities": ["List of activities with visual descriptions"]
         },
         "thinkAboutIt": {
@@ -306,6 +311,7 @@ export const generateLessonPlan = async (
           "exitTicket": "reflection interface design",
           "realWorldConnection": "applied learning visualization",
           "takeawayGraphic": "visual summary takeaway",
+          "imagePrompt": "A detailed prompt for a reflective takeaway visual (exclude LaTeX)",
           "activities": ["List of activities with visual descriptions"]
         }
       },
@@ -321,6 +327,34 @@ export const generateLessonPlan = async (
         "props": "optional physical items",
         "teacherNotes": "research citations and pedagogical notes"
       }
+    }
+  `;
+
+    return await callGeminiAPI(prompt);
+};
+
+export const generateWorksheet = async (
+    subject: string,
+    grade: string,
+    topic: string,
+    learningObjectives: string[]
+): Promise<{ title: string; content: string }> => {
+    const prompt = `
+    You are an expert worksheet designer. Create a comprehensive, student-friendly worksheet for "${topic}" (${grade} ${subject}).
+    
+    Learning Objectives:
+    ${learningObjectives.map(obj => `- ${obj}`).join('\n')}
+    
+    The worksheet should include:
+    1. A clear Title.
+    2. A brief, engaging introduction (2-3 sentences).
+    3. 3-4 structured activities/exercises (e.g., matching, fill-in-the-blanks, problem-solving).
+    4. A "Challenge" question for advanced students.
+    
+    Format the output as a JSON object:
+    {
+      "title": "Worksheet Title",
+      "content": "The full worksheet content in Markdown format, with clear headings, spacing, and instructions."
     }
   `;
 

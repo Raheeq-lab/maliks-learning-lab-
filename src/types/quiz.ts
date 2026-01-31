@@ -90,6 +90,8 @@ export interface Lesson {
   };
   activity?: ActivitySettings; // Added activity settings to Lesson
   isPublic?: boolean;
+  worksheetUrl?: string; // AI generated worksheet link
+  worksheetContent?: string; // AI generated worksheet markdown
 }
 
 export interface LessonContent {
@@ -153,6 +155,8 @@ export interface LessonPhase {
     exitTicket?: string;
     realWorldConnection?: string;
     takeawayGraphic?: string;
+    imageUrl?: string;
+    imagePrompt?: string;
   };
 }
 

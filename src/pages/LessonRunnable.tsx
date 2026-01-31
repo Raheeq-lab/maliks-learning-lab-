@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import {
     Play, Pause, SkipForward, ArrowLeft, RotateCcw, Clock,
     BookOpen, PenTool, FileText, Brain, Check, Lock, Globe, File, Layout,
-    Sparkles, Zap, AlertCircle, BrainCircuit
+    Sparkles, Zap, AlertCircle, BrainCircuit, Download
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/lib/supabase';
@@ -412,6 +412,20 @@ const LessonRunnable: React.FC = () => {
                                 </div>
                             )}
 
+                            {/* AI Generated Phase Visual */}
+                            {currentPhaseData?.visualMetadata?.imageUrl && (
+                                <div className="mb-8 rounded-3xl overflow-hidden shadow-2xl border-4 border-white/50 bg-bg-secondary/50 p-1 group relative">
+                                    <img
+                                        src={currentPhaseData.visualMetadata.imageUrl}
+                                        alt={currentPhaseData.title}
+                                        className="w-full h-auto object-cover rounded-2xl transform transition-transform duration-700 group-hover:scale-[1.02]"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
+                                        <p className="text-white text-sm font-medium italic">AI-Generated Visual Concept for {currentPhaseData.title}</p>
+                                    </div>
+                                </div>
+                            )}
+
                             {currentPhaseData?.content && currentPhaseData.content.length > 0 ? (
                                 <div className="space-y-8">
                                     {currentPhaseData.content.map((content, idx) => (
@@ -593,42 +607,61 @@ const LessonRunnable: React.FC = () => {
                                         </div>
                                     )}
                                 </div>
-                            </div>
-                        )}
-
-                        {/* Footer Navigation */}
-                        <CardFooter className="p-6 mt-6 bg-bg-card border-t border-border rounded-b-xl flex justify-between items-center sticky bottom-0 z-10 shadow-[0_-5px_15px_-5px_rgba(0,0,0,0.05)]">
-                            <Button
-                                variant="outline"
-                                onClick={() => {
-                                    if (currentPhaseIndex > 0) setCurrentPhaseIndex(prev => prev - 1);
-                                }}
-                                disabled={currentPhaseIndex === 0}
-                                className="w-36 h-11 text-text-secondary hover:text-text-primary hover:bg-bg-secondary border-gray-300"
-                            >
-                                <ArrowLeft size={18} className="mr-2" /> Previous
-                            </Button>
-
-                            <div className="hidden md:flex gap-2">
-                                {completedPhases.length > 0 && (
-                                    <Badge className="bg-warning-amber hover:bg-warning-amber text-white border-0 px-4 py-1.5 text-sm cursor-default shadow-sm">
-                                        +{completedPhases.length * 10} XP Earned
-                                    </Badge>
+                                {lesson.worksheetContent && (
+                                    <div className="mt-4 pt-4 border-t border-math-purple/10 flex justify-center">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() => {
+                                                const element = document.createElement("a");
+                                                const file = new Blob([lesson.worksheetContent || ''], { type: 'text/markdown' });
+                                                element.href = URL.createObjectURL(file);
+                                                element.download = `Worksheet_${lesson.title.replace(/\s+/g, '_')}.md`;
+                                                document.body.appendChild(element);
+                                                element.click();
+                                            }}
+                                            className="bg-white border-math-purple text-math-purple hover:bg-math-purple/10 font-bold"
+                                        >
+                                            <Download className="mr-2 h-4 w-4" /> Download AI Worksheet
+                                        </Button>
+                                    </div>
                                 )}
                             </div>
-
-                            <Button
-                                onClick={handleNextPhase}
-                                className={`w-36 h-11 text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg ${lesson.subject === 'math' ? 'bg-math-purple hover:bg-purple-700' : lesson.subject === 'english' ? 'bg-english-green hover:bg-green-700' : 'bg-ict-orange hover:bg-orange-600'}`}
-                            >
-                                {currentPhaseIndex === PHASES.length - 1 ? "Finish" : "Next Phase"}
-                                {currentPhaseIndex < PHASES.length - 1 && <SkipForward size={18} className="ml-2" />}
-                            </Button>
-                        </CardFooter>
+                        )}
                     </div>
+
+                    {/* Footer Navigation */}
+                    <CardFooter className="p-6 mt-6 bg-bg-card border-t border-border rounded-b-xl flex justify-between items-center sticky bottom-0 z-10 shadow-[0_-5px_15px_-5px_rgba(0,0,0,0.05)]">
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                if (currentPhaseIndex > 0) setCurrentPhaseIndex(prev => prev - 1);
+                            }}
+                            disabled={currentPhaseIndex === 0}
+                            className="w-36 h-11 text-text-secondary hover:text-text-primary hover:bg-bg-secondary border-gray-300"
+                        >
+                            <ArrowLeft size={18} className="mr-2" /> Previous
+                        </Button>
+
+                        <div className="hidden md:flex gap-2">
+                            {completedPhases.length > 0 && (
+                                <Badge className="bg-warning-amber hover:bg-warning-amber text-white border-0 px-4 py-1.5 text-sm cursor-default shadow-sm">
+                                    +{completedPhases.length * 10} XP Earned
+                                </Badge>
+                            )}
+                        </div>
+
+                        <Button
+                            onClick={handleNextPhase}
+                            className={`w-36 h-11 text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg ${lesson.subject === 'math' ? 'bg-math-purple hover:bg-purple-700' : lesson.subject === 'english' ? 'bg-english-green hover:bg-green-700' : 'bg-ict-orange hover:bg-orange-600'}`}
+                        >
+                            {currentPhaseIndex === PHASES.length - 1 ? "Finish" : "Next Phase"}
+                            {currentPhaseIndex < PHASES.length - 1 && <SkipForward size={18} className="ml-2" />}
+                        </Button>
+                    </CardFooter>
                 </Card>
-            </div>
-        </div>
+            </div >
+        </div >
     );
 };
 
