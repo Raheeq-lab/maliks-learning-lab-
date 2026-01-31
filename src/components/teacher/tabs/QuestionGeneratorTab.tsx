@@ -110,6 +110,15 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
               title: "🎯 ENGAGE",
               timeInMinutes: 5,
               content: [
+                {
+                  id: crypto.randomUUID(),
+                  type: 'universal-engage',
+                  content: 'Universal Engagement Phase',
+                  universalEngage: {
+                    pollQuestion: "How does this relate to your experience?",
+                    pollOptions: ["I've seen something like this before", "This reminds me of...", "This is completely new to me"]
+                  }
+                },
                 ...lessonPlan.phases.engage.activities.map(a => ({ type: 'text' as const, content: a, id: crypto.randomUUID() })),
                 ...(lessonPlan.phases.engage.activityType ? [{
                   id: crypto.randomUUID(),

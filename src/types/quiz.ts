@@ -163,7 +163,7 @@ export interface LessonPhase {
 
 export interface LessonPhaseContent {
   id: string;
-  type: "text" | "image" | "video" | "quiz" | "activity" | "resource" | "file" | "poll" | "brainstorm" | "flashcards" | "steps" | "diagram" | "timer" | "categorization" | "whiteboard" | "scaffolded" | "fill-blank" | "mapping" | "slider" | "exit-ticket";
+  type: "text" | "image" | "video" | "quiz" | "activity" | "resource" | "file" | "poll" | "brainstorm" | "flashcards" | "steps" | "diagram" | "timer" | "categorization" | "whiteboard" | "scaffolded" | "fill-blank" | "mapping" | "slider" | "exit-ticket" | "universal-engage";
   content: string;
   imageUrl?: string;
   videoUrl?: string;
@@ -180,6 +180,12 @@ export interface LessonPhaseContent {
   steps?: string[];
   categorizationGroups?: { title: string; items: string[] }[];
   scaffoldedLevels?: { level: number; question: string; hint?: string; solution: string }[];
+  // Universal Engage Specifics
+  universalEngage?: {
+    visualHookImage?: string; // Optional custom image
+    pollQuestion?: string;
+    pollOptions?: string[];
+  };
 }
 
 // Activity settings interface

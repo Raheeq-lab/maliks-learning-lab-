@@ -8,7 +8,7 @@ import {
     Play, Pause, SkipForward, ArrowLeft, RotateCcw, Clock,
     BookOpen, PenTool, FileText, Brain, Check, Lock, Globe, File, Layout,
     Sparkles, Zap, AlertCircle, BrainCircuit, Download,
-    Plus, Star
+    Plus, Star, Image as ImageIcon
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/lib/supabase';
@@ -81,7 +81,7 @@ const LessonRunnable: React.FC = () => {
                 const timeInSeconds = (phaseData.timeInMinutes || 5) * 60;
                 setTotalPhaseTime(timeInSeconds);
                 setTimeLeft(timeInSeconds);
-                setIsRunning(false); // Auto-pause on phase switch
+                setIsRunning(currentPhaseKey === 'engage'); // Auto-start for Engage phase
             }
         }
     }, [currentPhaseIndex, lesson]);
@@ -969,6 +969,112 @@ const LessonRunnable: React.FC = () => {
                                                         >
                                                             Finalize Lesson & Submit
                                                         </Button>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* UNIVERSAL ENGAGE */}
+                                            {content.type === "universal-engage" && (
+                                                <div className="space-y-8 rounded-xl overflow-hidden border border-border shadow-lg bg-white">
+                                                    {/* Header */}
+                                                    <div className="bg-[#FF6B35] p-6 text-white flex justify-between items-center">
+                                                        <h2 className="text-2xl font-bold tracking-tight">🎯 ENGAGE - First 5 Minutes</h2>
+                                                        <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-lg backdrop-blur-sm">
+                                                            <Clock size={20} className="animate-pulse" />
+                                                            <span className="font-mono text-xl font-bold">{timeLeft > 0 ? formattedTime() : "0:00"}</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="p-8 space-y-12">
+                                                        {/* Section 1: Visual Hook */}
+                                                        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                                            <h3 className="text-xl font-bold text-[#FF6B35] flex items-center gap-2">
+                                                                <span className="bg-[#FF6B35] text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">1</span>
+                                                                Step 1: Grab Attention with an Image
+                                                            </h3>
+                                                            <p className="text-lg font-medium text-text-primary">"Upload a puzzling picture related to your topic here:"</p>
+
+                                                            <div className="relative aspect-video bg-gray-100 rounded-xl overflow-hidden border-2 border-dashed border-gray-300 flex items-center justify-center group cursor-pointer hover:bg-gray-50 transition-colors">
+                                                                {content.universalEngage?.visualHookImage ? (
+                                                                    <img src={content.universalEngage.visualHookImage} alt="Hook" className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <div className="text-center p-6">
+                                                                        <ImageIcon size={48} className="mx-auto text-gray-400 mb-2 group-hover:scale-110 transition-transform" />
+                                                                        <p className="text-text-tertiary">Click to upload visual hook</p>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div className="bg-[#FF6B35]/10 p-4 rounded-lg text-sm text-text-secondary border-l-4 border-[#FF6B35]">
+                                                                <span className="font-bold text-[#FF6B35]">Teacher Tip:</span> Download an image showing something incomplete, mysterious, or counterintuitive about your topic. Examples: for science - an unexpected experiment result; for math - a visual pattern; for history - an artifact; for language - a word puzzle.
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Section 2: Notice & Wonder */}
+                                                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
+                                                            <h3 className="text-xl font-bold text-[#FF6B35] flex items-center gap-2">
+                                                                <span className="bg-[#FF6B35] text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
+                                                                Step 2: What do you Notice? What do you Wonder?
+                                                            </h3>
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                                <div className="space-y-2">
+                                                                    <label className="font-bold text-text-primary">Students: Type your observations here:</label>
+                                                                    <textarea className="w-full p-4 rounded-lg bg-gray-50 border border-border focus:border-[#FF6B35] h-32 resize-none transition-all" placeholder="I notice..." />
+                                                                </div>
+                                                                <div className="space-y-2">
+                                                                    <label className="font-bold text-text-primary">Students: What questions does this raise?</label>
+                                                                    <textarea className="w-full p-4 rounded-lg bg-gray-50 border border-border focus:border-[#FF6B35] h-32 resize-none transition-all" placeholder="I wonder..." />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Section 3: Personal Connection */}
+                                                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+                                                            <h3 className="text-xl font-bold text-[#FF6B35] flex items-center gap-2">
+                                                                <span className="bg-[#FF6B35] text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">3</span>
+                                                                Step 3: Personal Connection Poll
+                                                            </h3>
+                                                            <p className="text-lg font-medium text-text-primary">"{content.universalEngage?.pollQuestion || "How does this relate to your experience?"}"</p>
+                                                            <div className="space-y-3">
+                                                                {(content.universalEngage?.pollOptions || ["I've seen something like this before", "This reminds me of...", "This is completely new to me"]).map((option, idx) => (
+                                                                    <div key={idx} className="relative p-4 rounded-lg border border-gray-200 hover:border-[#FF6B35] cursor-pointer group bg-gray-50 hover:bg-[#FF6B35]/5 transition-all">
+                                                                        <div className="flex justify-between relative z-10">
+                                                                            <span className="font-medium text-text-primary group-hover:text-[#FF6B35] transition-colors">{option}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Section 4: Prediction */}
+                                                        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
+                                                            <h3 className="text-xl font-bold text-[#FF6B35] flex items-center gap-2">
+                                                                <span className="bg-[#FF6B35] text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">4</span>
+                                                                Step 4: Make a Prediction
+                                                            </h3>
+                                                            <div className="space-y-2">
+                                                                <label className="font-bold text-text-primary flex items-center gap-2">
+                                                                    <Sparkles size={16} className="text-[#FF6B35]" />
+                                                                    Based on this image and our discussion, predict what we'll learn today:
+                                                                </label>
+                                                                <textarea className="w-full p-4 rounded-lg bg-gray-50 border border-border focus:border-[#FF6B35] h-24 resize-none transition-all" placeholder="My prediction is..." />
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Section 5: Question Harvest */}
+                                                        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-400">
+                                                            <h3 className="text-xl font-bold text-[#FF6B35] flex items-center gap-2">
+                                                                <span className="bg-[#FF6B35] text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">5</span>
+                                                                Step 5: Your Burning Question
+                                                            </h3>
+                                                            <div className="bg-[#FF6B35]/5 p-6 rounded-xl border border-[#FF6B35]/20">
+                                                                <label className="font-bold text-lg text-text-primary block mb-3">What's the one question you most want answered today?</label>
+                                                                <div className="flex gap-2">
+                                                                    <input className="flex-1 p-4 rounded-lg border border-border focus:border-[#FF6B35] outline-none shadow-sm" placeholder="My burning question..." />
+                                                                    <Button className="bg-[#FF6B35] hover:bg-[#E55A25] text-white h-auto px-6 font-bold">Ask!</Button>
+                                                                </div>
+                                                                <p className="text-sm text-[#FF6B35] mt-3 font-medium italic">"These questions will guide our lesson!"</p>
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             )}
