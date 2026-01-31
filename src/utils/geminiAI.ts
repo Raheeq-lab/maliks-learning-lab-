@@ -248,11 +248,17 @@ export const generateLessonPlan = async (
     You are an EXPERT EDUCATIONAL DESIGNER and FULL-STACK DEVELOPER. Your goal is to create a COMPLETE RESEARCH-BASED interactive lesson for the topic "${topic}" (${grade} ${subject}).
     
     You must follow the 5-phase structure exactly and provide structured data for high-fidelity interactive elements.
+    
+    CRITICAL: All visual themes, image prompts, and activities MUST be strictly pedagogically relevant to the subject ("${subject}"), topic ("${topic}"), and grade level ("${grade}"). 
+    - DO NOT use generic sci-fi, futuristic, or "cinematic" themes unless they are the direct subject of the lesson. 
+    - For Primary/Elementary (Grades K-5), use concrete, real-world examples (e.g., for addition, use toys, fruits, or physical groups).
+    - For Middle/High School, use relevant academic or professional contexts.
 
     ## PHASE 1: 🎯 ENGAGE (5 mins)
     - Primary Goal: Activate prior knowledge & spark curiosity.
     - Required Activity: A "poll" with 3 options OR a "brainstorm" board activity.
     - JSON required: "activityType": "poll" (with pollOptions) or "brainstorm".
+    - Visual Hook: Must show a puzzling real-world scenario or object related to ${topic}.
 
     ## PHASE 2: 📚 LEARN (8 mins)
     - Primary Goal: Reduce cognitive load, multimodal presentation.

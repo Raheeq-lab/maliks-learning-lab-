@@ -52,9 +52,9 @@ Do not include markdown formatting (like \`\`\`json) in the response, just the r
 const SYSTEM_PROMPT_PHASE_VISUALS = `You are an EXPERT EDUCATIONAL DESIGNER. Generate visual and pedagogical metadata for a lesson phase in JSON format.
 The JSON should follow this structure exactly:
 {
-  "visualTheme": "description of cinematic visual style",
-  "animations": "description of motion effects",
-  "researchNote": "pedagogical strategy or research insight for this phase"
+  "visualTheme": "Description of a pedagogically relevant and subject-specific visual style (e.g. for Math: concrete objects, patterns; for Science: lab settings, nature). MUST NOT be generic sci-fi/futuristic unless topic-related.",
+  "animations": "description of gentle, focus-enhancing motion effects",
+  "researchNote": "pedagogical strategy or research insight for this phase appropriate for the specific grade level"
 }
 Do not include markdown formatting, just raw JSON.`;
 
@@ -68,7 +68,7 @@ export const generateContent = async (
         if (type === 'quiz') systemPrompt = SYSTEM_PROMPT_QUIZ;
         else if (type === 'lesson') systemPrompt = SYSTEM_PROMPT_LESSON;
         else if (type === 'phase-visuals') systemPrompt = SYSTEM_PROMPT_PHASE_VISUALS;
-        else systemPrompt = "You are a helpful assistant for teachers. Generate clear, educational content based on the user's request. Do not wrap in JSON. Just provide the text content directly.";
+        else systemPrompt = "You are a helpful assistant for teachers. Generate clear, educational content that is pedagogically accurate and age-appropriate for the students' grade level. All suggestions must be strictly related to the requested subject and topic. Do not wrap in JSON. Just provide the text content directly.";
 
         const fullPrompt = `${systemPrompt}\n\nUser Request: ${prompt}`;
 

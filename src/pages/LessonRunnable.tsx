@@ -168,7 +168,8 @@ const LessonRunnable: React.FC = () => {
             const topic = lesson?.topic || "science";
             const imagePrompt = lesson?.lessonStructure?.engage?.visualMetadata?.imagePrompt || `Educational illustration for ${topic}`;
 
-            const response = await generateContent(config, `Provide a high-quality, professional educational image URL link (Unsplash preferred) related to: "${imagePrompt}". RETURN ONLY THE URL starting with http.`, 'text');
+            const forgePrompt = `Subject: ${lesson?.subject || "general"}\nTopic: ${topic}\nGrade Level: ${lesson?.gradeLevel || "all"}\nTarget Image: ${imagePrompt}\n\nProvide a high-quality, professional educational image URL link (Unsplash preferred). The image MUST be strictly pedagogically relevant and age-appropriate. RETURN ONLY THE URL starting with http.`;
+            const response = await generateContent(config, forgePrompt, 'text');
 
             const content = response.content.trim();
             const urlMatch = content.match(/https?:\/\/[^\s"'>)]+/);

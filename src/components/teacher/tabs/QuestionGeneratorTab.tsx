@@ -254,8 +254,7 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
       for (const phaseKey of phases) {
         const phase = updatedLesson.lessonStructure[phaseKey];
         if (phase.visualMetadata?.imagePrompt) {
-          const prompt = `Provide a high-quality, professional educational image URL link related to this prompt: "${phase.visualMetadata.imagePrompt}". Topic: ${customTopic}. Category: ${subject}. 
-          For demo purposes, return a high-res Unsplash search URL like https://images.unsplash.com/photo-[id]?auto=format&fit=crop&q=80&w=1000 and NOTHING ELSE. JUST THE URL.`;
+          const prompt = `Subject: ${subject}\nTopic: ${customTopic}\nGrade Level: ${selectedGrade}\nTarget Image: ${phase.visualMetadata.imagePrompt}\n\nProvide a high-quality, professional educational image URL link (Unsplash preferred). The image MUST be strictly pedagogically relevant and age-appropriate (NO unrelated sci-fi). Return a high-res Unsplash search URL like https://images.unsplash.com/photo-[id]?auto=format&fit=crop&q=80&w=1000 and NOTHING ELSE. JUST THE URL.`;
 
           try {
             const imageUrl = await generateTextContent(prompt);
