@@ -10,35 +10,62 @@ export interface QuizQuestion {
 
 export interface LessonPlanPhase {
     duration: string;
+    activities: string[];
     visualTheme?: string;
     screenLayout?: string;
     interactiveHook?: string;
     interactiveElements?: string;
     animations?: string;
     audio?: string;
-    contentVisualization?: string;
-    feedbackSystem?: string;
-    visualMetaphor?: string;
     collaborationInterface?: string;
     roleIndicators?: string;
     progressMap?: string;
     workspaceDesign?: string;
-    celebration?: string;
     scaffolding?: string;
     selfCheck?: string;
     rewards?: string;
-    errorVisualization?: string;
     reflectionInterface?: string;
     connectionVisualizer?: string;
     realWorldApplication?: string;
+    // Research-based fields
+    researchHook?: string;
+    misconceptionAddressed?: string;
+    researchContent?: string;
+    researchInsight?: string;
+    interactiveLearning?: string;
+    checkForUnderstanding?: string;
+    researchStrategy?: string;
+    differentiation?: string;
+    progressVisualization?: string;
+    celebration?: string;
+    researchPractice?: string;
+    scaffoldingSystem?: string;
+    selfAssessment?: string;
+    errorRecovery?: string;
+    researchReflection?: string;
+    exitTicket?: string;
+    realWorldConnection?: string;
     takeawayGraphic?: string;
-    activities: string[];
 }
 
 export interface LessonPlan {
     subject: string;
     grade: string;
     topic: string;
+    researchNotes: {
+        misconceptions: string[];
+        strategies: string[];
+        realWorldConnections: string[];
+        vocabulary: string[];
+        priorKnowledge: string[];
+    };
+    visualTheme: {
+        primaryTheme: string;
+        colorPalette: string;
+        characters: string;
+        animationStyle: string;
+        soundTheme: string;
+    };
     phases: {
         engage: LessonPlanPhase;
         learn: LessonPlanPhase;
@@ -46,17 +73,17 @@ export interface LessonPlan {
         tryItYourself: LessonPlanPhase;
         thinkAboutIt: LessonPlanPhase;
     };
-    visualAssets: {
-        primaryColors: string;
-        iconSet: string;
-        characterTheme: string;
-        animationTypes: string;
-        interactiveComponents: string;
-    };
-    differentiation: {
-        struggling: string;
-        advanced: string;
+    assessment: {
+        formativeChecks: string;
+        extension: string;
+        support: string;
         accessibility: string;
+    };
+    resources: {
+        visualAssets: string;
+        interactiveTools: string;
+        props: string;
+        teacherNotes: string;
     };
 }
 
@@ -205,77 +232,94 @@ export const generateLessonPlan = async (
     topic: string
 ): Promise<LessonPlan> => {
     const prompt = `
-    You are a VISUAL EDUCATIONAL DESIGNER AI. Your specialty is transforming standard lesson content into visually stunning, interactive learning experiences.
-    
-    Create a complete visual lesson plan for ${grade} ${subject} on the topic "${topic}" with exactly 5 timed phases: 
-    ENGAGE (5 min), LEARN (8 min), PRACTICE TOGETHER (12 min), TRY IT YOURSELF (10 min), THINK ABOUT IT (5 min).
+    You are a RESEARCH-BASED VISUAL LESSON DESIGNER. For the topic "${topic}" (${grade} ${subject}), follow this exact 6-step research pipeline to create a stunning visual lesson:
 
-    CRITICAL INSTRUCTION: For EVERY element, describe the VISUAL appearance, not just the activity. 
-    Instead of "do addition problems" write "🎨 Colorful animated number blocks that snap together with particle effects when the correct sum is reached." 
-    Instead of "discuss answers" write "💬 Speech bubble interface where student responses appear with avatar pictures, color-coded by correctness."
+    ## RESEARCH PIPELINE
+    1. GET TOPIC → Understand the exact learning objective
+    2. DO RESEARCH → Find age-appropriate content, common misconceptions, best practices
+    3. WRITE OUTLINE → Structure the 5-phase lesson with timing
+    4. CREATE VISUAL DESIGN → Design banners, colors, animations, interactive elements
+    5. WRITE LESSON → Create the actual lesson content with visuals
+    6. DISPLAY LESSON → Format for beautiful presentation
 
     The output must be a JSON object following this structure:
     {
       "subject": "${subject}",
       "grade": "${grade}",
       "topic": "${topic}",
+      "researchNotes": {
+        "misconceptions": ["List of common student misconceptions"],
+        "strategies": ["List of age-appropriate strategies"],
+        "realWorldConnections": ["How this connects to real life"],
+        "vocabulary": ["Key terms needed"],
+        "priorKnowledge": ["What students should know already"]
+      },
+      "visualTheme": {
+        "primaryTheme": "e.g., Space Exploration, Jungle Safari",
+        "colorPalette": "5 hex codes for each phase",
+        "characters": "Consistent visual characters",
+        "animationStyle": "e.g., Smooth transitions, bouncy, minimalist",
+        "soundTheme": "audio cues suggestions"
+      },
       "phases": {
         "engage": {
           "duration": "5 minutes",
-          "visualTheme": "description of hex colors and style",
-          "screenLayout": "arrangement of elements and animations",
-          "interactiveHook": "what students physically do (click, drag, etc.)",
-          "animations": "description of introductory animations",
-          "audio": "sound effects or music suggestions",
+          "researchHook": "research-based physical/digital hook",
+          "visualTheme": "visual style description",
+          "screenLayout": "screen arrangement",
+          "interactiveHook": "what students physically do",
+          "misconceptionAddressed": "how to tackle a misconception early",
+          "animations": "opening animation description",
+          "audio": "opening sound theme",
           "activities": ["List of activities with visual descriptions"]
         },
         "learn": {
           "duration": "8 minutes",
-          "contentVisualization": "how concepts are shown visually",
+          "researchContent": "pedagogically sound instructional approach",
           "animations": "step-by-step visual learning breakdown",
-          "interactiveElements": "what students manipulate",
-          "feedbackSystem": "how correct understanding is shown visually",
-          "visualMetaphor": "main visual theme (e.g. puzzle pieces)",
+          "researchInsight": "e.g., Chunking, multimodal presentation",
+          "interactiveLearning": "student manipulation of concepts",
+          "checkForUnderstanding": "visual feedback system",
           "activities": ["List of activities with visual descriptions"]
         },
         "practiceTogether": {
           "duration": "12 minutes",
-          "collaborationInterface": "how group work appears on screen",
-          "roleIndicators": "how student roles are shown",
-          "progressMap": "visualization of group progress",
-          "workspaceDesign": "what the collaborative area looks like",
-          "celebration": "animation when group completes task",
+          "researchStrategy": "collaborative learning method",
+          "collaborationInterface": "group workspace design",
+          "differentiation": "how roles help mixed-ability groups",
+          "progressVisualization": "how groups see progress",
+          "celebration": "positive reinforcement animation",
           "activities": ["List of activities with visual descriptions"]
         },
         "tryItYourself": {
           "duration": "10 minutes",
+          "researchPractice": "optimal practice structure",
           "workspaceDesign": "individual activity area appearance",
-          "scaffolding": "how hints/help appear when needed",
-          "selfCheck": "visual way students check their own work",
-          "rewards": "visual rewards upon completion",
-          "errorVisualization": "how mistakes are shown constructively",
+          "scaffoldingSystem": "gradual release visual cues",
+          "selfAssessment": "visual self-check methods",
+          "errorRecovery": "constructive mistake handling",
           "activities": ["List of activities with visual descriptions"]
         },
         "thinkAboutIt": {
           "duration": "5 minutes",
-          "reflectionInterface": "thought bubble/exit ticket visual design",
-          "connectionVisualizer": "how ideas link together graphically",
-          "realWorldApplication": "visual showing practical use",
-          "takeawayGraphic": "what students take with them visually",
+          "researchReflection": "effective reflection technique",
+          "exitTicket": "reflection interface design",
+          "realWorldConnection": "applied learning visualization",
+          "takeawayGraphic": "visual summary takeaway",
           "activities": ["List of activities with visual descriptions"]
         }
       },
-      "visualAssets": {
-        "primaryColors": "Hex codes for each phase",
-        "iconSet": "Specific emojis/icons for each activity",
-        "characterTheme": "Consistent visual characters or theme",
-        "animationTypes": "List of specific animations needed",
-        "interactiveComponents": "Drag-drop, sliders, drawing tools, etc."
+      "assessment": {
+        "formativeChecks": "visual assessment points",
+        "extension": "for advanced learners",
+        "support": "for struggling learners",
+        "accessibility": "alt-text, high contrast notes"
       },
-      "differentiation": {
-        "struggling": "Visual simplifications",
-        "advanced": "Visual extensions",
-        "accessibility": "High contrast, text-to-speech indicators"
+      "resources": {
+        "visualAssets": "required images/animations",
+        "interactiveTools": "digital manipulatives",
+        "props": "optional physical items",
+        "teacherNotes": "research citations and pedagogical notes"
       }
     }
   `;

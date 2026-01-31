@@ -62,6 +62,32 @@ export interface Lesson {
   accessCode: string;
   learningType: string; // Added learningType property
   lessonStructure?: LessonStructure; // Added new lesson structure
+  researchNotes?: {
+    misconceptions: string[];
+    strategies: string[];
+    realWorldConnections: string[];
+    vocabulary: string[];
+    priorKnowledge: string[];
+  };
+  visualTheme?: {
+    primaryTheme: string;
+    colorPalette: string;
+    characters: string;
+    animationStyle: string;
+    soundTheme: string;
+  };
+  assessmentSettings?: {
+    formativeChecks: string;
+    extension: string;
+    support: string;
+    accessibility: string;
+  };
+  requiredResources?: {
+    visualAssets: string;
+    interactiveTools: string;
+    props: string;
+    teacherNotes: string;
+  };
   activity?: ActivitySettings; // Added activity settings to Lesson
   isPublic?: boolean;
 }
@@ -107,20 +133,25 @@ export interface LessonPhase {
     interactiveHook?: string;
     animations?: string;
     audio?: string;
-    visualMetaphor?: string;
-    feedbackSystem?: string;
     collaborationInterface?: string;
-    roleIndicators?: string;
-    progressMap?: string;
     workspaceDesign?: string;
     celebration?: string;
-    scaffolding?: string;
-    selfCheck?: string;
-    rewards?: string;
-    errorVisualization?: string;
-    reflectionInterface?: string;
-    connectionVisualizer?: string;
-    realWorldApplication?: string;
+    researchHook?: string;
+    misconceptionAddressed?: string;
+    researchContent?: string;
+    researchInsight?: string;
+    interactiveLearning?: string;
+    checkForUnderstanding?: string;
+    researchStrategy?: string;
+    differentiation?: string;
+    progressVisualization?: string;
+    researchPractice?: string;
+    scaffoldingSystem?: string;
+    selfAssessment?: string;
+    errorRecovery?: string;
+    researchReflection?: string;
+    exitTicket?: string;
+    realWorldConnection?: string;
     takeawayGraphic?: string;
   };
 }

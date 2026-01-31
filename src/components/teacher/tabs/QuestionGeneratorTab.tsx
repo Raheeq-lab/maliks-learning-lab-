@@ -96,6 +96,10 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
           subject: subject,
           content: [], // Legacy compat
           learningType: learningType,
+          researchNotes: lessonPlan.researchNotes,
+          visualTheme: lessonPlan.visualTheme,
+          assessmentSettings: lessonPlan.assessment,
+          requiredResources: lessonPlan.resources,
           lessonStructure: {
             engage: {
               title: "🎯 ENGAGE",
@@ -106,7 +110,9 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
                 screenLayout: lessonPlan.phases.engage.screenLayout,
                 interactiveHook: lessonPlan.phases.engage.interactiveHook,
                 animations: lessonPlan.phases.engage.animations,
-                audio: lessonPlan.phases.engage.audio
+                audio: lessonPlan.phases.engage.audio,
+                researchHook: lessonPlan.phases.engage.researchHook,
+                misconceptionAddressed: lessonPlan.phases.engage.misconceptionAddressed
               }
             },
             model: {
@@ -114,11 +120,11 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
               timeInMinutes: 8,
               content: lessonPlan.phases.learn.activities.map(a => ({ type: 'text', content: a, id: crypto.randomUUID() })),
               visualMetadata: {
-                visualTheme: lessonPlan.phases.learn.visualTheme,
-                screenLayout: lessonPlan.phases.learn.screenLayout,
+                researchContent: lessonPlan.phases.learn.researchContent,
                 animations: lessonPlan.phases.learn.animations,
-                visualMetaphor: lessonPlan.phases.learn.visualMetaphor,
-                feedbackSystem: lessonPlan.phases.learn.feedbackSystem
+                researchInsight: lessonPlan.phases.learn.researchInsight,
+                interactiveLearning: lessonPlan.phases.learn.interactiveLearning,
+                checkForUnderstanding: lessonPlan.phases.learn.checkForUnderstanding
               }
             },
             guidedPractice: {
@@ -126,10 +132,10 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
               timeInMinutes: 12,
               content: lessonPlan.phases.practiceTogether.activities.map(a => ({ type: 'text', content: a, id: crypto.randomUUID() })),
               visualMetadata: {
+                researchStrategy: lessonPlan.phases.practiceTogether.researchStrategy,
                 collaborationInterface: lessonPlan.phases.practiceTogether.collaborationInterface,
-                roleIndicators: lessonPlan.phases.practiceTogether.roleIndicators,
-                progressMap: lessonPlan.phases.practiceTogether.progressMap,
-                workspaceDesign: lessonPlan.phases.practiceTogether.workspaceDesign,
+                differentiation: lessonPlan.phases.practiceTogether.differentiation,
+                progressVisualization: lessonPlan.phases.practiceTogether.progressVisualization,
                 celebration: lessonPlan.phases.practiceTogether.celebration
               }
             },
@@ -138,11 +144,11 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
               timeInMinutes: 10,
               content: lessonPlan.phases.tryItYourself.activities.map(a => ({ type: 'text', content: a, id: crypto.randomUUID() })),
               visualMetadata: {
+                researchPractice: lessonPlan.phases.tryItYourself.researchPractice,
                 workspaceDesign: lessonPlan.phases.tryItYourself.workspaceDesign,
-                scaffolding: lessonPlan.phases.tryItYourself.scaffolding,
-                selfCheck: lessonPlan.phases.tryItYourself.selfCheck,
-                rewards: lessonPlan.phases.tryItYourself.rewards,
-                errorVisualization: lessonPlan.phases.tryItYourself.errorVisualization
+                scaffoldingSystem: lessonPlan.phases.tryItYourself.scaffoldingSystem,
+                selfAssessment: lessonPlan.phases.tryItYourself.selfAssessment,
+                errorRecovery: lessonPlan.phases.tryItYourself.errorRecovery
               }
             },
             reflect: {
@@ -150,9 +156,9 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
               timeInMinutes: 5,
               content: lessonPlan.phases.thinkAboutIt.activities.map(a => ({ type: 'text', content: a, id: crypto.randomUUID() })),
               visualMetadata: {
-                reflectionInterface: lessonPlan.phases.thinkAboutIt.reflectionInterface,
-                connectionVisualizer: lessonPlan.phases.thinkAboutIt.connectionVisualizer,
-                realWorldApplication: lessonPlan.phases.thinkAboutIt.realWorldApplication,
+                researchReflection: lessonPlan.phases.thinkAboutIt.researchReflection,
+                exitTicket: lessonPlan.phases.thinkAboutIt.exitTicket,
+                realWorldConnection: lessonPlan.phases.thinkAboutIt.realWorldConnection,
                 takeawayGraphic: lessonPlan.phases.thinkAboutIt.takeawayGraphic
               }
             }
@@ -165,7 +171,7 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
 
         setGeneratedLesson(newLesson);
         setGeneratedQuestions([]);
-        toast({ title: "Lesson Generated!", description: "Review your visual lesson plan below." });
+        toast({ title: "Research-Based Lesson Ready!", description: "Complete pedagogical plan generated." });
       }
     } catch (err: any) {
       console.error(err);
@@ -418,7 +424,7 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
                   </Button>
                   <Button onClick={() => {
                     onCreateLesson(generatedLesson);
-                    toast({ title: "Lesson Saved!", description: "Visual lesson added to your library." });
+                    toast({ title: "Lesson Saved!", description: "Research-based lesson added to library." });
                     setGeneratedLesson(null);
                     setCustomTopic("");
                   }} className="bg-math-purple hover:bg-math-purple/90 text-white shadow-lg shadow-purple-900/20 border-none transition-all hover:scale-105">
@@ -427,69 +433,166 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
                 </div>
               </div>
 
-              <div className="space-y-6 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-6 max-h-[700px] overflow-y-auto pr-2 custom-scrollbar">
+                {/* Research Notes Card */}
+                {generatedLesson.researchNotes && (
+                  <Card className="border-math-purple/20 bg-math-purple/5 overflow-hidden">
+                    <div className="p-4 bg-math-purple/10 border-b border-math-purple/20 flex items-center gap-2">
+                      <BrainCircuit size={20} className="text-math-purple" />
+                      <h4 className="font-bold text-lg text-text-primary">Pedagogical Research Pipeline</h4>
+                    </div>
+                    <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <div className="space-y-1">
+                          <span className="text-math-purple font-bold uppercase text-[10px] tracking-wider block">⚠️ Common Misconceptions</span>
+                          <ul className="space-y-1.5">
+                            {generatedLesson.researchNotes.misconceptions.map((m: string, i: number) => (
+                              <li key={i} className="text-xs text-text-secondary flex gap-2">
+                                <span className="text-math-purple">•</span> {m}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-math-purple font-bold uppercase text-[10px] tracking-wider block">🌍 Real-World Connections</span>
+                          <p className="text-xs text-text-secondary italic">
+                            {generatedLesson.researchNotes.realWorldConnections.join(", ")}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="space-y-1">
+                          <span className="text-math-purple font-bold uppercase text-[10px] tracking-wider block">📝 Vocabulary & Concepts</span>
+                          <div className="flex flex-wrap gap-2">
+                            {generatedLesson.researchNotes.vocabulary.map((v: string, i: number) => (
+                              <span key={i} className="px-2 py-0.5 rounded bg-math-purple/10 border border-math-purple/20 text-[10px] font-bold text-math-purple">
+                                {v}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-math-purple font-bold uppercase text-[10px] tracking-wider block">💡 Teaching Strategies</span>
+                          <ul className="space-y-1.5">
+                            {generatedLesson.researchNotes.strategies.map((s: string, i: number) => (
+                              <li key={i} className="text-xs text-text-secondary flex gap-2">
+                                <span className="text-math-purple">•</span> {s}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Visual Theme Card */}
+                {generatedLesson.visualTheme && (
+                  <Card className="border-ict-orange/20 bg-ict-orange/5">
+                    <div className="p-4 bg-ict-orange/10 border-b border-ict-orange/20 flex items-center gap-2">
+                      <Sparkles size={20} className="text-ict-orange" />
+                      <h4 className="font-bold text-lg text-text-primary">Visual Concept & Experience</h4>
+                    </div>
+                    <CardContent className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="space-y-1">
+                        <span className="text-ict-orange font-bold uppercase text-[10px] tracking-wider block">Primary Theme</span>
+                        <p className="text-sm font-bold text-text-primary">{generatedLesson.visualTheme.primaryTheme}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-ict-orange font-bold uppercase text-[10px] tracking-wider block">Color Palette</span>
+                        <p className="text-xs text-text-secondary text-sm font-mono break-all">{generatedLesson.visualTheme.colorPalette}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <span className="text-ict-orange font-bold uppercase text-[10px] tracking-wider block">Characters & Style</span>
+                        <p className="text-xs text-text-secondary">{generatedLesson.visualTheme.characters} • {generatedLesson.visualTheme.animationStyle}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
                 {['engage', 'model', 'guidedPractice', 'independentPractice', 'reflect'].map((phaseKey) => {
                   const phase = (generatedLesson.lessonStructure as any)[phaseKey];
                   if (!phase) return null;
 
                   return (
                     <Card key={phaseKey} className={`group border-l-4 bg-bg-card border-y border-r border-border hover:bg-bg-secondary/30 transition-all duration-300 ${phaseKey === 'engage' ? 'border-l-orange-500' :
-                      phaseKey === 'model' ? 'border-l-blue-500' :
-                        phaseKey === 'guidedPractice' ? 'border-l-green-500' :
-                          phaseKey === 'independentPractice' ? 'border-l-purple-500' :
-                            'border-l-pink-500'
+                        phaseKey === 'model' ? 'border-l-blue-500' :
+                          phaseKey === 'guidedPractice' ? 'border-l-green-500' :
+                            phaseKey === 'independentPractice' ? 'border-l-purple-500' :
+                              'border-l-pink-500'
                       }`}>
                       <div className="p-4 bg-bg-secondary/50 border-b border-border flex justify-between items-center">
-                        <h4 className="font-bold text-lg text-text-primary">{phase.title}</h4>
+                        <div className="flex flex-col">
+                          <h4 className="font-bold text-lg text-text-primary">{phase.title}</h4>
+                          {phase.visualMetadata?.researchHook && (
+                            <span className="text-[10px] text-text-tertiary font-medium">Research-Based Hook Principle</span>
+                          )}
+                        </div>
                         <span className="text-xs font-semibold px-2 py-1 rounded-full bg-bg-card border border-border text-text-secondary">
                           {phase.timeInMinutes} MIN
                         </span>
                       </div>
-                      <CardContent className="p-6 space-y-4">
-                        {/* Visual Metadata Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                          {phase.visualMetadata?.visualTheme && (
-                            <div className="space-y-1">
-                              <span className="text-text-tertiary font-bold uppercase text-[10px] tracking-wider mb-1 block">🎨 Visual Theme</span>
-                              <div className="text-text-primary leading-relaxed bg-bg-secondary/30 p-3 rounded-lg border border-border/50 text-xs italic">
-                                {phase.visualMetadata.visualTheme}
+                      <CardContent className="p-6 space-y-6">
+                        {/* Pedagogy Insets */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* Left Column: Research/Pedagogy */}
+                          <div className="space-y-4">
+                            <div className="bg-bg-secondary/50 rounded-xl p-4 border border-border/50">
+                              <span className="text-[10px] font-bold text-text-tertiary uppercase tracking-widest mb-2 block">🎓 Pedagogical Approach</span>
+                              <p className="text-xs text-text-secondary italic leading-relaxed">
+                                {phase.visualMetadata?.researchHook ||
+                                  phase.visualMetadata?.researchContent ||
+                                  phase.visualMetadata?.researchStrategy ||
+                                  phase.visualMetadata?.researchPractice ||
+                                  phase.visualMetadata?.researchReflection}
+                              </p>
+                              {phase.visualMetadata?.misconceptionAddressed && (
+                                <div className="mt-3 text-[10px] text-red-400 bg-red-900/10 p-2 rounded-lg border border-red-900/20">
+                                  <strong>Misconception Fix:</strong> {phase.visualMetadata.misconceptionAddressed}
+                                </div>
+                              )}
+                              {phase.visualMetadata?.researchInsight && (
+                                <div className="mt-3 text-[10px] text-blue-400 bg-blue-900/10 p-2 rounded-lg border border-blue-900/20">
+                                  <strong>Research Insight:</strong> {phase.visualMetadata.researchInsight}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Right Column: Visual Design */}
+                          <div className="space-y-4">
+                            <div className="bg-math-purple/5 rounded-xl p-4 border border-math-purple/10">
+                              <span className="text-[10px] font-bold text-math-purple uppercase tracking-widest mb-2 block">🎨 Visual Execution</span>
+                              <div className="grid grid-cols-1 gap-3">
+                                {phase.visualMetadata?.visualTheme && (
+                                  <div>
+                                    <span className="text-[9px] text-math-purple font-bold">THEME:</span>
+                                    <p className="text-[11px] text-text-primary">{phase.visualMetadata.visualTheme}</p>
+                                  </div>
+                                )}
+                                {phase.visualMetadata?.animations && (
+                                  <div>
+                                    <span className="text-[9px] text-math-purple font-bold">ANIMATION:</span>
+                                    <p className="text-[11px] text-text-primary">{phase.visualMetadata.animations}</p>
+                                  </div>
+                                )}
+                                {(phase.visualMetadata?.interactiveHook || phase.visualMetadata?.interactiveLearning) && (
+                                  <div className="flex gap-2 items-start text-indigo-400">
+                                    <Zap size={14} className="shrink-0" />
+                                    <p className="text-[11px] font-medium">{phase.visualMetadata.interactiveHook || phase.visualMetadata.interactiveLearning}</p>
+                                  </div>
+                                )}
                               </div>
                             </div>
-                          )}
-                          {phase.visualMetadata?.screenLayout && (
-                            <div className="space-y-1">
-                              <span className="text-text-tertiary font-bold uppercase text-[10px] tracking-wider mb-1 block">🖥️ Screen Layout</span>
-                              <div className="text-text-primary leading-relaxed bg-bg-secondary/30 p-3 rounded-lg border border-border/50 text-xs">
-                                {phase.visualMetadata.screenLayout}
-                              </div>
-                            </div>
-                          )}
+                          </div>
                         </div>
-
-                        {/* Interactive Elements */}
-                        {(phase.visualMetadata?.interactiveHook || phase.visualMetadata?.interactiveElements) && (
-                          <div className="space-y-2">
-                            <span className="text-text-tertiary font-bold uppercase text-[10px] tracking-wider block">🖱️ Interaction Design</span>
-                            <div className="text-text-primary leading-relaxed bg-indigo-500/5 p-3 rounded-lg border border-indigo-500/20 text-xs flex gap-2 items-start">
-                              <Zap size={14} className="text-indigo-500 shrink-0 mt-0.5" />
-                              <span>{phase.visualMetadata.interactiveHook || phase.visualMetadata.interactiveElements}</span>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Animations */}
-                        {phase.visualMetadata?.animations && (
-                          <div className="space-y-2">
-                            <span className="text-text-tertiary font-bold uppercase text-[10px] tracking-wider block">🎬 Animation & Flow</span>
-                            <div className="text-text-primary leading-relaxed bg-bg-secondary/30 p-3 rounded-lg border border-border/50 text-xs">
-                              {phase.visualMetadata.animations}
-                            </div>
-                          </div>
-                        )}
 
                         {/* Activities List */}
                         <div className="space-y-3 pt-2">
-                          <span className="text-text-tertiary font-bold uppercase text-[10px] tracking-wider block">📝 Visualized Activities</span>
+                          <div className="flex items-center gap-2">
+                            <Plus size={14} className="text-text-tertiary" />
+                            <span className="text-text-tertiary font-bold uppercase text-[10px] tracking-wider block">Visualized Activity Pipeline</span>
+                          </div>
                           <div className="grid grid-cols-1 gap-2">
                             {phase.content.map((item: any, idx: number) => (
                               <div key={idx} className="flex gap-3 text-sm text-text-secondary bg-bg-card p-3 rounded-xl border border-border/30 group-hover:bg-bg-secondary/50 transition-colors">
