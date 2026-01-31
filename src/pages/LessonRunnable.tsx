@@ -6,7 +6,8 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import {
     Play, Pause, SkipForward, ArrowLeft, RotateCcw, Clock,
-    BookOpen, PenTool, FileText, Brain, Check, Lock, Globe, File, Layout
+    BookOpen, PenTool, FileText, Brain, Check, Lock, Globe, File, Layout,
+    Sparkles, Zap, AlertCircle, BrainCircuit
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/lib/supabase';
@@ -89,6 +90,10 @@ const LessonRunnable: React.FC = () => {
                 gradeLevel: data.grade_level || data.gradelevel,
                 learningType: data.learning_type,
                 lessonStructure: data.lesson_structure || data.lessonstructure,
+                researchNotes: data.research_notes || data.researchnotes,
+                visualTheme: data.visual_theme || data.visualtheme,
+                assessmentSettings: data.assessment_settings || data.assessmentsettings,
+                requiredResources: data.required_resources || data.requiredresources,
                 accessCode: data.access_code,
                 createdBy: data.created_by,
             };
@@ -322,7 +327,10 @@ const LessonRunnable: React.FC = () => {
                     </div>
 
                     {/* Active Phase Content */}
-                    <div className="bg-bg-secondary/30 min-h-[500px] p-6 pt-2">
+                    <div className={`
+                        min-h-[500px] p-6 pt-2 transition-all duration-700
+                        ${currentPhaseData?.visualMetadata?.visualTheme ? 'bg-bg-secondary/40 ring-1 ring-math-purple/10' : 'bg-bg-secondary/30'}
+                    `}>
                         {/* Phase Specific Title */}
                         <div className={`mb-6 flex items-center gap-3 pb-4 border-b border-gray-100`}>
                             <div className={`p-2.5 rounded-lg ${phaseColors.bg} text-white shadow-sm`}>
@@ -347,6 +355,63 @@ const LessonRunnable: React.FC = () => {
                         </div>
 
                         <CardContent className="p-0">
+                            {/* Phase-Level Metadata & Research Insights */}
+                            {currentPhaseData?.visualMetadata && (
+                                <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {/* Visual Theme Callout */}
+                                        <div className="bg-bg-card p-4 rounded-xl border border-border shadow-sm flex items-start gap-3">
+                                            <div className="bg-math-purple/10 p-2 rounded-lg text-math-purple">
+                                                <Sparkles size={20} />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-xs font-bold uppercase text-math-purple tracking-widest mb-1">Active Visual Theme</h4>
+                                                <p className="text-sm font-semibold text-text-primary capitalize">
+                                                    {currentPhaseData.visualMetadata.visualTheme || "Classic Lab Layout"}
+                                                </p>
+                                                {currentPhaseData.visualMetadata.animations && (
+                                                    <div className="mt-2 flex items-center gap-1.5 text-[10px] text-text-tertiary">
+                                                        <Zap size={10} className="text-warning-amber" />
+                                                        <span>FX: {currentPhaseData.visualMetadata.animations}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Pedagogical Research Insight */}
+                                        <div className="bg-bg-card p-4 rounded-xl border border-focus-blue/30 shadow-sm flex items-start gap-3 border-l-4 border-l-focus-blue">
+                                            <div className="bg-focus-blue/10 p-2 rounded-lg text-focus-blue">
+                                                <BrainCircuit size={20} />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-xs font-bold uppercase text-focus-blue tracking-widest mb-1">Phase Research Insight</h4>
+                                                <p className="text-sm text-text-secondary italic leading-relaxed">
+                                                    {currentPhaseData.visualMetadata.researchHook ||
+                                                        currentPhaseData.visualMetadata.researchContent ||
+                                                        currentPhaseData.visualMetadata.researchStrategy ||
+                                                        currentPhaseData.visualMetadata.researchPractice ||
+                                                        currentPhaseData.visualMetadata.researchReflection ||
+                                                        "Standard pedagogical delivery."}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Misconception Alert */}
+                            {currentPhaseData?.visualMetadata?.misconceptionAddressed && (
+                                <div className="mb-6 bg-error-coral/5 border border-error-coral/20 p-4 rounded-xl flex items-center gap-3">
+                                    <div className="bg-error-coral/10 p-2 rounded-lg text-error-coral">
+                                        <AlertCircle size={20} />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-xs font-bold uppercase text-error-coral tracking-widest mb-1">Misconception Alert</h4>
+                                        <p className="text-sm text-text-primary font-medium">{currentPhaseData.visualMetadata.misconceptionAddressed}</p>
+                                    </div>
+                                </div>
+                            )}
+
                             {currentPhaseData?.content && currentPhaseData.content.length > 0 ? (
                                 <div className="space-y-8">
                                     {currentPhaseData.content.map((content, idx) => (
