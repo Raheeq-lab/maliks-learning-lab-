@@ -158,10 +158,6 @@ export interface LessonPhase {
     takeawayGraphic?: string;
     imageUrl?: string;
     imagePrompt?: string;
-    talkingPoints?: string[];
-    differentiationHigh?: string;
-    differentiationLow?: string;
-    misconceptionAlert?: string;
   };
 }
 

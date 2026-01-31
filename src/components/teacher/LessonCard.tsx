@@ -89,6 +89,9 @@ const LessonCard: React.FC<LessonCardProps> = ({
             </CardHeader>
 
             <CardContent className="space-y-3 p-card-padding pt-0 pb-3">
+                <div className="flex items-center gap-2">
+                    <div className="flex-1 h-1 bg-gradient-to-r from-transparent via-border to-transparent opacity-50"></div>
+                </div>
                 {!isPublic && (
                     <div className="text-center">
                         <p className="text-[10px] text-text-tertiary italic">Private Dashboard Only</p>

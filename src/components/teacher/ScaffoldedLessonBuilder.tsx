@@ -55,22 +55,22 @@ const initialLessonStructure: LessonStructure = {
     content: [{ id: `engage-${Date.now()}`, type: "text", content: "" }]
   },
   model: {
-    title: "Learn",
+    title: "Model",
     timeInMinutes: 8,
     content: [{ id: `model-${Date.now()}`, type: "text", content: "" }]
   },
   guidedPractice: {
-    title: "Practice Together",
+    title: "Guided Practice",
     timeInMinutes: 12,
     content: [{ id: `guided-${Date.now()}`, type: "text", content: "" }]
   },
   independentPractice: {
-    title: "Try It Yourself",
+    title: "Independent Practice",
     timeInMinutes: 10,
     content: [{ id: `independent-${Date.now()}`, type: "text", content: "" }]
   },
   reflect: {
-    title: "Think About It",
+    title: "Reflect",
     timeInMinutes: 5,
     content: [{ id: `reflect-${Date.now()}`, type: "text", content: "" }]
   }
@@ -126,7 +126,6 @@ const getTopicSuggestions = (subject: "math" | "english" | "ict", grade: number)
     }
   }
 };
-
 
 const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grades, subject, onSave, onCancel, initialData, onSwitchToGeneric }) => {
   const handleCancel = () => {
@@ -1167,7 +1166,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
     }
   };
 
-  const handleMetadataChange = (phase: keyof LessonStructure, field: string, value: any) => {
+  const handleMetadataChange = (phase: keyof LessonStructure, field: string, value: string) => {
     setLessonStructure(prev => ({
       ...prev,
       [phase]: {
@@ -1470,68 +1469,6 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
       </div>
     );
     // ...
-  };
-
-
-  const PhaseTeacherSupport: React.FC<{ phase: keyof LessonStructure }> = ({ phase }) => {
-    const metadata = lessonStructure[phase].visualMetadata || {};
-    const talkingPoints = metadata.talkingPoints || [];
-
-    return (
-      <Card className="border-border bg-yellow-50/50 shadow-sm border-dashed mb-4">
-        <CardHeader className="py-3 px-4">
-          <CardTitle className="text-xs font-bold flex items-center gap-2 uppercase tracking-wide text-yellow-700">
-            <Zap size={14} /> Teacher Support Controls
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4 px-4 pb-4">
-          <div className="space-y-2">
-            <Label className="text-[10px] font-bold uppercase text-text-tertiary">Teacher Talking Points</Label>
-            <Textarea
-              placeholder="Key points to mention... (one per line)"
-              value={talkingPoints.join('\n')}
-              onChange={(e) => {
-                const points = e.target.value.split('\n');
-                handleMetadataChange(phase, "talkingPoints", points);
-              }}
-              className="text-xs bg-white min-h-[80px]"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <Label className="text-[10px] font-bold uppercase text-text-tertiary">Differentiation (Support)</Label>
-              <Input
-                placeholder="For struggling learners..."
-                value={metadata.differentiationLow || ''}
-                onChange={(e) => handleMetadataChange(phase, "differentiationLow", e.target.value)}
-                className="text-xs bg-white h-7"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-[10px] font-bold uppercase text-text-tertiary">Differentiation (Challenge)</Label>
-              <Input
-                placeholder="For advanced learners..."
-                value={metadata.differentiationHigh || ''}
-                onChange={(e) => handleMetadataChange(phase, "differentiationHigh", e.target.value)}
-                className="text-xs bg-white h-7"
-              />
-            </div>
-          </div>
-          <div className="space-y-1">
-            <Label className="text-[10px] font-bold uppercase text-text-tertiary">Misconception Alert</Label>
-            <div className="flex items-center gap-2">
-              <AlertCircle size={14} className="text-error-coral" />
-              <Input
-                placeholder="Common misconception to address..."
-                value={metadata.misconceptionAlert || ''}
-                onChange={(e) => handleMetadataChange(phase, "misconceptionAlert", e.target.value)}
-                className="text-xs bg-white h-7 flex-1"
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
   };
 
   return (
@@ -1846,7 +1783,6 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                   </div>
 
                   <PhaseVisualMetadata phase="engage" />
-                  <PhaseTeacherSupport phase="engage" />
 
                   {lessonStructure.engage.content.map((content, index) => (
                     <div key={content.id} className="bg-bg-card rounded-md border border-border p-4 shadow-sm">
@@ -1935,7 +1871,6 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                   </div>
 
                   <PhaseVisualMetadata phase="model" />
-                  <PhaseTeacherSupport phase="model" />
 
                   {lessonStructure.model.content.map((content, index) => (
                     <div key={content.id} className="bg-bg-card rounded-md border border-border p-4 shadow-sm">
@@ -2025,7 +1960,6 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                   </div>
 
                   <PhaseVisualMetadata phase="guidedPractice" />
-                  <PhaseTeacherSupport phase="guidedPractice" />
 
                   {lessonStructure.guidedPractice.content.map((content, index) => (
                     <div key={content.id} className="bg-bg-card rounded-md border border-border p-4 shadow-sm">
@@ -2105,7 +2039,6 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                   </div>
 
                   <PhaseVisualMetadata phase="independentPractice" />
-                  <PhaseTeacherSupport phase="independentPractice" />
 
                   {lessonStructure.independentPractice.content.map((content, index) => (
                     <div key={content.id} className="bg-bg-card rounded-md border border-border p-4 shadow-sm">
@@ -2185,7 +2118,6 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                   </div>
 
                   <PhaseVisualMetadata phase="reflect" />
-                  <PhaseTeacherSupport phase="reflect" />
 
                   {lessonStructure.reflect.content.map((content, index) => (
                     <div key={content.id} className="bg-bg-card rounded-md border border-border p-4 shadow-sm">
