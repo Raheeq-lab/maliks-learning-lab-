@@ -102,7 +102,7 @@ const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const MODELS = [
     { model: "gemini-1.5-flash-latest", version: "v1beta" },
     { model: "gemini-1.5-flash", version: "v1beta" },
-    { model: "gemini-pro", version: "v1beta" }
+    { model: "gemini-pro", version: "v1" }
 ];
 
 /**

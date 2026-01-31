@@ -90,7 +90,7 @@ const callGemini = async (apiKey: string, prompt: string): Promise<GenerationRes
     const configurations = [
         { version: 'v1beta', model: 'gemini-1.5-flash-latest' },
         { version: 'v1beta', model: 'gemini-1.5-flash' },
-        { version: 'v1beta', model: 'gemini-pro' }
+        { version: 'v1', model: 'gemini-pro' }
     ];
 
     let firstError = '';
