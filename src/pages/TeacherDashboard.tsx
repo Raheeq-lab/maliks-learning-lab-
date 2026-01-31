@@ -99,6 +99,10 @@ const TeacherDashboard: React.FC = () => {
           timeLimit: l.time_limit,
           learningType: l.learning_type || l.learningtype, // Just in case
           lessonStructure: l.lesson_structure || l.lessonstructure,
+          researchNotes: l.research_notes || l.researchnotes,
+          visualTheme: l.visual_theme || l.visualtheme,
+          assessmentSettings: l.assessment_settings || l.assessmentsettings,
+          requiredResources: l.required_resources || l.requiredresources,
           accessCode: l.access_code || l.accesscode,
           createdBy: l.created_by || l.createdby,
           createdAt: l.created_at || l.createdat
@@ -204,6 +208,10 @@ const TeacherDashboard: React.FC = () => {
         access_code: lesson.accessCode.toUpperCase(),
         learning_type: lesson.learningType || 'scaffolded',
         lesson_structure: lesson.lessonStructure || {},
+        research_notes: lesson.researchNotes || null,
+        visual_theme: lesson.visualTheme || null,
+        assessment_settings: lesson.assessmentSettings || null,
+        required_resources: lesson.requiredResources || null,
         activity: lesson.activity || null,
         created_by: user.id,
         is_public: false

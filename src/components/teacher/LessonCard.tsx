@@ -15,6 +15,10 @@ interface LessonCardProps {
     onEdit: () => void;
     onDelete: () => void;
     subject?: "math" | "english" | "ict";
+    researchNotes?: {
+        misconceptions?: string[];
+        strategies?: string[];
+    };
 }
 
 const LessonCard: React.FC<LessonCardProps> = ({
@@ -27,7 +31,8 @@ const LessonCard: React.FC<LessonCardProps> = ({
     onEdit,
     onDelete,
     onTogglePublic,
-    subject = "math"
+    subject = "math",
+    researchNotes
 }) => {
     const [copied, setCopied] = useState(false);
 
@@ -57,7 +62,14 @@ const LessonCard: React.FC<LessonCardProps> = ({
                         <CardTitle className="text-lg font-bold leading-tight text-text-primary tracking-tight">
                             {title}
                         </CardTitle>
-                        <p className="text-xs text-text-secondary mt-1 font-medium">Grade {gradeLevel}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                            <p className="text-xs text-text-secondary font-medium">Grade {gradeLevel}</p>
+                            {researchNotes && (researchNotes.misconceptions?.length > 0 || researchNotes.strategies?.length > 0) && (
+                                <Badge variant="outline" className="text-[9px] h-4 px-1 bg-math-purple/5 border-math-purple/30 text-math-purple font-bold uppercase tracking-tight">
+                                    Research-Based
+                                </Badge>
+                            )}
+                        </div>
                     </div>
                     <Badge
                         variant={isPublic ? "secondary" : "outline"}

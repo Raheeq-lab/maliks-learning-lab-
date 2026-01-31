@@ -8,11 +8,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import {
-  ArrowLeft, Plus, Trash2, Clock, BookOpen, Laptop, BookText, Brain,
+  ArrowLeft, Plus, Trash2, Clock, BookOpen, Laptop, BookText, Brain, BrainCircuit,
   Play, PenTool, FileText, Download, Save, Eye, Sparkles, Wand2, Loader2,
   Upload, File, X, Image, BarChart2, Gamepad2, BriefcaseBusiness,
   MessageSquare, Pen, Headphones, Pencil, Search, MousePointer, CheckSquare, FileUp,
-  Lock, Globe, Settings
+  Lock, Globe, Settings, Zap, AlertCircle
 } from "lucide-react";
 import {
   Lesson,
@@ -140,10 +140,38 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
   const [topic, setTopic] = useState<string>('');
   const [selectedLearningType, setSelectedLearningType] = useState<string>(initialData?.learningType || 'scaffolded-lesson');
   const [lessonStructure, setLessonStructure] = useState<LessonStructure>(initialData?.lessonStructure || initialLessonStructure);
-  const [activePhase, setActivePhase] = useState<keyof LessonStructure>("engage");
+  const [activePhase, setActivePhase] = useState<keyof LessonStructure | 'research'>(initialData?.researchNotes ? 'research' : 'engage');
   const [showPreview, setShowPreview] = useState(false);
   const [isPublic, setIsPublic] = useState(initialData?.isPublic ?? true); // Default to public
   const [activitySettings, setActivitySettings] = useState<ActivitySettings>(initialActivitySettings);
+
+  // Pedagogical Research & Visual Theme State
+  const [researchNotes, setResearchNotes] = useState(initialData?.researchNotes || {
+    misconceptions: [],
+    strategies: [],
+    realWorldConnections: [],
+    vocabulary: [],
+    priorKnowledge: []
+  });
+  const [visualTheme, setVisualTheme] = useState(initialData?.visualTheme || {
+    primaryTheme: '',
+    colorPalette: '',
+    characters: '',
+    animationStyle: '',
+    soundTheme: ''
+  });
+  const [assessmentSettings, setAssessmentSettings] = useState(initialData?.assessmentSettings || {
+    formativeChecks: '',
+    extension: '',
+    support: '',
+    accessibility: ''
+  });
+  const [requiredResources, setRequiredResources] = useState(initialData?.requiredResources || {
+    visualAssets: '',
+    interactiveTools: '',
+    props: '',
+    teacherNotes: ''
+  });
   const imageInputRefs = React.useRef<{ [key: string]: HTMLInputElement | null }>({});
   const videoInputRefs = React.useRef<{ [key: string]: HTMLInputElement | null }>({});
   const fileInputRefs = React.useRef<{ [key: string]: HTMLInputElement | null }>({});
@@ -169,6 +197,10 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
           if (parsed.selectedLearningType) setSelectedLearningType(parsed.selectedLearningType);
           if (parsed.lessonStructure) setLessonStructure(parsed.lessonStructure);
           if (parsed.isPublic !== undefined) setIsPublic(parsed.isPublic);
+          if (parsed.researchNotes) setResearchNotes(parsed.researchNotes);
+          if (parsed.visualTheme) setVisualTheme(parsed.visualTheme);
+          if (parsed.assessmentSettings) setAssessmentSettings(parsed.assessmentSettings);
+          if (parsed.requiredResources) setRequiredResources(parsed.requiredResources);
         } catch (e) {
           console.error("Failed to parse lesson draft", e);
         }
@@ -186,7 +218,11 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
         topic,
         selectedLearningType,
         lessonStructure,
-        isPublic
+        isPublic,
+        researchNotes,
+        visualTheme,
+        assessmentSettings,
+        requiredResources
       };
       localStorage.setItem('scaffolded_lesson_builder_draft', JSON.stringify(draft));
     }
@@ -420,6 +456,10 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
       createdAt: initialData?.createdAt || new Date().toISOString(),
       accessCode: initialData?.accessCode || generateAccessCode(),
       learningType: selectedLearningType,
+      researchNotes,
+      visualTheme,
+      assessmentSettings,
+      requiredResources,
       isPublic,
     };
 
@@ -809,6 +849,80 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
     }
   };
 
+  const handleMetadataChange = (phase: keyof LessonStructure, field: string, value: string) => {
+    setLessonStructure(prev => ({
+      ...prev,
+      [phase]: {
+        ...prev[phase],
+        visualMetadata: {
+          ...prev[phase].visualMetadata,
+          [field]: value
+        }
+      }
+    }));
+  };
+
+  const PhaseVisualMetadata = ({ phase }: { phase: keyof LessonStructure }) => {
+    const metadata = lessonStructure[phase].visualMetadata || {};
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-bg-secondary/30 p-4 rounded-xl border border-border/50 mb-6">
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-bold uppercase text-math-purple flex items-center gap-1.5">
+              <Sparkles size={12} /> Visual Execution Theme
+            </Label>
+            <Input
+              placeholder="e.g. Glowing space station control room..."
+              value={metadata.visualTheme || ''}
+              onChange={(e) => handleMetadataChange(phase, 'visualTheme', e.target.value)}
+              className="text-xs bg-bg-input h-8 border-border"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-bold uppercase text-math-purple flex items-center gap-1.5">
+              <Play size={12} /> Phase Animations
+            </Label>
+            <Input
+              placeholder="e.g. Floating particles, slow zoom..."
+              value={metadata.animations || ''}
+              onChange={(e) => handleMetadataChange(phase, 'animations', e.target.value)}
+              className="text-xs bg-bg-input h-8 border-border"
+            />
+          </div>
+        </div>
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <Label className="text-[10px] font-bold uppercase text-focus-blue flex items-center gap-1.5">
+              <Brain size={12} /> Pedagogical Approach
+            </Label>
+            <Textarea
+              placeholder="Research-based approach for this phase..."
+              value={
+                metadata.researchHook ||
+                metadata.researchContent ||
+                metadata.researchStrategy ||
+                metadata.researchPractice ||
+                metadata.researchReflection || ''
+              }
+              onChange={(e) => {
+                const fieldMap: Record<string, string> = {
+                  engage: 'researchHook',
+                  model: 'researchContent',
+                  guidedPractice: 'researchStrategy',
+                  independentPractice: 'researchPractice',
+                  reflect: 'researchReflection'
+                };
+                handleMetadataChange(phase, fieldMap[phase], e.target.value);
+              }}
+              className="text-xs bg-bg-input min-h-[80px] border-border"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const StudentPreview = () => {
     // ... existing preview code
     const [currentPhase, setCurrentPhase] = useState<keyof LessonStructure>("engage");
@@ -1140,11 +1254,18 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
 
             <div className="space-y-6">
               <Tabs
-                value={activePhase}
-                onValueChange={(value) => setActivePhase(value as keyof LessonStructure)}
+                value={activePhase === "research" ? "research" : activePhase}
+                onValueChange={(value) => setActivePhase(value as any)}
                 className="w-full"
               >
-                <TabsList className="grid grid-cols-5 mb-4">
+                <TabsList className="grid grid-cols-6 mb-4">
+                  <TabsTrigger
+                    value="research"
+                    className="data-[state=active]:bg-math-purple data-[state=active]:text-white"
+                  >
+                    <BrainCircuit size={14} className="mr-1" />
+                    Research
+                  </TabsTrigger>
                   <TabsTrigger
                     value="engage"
                     className="data-[state=active]:bg-blue-500 data-[state=active]:text-white"
@@ -1182,6 +1303,123 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                   </TabsTrigger>
                 </TabsList>
 
+                <TabsContent value="research" className="space-y-6">
+                  <div className="bg-math-purple/5 p-4 rounded-xl border border-math-purple/20 mb-6">
+                    <h3 className="font-bold text-math-purple flex items-center gap-2">
+                      <BrainCircuit size={22} />
+                      Pedagogical Research Foundation
+                    </h3>
+                    <p className="text-[10px] text-text-secondary mt-1">Define the research and visual concept that grounds this lesson.</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card className="border-border bg-bg-card">
+                      <CardHeader className="py-4">
+                        <CardTitle className="text-sm font-bold flex items-center gap-2 uppercase tracking-tight text-text-primary">
+                          <AlertCircle size={16} className="text-red-500" />
+                          Student Misconceptions
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <Textarea
+                          placeholder="e.g. Students often think fractions with larger denominators are larger numbers..."
+                          value={researchNotes.misconceptions.join('\n')}
+                          onChange={(e) => setResearchNotes({ ...researchNotes, misconceptions: e.target.value.split('\n') })}
+                          rows={4}
+                          className="text-xs bg-bg-input border-border"
+                        />
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-border bg-bg-card">
+                      <CardHeader className="py-4">
+                        <CardTitle className="text-sm font-bold flex items-center gap-2 uppercase tracking-tight text-text-primary">
+                          <Brain size={16} className="text-math-purple" />
+                          Teaching Strategies
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <Textarea
+                          placeholder="e.g. Using visual area models to represent fractional parts..."
+                          value={researchNotes.strategies.join('\n')}
+                          onChange={(e) => setResearchNotes({ ...researchNotes, strategies: e.target.value.split('\n') })}
+                          rows={4}
+                          className="text-xs bg-bg-input border-border"
+                        />
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-border bg-bg-card">
+                      <CardHeader className="py-4">
+                        <CardTitle className="text-sm font-bold flex items-center gap-2 uppercase tracking-tight text-text-primary">
+                          <Globe size={16} className="text-focus-blue" />
+                          Real-World & Vocabulary
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-bold uppercase text-text-tertiary">Real-World Connections</Label>
+                          <Input
+                            placeholder="e.g. Slicing pizza, measuring ingredients..."
+                            value={researchNotes.realWorldConnections.join(', ')}
+                            onChange={(e) => setResearchNotes({ ...researchNotes, realWorldConnections: e.target.value.split(', ') })}
+                            className="text-xs bg-bg-input border-border"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-bold uppercase text-text-tertiary">Key Vocabulary</Label>
+                          <Input
+                            placeholder="e.g. Numerator, Denominator, Equivalent..."
+                            value={researchNotes.vocabulary.join(', ')}
+                            onChange={(e) => setResearchNotes({ ...researchNotes, vocabulary: e.target.value.split(', ') })}
+                            className="text-xs bg-bg-input border-border"
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-ict-orange/20 bg-ict-orange/5 shadow-sm border-dashed">
+                      <CardHeader className="py-4">
+                        <CardTitle className="text-sm font-bold flex items-center gap-2 uppercase tracking-tight text-ict-orange">
+                          <Sparkles size={16} />
+                          Visual Identity
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-[10px] font-bold uppercase text-text-tertiary">Primary Theme</Label>
+                            <Input
+                              placeholder="e.g. Pizzeria, Space Mission"
+                              value={visualTheme.primaryTheme}
+                              onChange={(e) => setVisualTheme({ ...visualTheme, primaryTheme: e.target.value })}
+                              className="text-xs bg-bg-input border-border"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-[10px] font-bold uppercase text-text-tertiary">Palette</Label>
+                            <Input
+                              placeholder="#FF0000, #00FF00"
+                              value={visualTheme.colorPalette}
+                              onChange={(e) => setVisualTheme({ ...visualTheme, colorPalette: e.target.value })}
+                              className="text-xs bg-bg-input border-border"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-bold uppercase text-text-tertiary">Animation Spirit</Label>
+                          <Input
+                            placeholder="e.g. Bouncy transitions, slow fades..."
+                            value={visualTheme.animationStyle}
+                            onChange={(e) => setVisualTheme({ ...visualTheme, animationStyle: e.target.value })}
+                            className="text-xs bg-bg-input border-border"
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+
                 <TabsContent value="engage" className="space-y-4">
                   <div className="flex justify-between items-center">
                     <div>
@@ -1212,6 +1450,8 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                       </Button>
                     </div>
                   </div>
+
+                  <PhaseVisualMetadata phase="engage" />
 
                   {lessonStructure.engage.content.map((content, index) => (
                     <div key={content.id} className="bg-bg-card rounded-md border border-border p-4 shadow-sm">
@@ -1298,6 +1538,8 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                       </Button>
                     </div>
                   </div>
+
+                  <PhaseVisualMetadata phase="model" />
 
                   {lessonStructure.model.content.map((content, index) => (
                     <div key={content.id} className="bg-bg-card rounded-md border border-border p-4 shadow-sm">
@@ -1386,6 +1628,8 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                     </div>
                   </div>
 
+                  <PhaseVisualMetadata phase="guidedPractice" />
+
                   {lessonStructure.guidedPractice.content.map((content, index) => (
                     <div key={content.id} className="bg-bg-card rounded-md border border-border p-4 shadow-sm">
                       {renderContentBlock("guidedPractice", content, index)}
@@ -1463,6 +1707,8 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                     </div>
                   </div>
 
+                  <PhaseVisualMetadata phase="independentPractice" />
+
                   {lessonStructure.independentPractice.content.map((content, index) => (
                     <div key={content.id} className="bg-bg-card rounded-md border border-border p-4 shadow-sm">
                       {renderContentBlock("independentPractice", content, index)}
@@ -1539,6 +1785,8 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                       </Button>
                     </div>
                   </div>
+
+                  <PhaseVisualMetadata phase="reflect" />
 
                   {lessonStructure.reflect.content.map((content, index) => (
                     <div key={content.id} className="bg-bg-card rounded-md border border-border p-4 shadow-sm">

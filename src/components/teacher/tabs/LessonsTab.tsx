@@ -99,6 +99,7 @@ const LessonsTab: React.FC<LessonsTabProps> = ({ lessons, onCreateLesson, onCopy
               gradeLevel={lesson.gradeLevel}
               accessCode={lesson.accessCode}
               isPublic={lesson.isPublic || (lesson as any).is_public}
+              researchNotes={lesson.researchNotes}
               onRun={() => onRunLesson(lesson.id)}
               onCopy={() => onCopyCode(lesson.title)}
               onEdit={() => onEditLesson(lesson)}
