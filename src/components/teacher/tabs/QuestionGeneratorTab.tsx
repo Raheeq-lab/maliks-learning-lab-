@@ -254,11 +254,19 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
       for (const phaseKey of phases) {
         const phase = updatedLesson.lessonStructure[phaseKey];
         if (phase.visualMetadata?.imagePrompt) {
-          const prompt = `Subject: ${subject}\nTopic: ${customTopic}\nGrade Level: ${selectedGrade}\nTarget Image: ${phase.visualMetadata.imagePrompt}\n\nProvide a high-quality, professional educational image URL link (Unsplash preferred). The image MUST be strictly pedagogically relevant and age-appropriate (NO unrelated sci-fi). Return a high-res Unsplash search URL like https://images.unsplash.com/photo-[id]?auto=format&fit=crop&q=80&w=1000 and NOTHING ELSE. JUST THE URL.`;
+          const prompt = `Subject: ${subject}\nTopic: ${customTopic}\nGrade Level: ${selectedGrade}\nTarget Image: ${phase.visualMetadata.imagePrompt}\n\nProvide a high-quality, professional educational image URL link (Unsplash preferred). If a specific ID is unavailable, use this keyword format: https://source.unsplash.com/featured/1600x900?[KEYWORDS]. RETURN ONLY THE URL starting with http.`;
 
           try {
-            const imageUrl = await generateTextContent(prompt);
-            if (imageUrl && imageUrl.startsWith('http')) {
+            const rawResponse = await generateTextContent(prompt);
+            const content = rawResponse.trim();
+            const urlMatch = content.match(/https?:\/\/[^\s"'>\])]+/);
+            let imageUrl = urlMatch ? urlMatch[0] : null;
+
+            if (!imageUrl) {
+              imageUrl = `https://source.unsplash.com/featured/1600x900?${customTopic.replace(/\s+/g, ',')},${String(phaseKey)}`;
+            }
+
+            if (imageUrl) {
               phase.visualMetadata.imageUrl = imageUrl.trim();
             }
           } catch (e) {

@@ -168,19 +168,29 @@ const LessonRunnable: React.FC = () => {
             const topic = lesson?.topic || "science";
             const imagePrompt = lesson?.lessonStructure?.engage?.visualMetadata?.imagePrompt || `Educational illustration for ${topic}`;
 
-            const forgePrompt = `Subject: ${lesson?.subject || "general"}\nTopic: ${topic}\nGrade Level: ${lesson?.gradeLevel || "all"}\nTarget Image: ${imagePrompt}\n\nProvide a high-quality, professional educational image URL link (Unsplash preferred). The image MUST be strictly pedagogically relevant and age-appropriate. RETURN ONLY THE URL starting with http.`;
+            const forgePrompt = `Subject: ${lesson?.subject || "general"}\nTopic: ${topic}\nGrade Level: ${lesson?.gradeLevel || "all"}\nTarget Image: ${imagePrompt}\n\nProvide a high-quality, professional educational image URL link (Unsplash preferred). \nIf you cannot find a specific high-res ID, provide a keyword-based fallback URL in this format: https://images.unsplash.com/photo-1?auto=format&fit=crop&q=80&w=1080&q=[KEYWORDS]\n\nRETURN ONLY THE URL starting with http.`;
             const response = await generateContent(config, forgePrompt, 'text');
 
             const content = response.content.trim();
-            const urlMatch = content.match(/https?:\/\/[^\s"'>)]+/);
-            const imageUrl = urlMatch ? urlMatch[0] : null;
+            // Match any URL starting with http/https up to the first space, quote, or bracket
+            const urlMatch = content.match(/https?:\/\/[^\s"'>\])]+/);
+            let imageUrl = urlMatch ? urlMatch[0] : null;
+
+            // Fallback: If AI returned keywords instead of a full photo ID in the URL, reform it
+            if (imageUrl && (imageUrl.includes('keywords=') || imageUrl.includes('search='))) {
+                const keywords = imageUrl.split('=').pop() || topic;
+                imageUrl = `https://source.unsplash.com/featured/1600x900?${keywords}`;
+            }
 
             if (imageUrl) {
                 await updateUniversalEngageImage(imageUrl);
                 toast({ title: "Image Generated", description: "Visual hook updated successfully!" });
             } else {
                 console.error("Failed to extract URL from response:", content);
-                toast({ title: "Forge Failed", description: "AI returned an invalid response. Please try again.", variant: "destructive" });
+                // Last ditch effort: constructive fallback
+                const fallbackUrl = `https://source.unsplash.com/featured/1600x900?${topic.replace(/\s+/g, ',')},education`;
+                await updateUniversalEngageImage(fallbackUrl);
+                toast({ title: "Forge Note", description: "Used a general topic image as fallback." });
             }
         } catch (error) {
             toast({ title: "Error", description: "AI Forge encountered an error.", variant: "destructive" });
@@ -1095,7 +1105,17 @@ const LessonRunnable: React.FC = () => {
                                                             <div className="space-y-4">
                                                                 <div className="relative aspect-video bg-bg-secondary rounded-xl overflow-hidden border-2 border-dashed border-border flex items-center justify-center group shadow-inner">
                                                                     {content.universalEngage?.visualHookImage ? (
-                                                                        <img src={content.universalEngage.visualHookImage} alt="Hook" className="w-full h-full object-cover" />
+                                                                        <img
+                                                                            src={content.universalEngage.visualHookImage}
+                                                                            alt="Hook"
+                                                                            className="w-full h-full object-cover"
+                                                                            onError={(e) => {
+                                                                                const target = e.target as HTMLImageElement;
+                                                                                if (!target.src.includes('source.unsplash.com')) {
+                                                                                    target.src = `https://source.unsplash.com/featured/1600x900?${lesson?.topic || 'education'}`;
+                                                                                }
+                                                                            }}
+                                                                        />
                                                                     ) : (
                                                                         <div className="text-center p-8 flex flex-col items-center">
                                                                             <div className="bg-bg-card p-4 rounded-full mb-4 shadow-sm group-hover:scale-110 transition-transform">
