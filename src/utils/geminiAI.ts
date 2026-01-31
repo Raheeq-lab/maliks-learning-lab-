@@ -101,11 +101,9 @@ const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 // Updated configurations for Preview Access Keys
 const MODELS = [
-    { model: "gemini-2.5-flash-lite-preview-09-2025", version: "v1beta" },
-    { model: "gemini-2.5-flash-preview-09-2025", version: "v1beta" },
-    { model: "gemini-3-flash-preview", version: "v1beta" },
-    { model: "gemini-3-pro-preview", version: "v1beta" },
-    { model: "nano-banana-pro-preview", version: "v1beta" }
+    { model: "gemini-2.0-flash-exp", version: "v1beta" },
+    { model: "gemini-1.5-flash", version: "v1beta" },
+    { model: "gemini-1.5-pro", version: "v1beta" }
 ];
 
 /**

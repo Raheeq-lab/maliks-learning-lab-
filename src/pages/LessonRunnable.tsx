@@ -171,16 +171,15 @@ const LessonRunnable: React.FC = () => {
             const response = await generateContent(config, `Provide a high-quality, professional educational image URL link (Unsplash preferred) related to: "${imagePrompt}". RETURN ONLY THE URL starting with http.`, 'text');
 
             const content = response.content.trim();
-            if (content.startsWith('http')) {
-                await updateUniversalEngageImage(content);
+            const urlMatch = content.match(/https?:\/\/[^\s"'>)]+/);
+            const imageUrl = urlMatch ? urlMatch[0] : null;
+
+            if (imageUrl) {
+                await updateUniversalEngageImage(imageUrl);
                 toast({ title: "Image Generated", description: "Visual hook updated successfully!" });
             } else {
-                // Determine if it was a rate limit error or general failure
-                if (response.error) {
-                    toast({ title: "Forge Failed", description: response.error, variant: "destructive" });
-                } else {
-                    toast({ title: "Generation Failed", description: "Could not retrieve a valid image URL.", variant: "destructive" });
-                }
+                console.error("Failed to extract URL from response:", content);
+                toast({ title: "Forge Failed", description: "AI returned an invalid response. Please try again.", variant: "destructive" });
             }
         } catch (error) {
             toast({ title: "Error", description: "AI Forge encountered an error.", variant: "destructive" });
@@ -1092,44 +1091,55 @@ const LessonRunnable: React.FC = () => {
                                                             </div>
                                                             <p className="text-lg font-medium text-text-primary">"Upload a puzzling picture related to your topic here:"</p>
 
-                                                            <div className="relative aspect-video bg-bg-secondary rounded-xl overflow-hidden border-2 border-dashed border-border flex items-center justify-center group">
-                                                                {content.universalEngage?.visualHookImage ? (
-                                                                    <img src={content.universalEngage.visualHookImage} alt="Hook" className="w-full h-full object-cover" />
-                                                                ) : (
-                                                                    <div className="text-center p-8 w-full h-full flex flex-col items-center justify-center">
-                                                                        <div className="bg-bg-card p-4 rounded-full mb-4 shadow-sm group-hover:scale-110 transition-transform">
-                                                                            <ImageIcon size={48} className="text-text-tertiary" />
+                                                            <div className="space-y-4">
+                                                                <div className="relative aspect-video bg-bg-secondary rounded-xl overflow-hidden border-2 border-dashed border-border flex items-center justify-center group shadow-inner">
+                                                                    {content.universalEngage?.visualHookImage ? (
+                                                                        <img src={content.universalEngage.visualHookImage} alt="Hook" className="w-full h-full object-cover" />
+                                                                    ) : (
+                                                                        <div className="text-center p-8 flex flex-col items-center">
+                                                                            <div className="bg-bg-card p-4 rounded-full mb-4 shadow-sm group-hover:scale-110 transition-transform">
+                                                                                <ImageIcon size={48} className="text-text-tertiary" />
+                                                                            </div>
+                                                                            <h4 className="font-bold text-lg text-text-primary mb-2">No Visual Hook Set</h4>
+                                                                            <p className="text-text-tertiary max-w-sm mb-0">AI suggestion above or use the buttons below to add one.</p>
                                                                         </div>
-                                                                        <h4 className="font-bold text-lg text-text-primary mb-2">Upload Visual Hook</h4>
-                                                                        <p className="text-text-tertiary mb-6 max-w-sm">
-                                                                            Drag and drop an image here, or use the buttons below.
-                                                                        </p>
-                                                                        <div className="flex gap-3">
-                                                                            <input
-                                                                                type="file"
-                                                                                ref={fileInputRef}
-                                                                                className="hidden"
-                                                                                accept="image/*"
-                                                                                onChange={handleFileUpload}
-                                                                            />
-                                                                            <Button
-                                                                                onClick={() => fileInputRef.current?.click()}
-                                                                                className="bg-[#FF6B35] hover:bg-orange-600 text-white dark:bg-orange-600 dark:hover:bg-orange-700 font-bold shadow-lg shadow-orange-900/10"
-                                                                            >
-                                                                                <Download className="mr-2 h-4 w-4" />
-                                                                                Select Photo
-                                                                            </Button>
-                                                                            <Button
-                                                                                onClick={handleAIForgeImage}
-                                                                                disabled={generatingImage}
-                                                                                className="bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-lg shadow-purple-900/10"
-                                                                            >
-                                                                                {generatingImage ? <MoreHorizontal className="animate-pulse mr-2 h-4 w-4" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                                                                                AI Forge
-                                                                            </Button>
-                                                                        </div>
-                                                                    </div>
-                                                                )}
+                                                                    )}
+                                                                </div>
+
+                                                                <div className="flex flex-wrap gap-3 items-center justify-center bg-bg-secondary/50 p-4 rounded-xl border border-border/50">
+                                                                    <input
+                                                                        type="file"
+                                                                        ref={fileInputRef}
+                                                                        className="hidden"
+                                                                        accept="image/*"
+                                                                        onChange={handleFileUpload}
+                                                                    />
+                                                                    <Button
+                                                                        onClick={() => fileInputRef.current?.click()}
+                                                                        className="bg-[#FF6B35] hover:bg-orange-600 text-white dark:bg-orange-600 dark:hover:bg-orange-700 font-bold shadow-lg shadow-orange-900/10 flex-1 sm:flex-none py-6 h-auto"
+                                                                    >
+                                                                        <Download className="mr-2 h-5 w-5" />
+                                                                        Select Photo
+                                                                    </Button>
+                                                                    <div className="h-8 w-px bg-border hidden sm:block mx-1" />
+                                                                    <Button
+                                                                        onClick={handleAIForgeImage}
+                                                                        disabled={generatingImage}
+                                                                        className="bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-lg shadow-purple-900/10 flex-1 sm:flex-none py-6 h-auto"
+                                                                    >
+                                                                        {generatingImage ? <MoreHorizontal className="animate-pulse mr-2 h-5 w-5" /> : <Sparkles className="mr-2 h-5 w-5" />}
+                                                                        AI Forge Image
+                                                                    </Button>
+                                                                    {content.universalEngage?.visualHookImage && (
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            onClick={() => updateUniversalEngageImage("")}
+                                                                            className="text-text-tertiary hover:text-error-coral hover:bg-error-coral/10 py-6 h-auto px-4"
+                                                                        >
+                                                                            Remove
+                                                                        </Button>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                             <div className="bg-[#FF6B35]/10 dark:bg-orange-900/20 p-4 rounded-lg text-sm text-text-secondary border-l-4 border-[#FF6B35] dark:border-orange-500">
                                                                 <span className="font-bold text-[#FF6B35] dark:text-orange-400">Teacher Tip:</span> Download an image showing something incomplete, mysterious, or counterintuitive about your topic. Examples: for science - an unexpected experiment result; for math - a visual pattern; for history - an artifact; for language - a word puzzle.
