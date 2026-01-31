@@ -11,6 +11,8 @@ export interface Quiz {
   createdAt: string;
   questions: QuizQuestion[];
   isPublic?: boolean;
+  is_live_session?: boolean;
+  live_status?: 'idle' | 'waiting' | 'active';
 }
 
 export interface QuizQuestion {
@@ -99,6 +101,28 @@ export interface LessonPhase {
   title: string;
   timeInMinutes: number;
   content: LessonPhaseContent[];
+  visualMetadata?: {
+    visualTheme?: string;
+    screenLayout?: string;
+    interactiveHook?: string;
+    animations?: string;
+    audio?: string;
+    visualMetaphor?: string;
+    feedbackSystem?: string;
+    collaborationInterface?: string;
+    roleIndicators?: string;
+    progressMap?: string;
+    workspaceDesign?: string;
+    celebration?: string;
+    scaffolding?: string;
+    selfCheck?: string;
+    rewards?: string;
+    errorVisualization?: string;
+    reflectionInterface?: string;
+    connectionVisualizer?: string;
+    realWorldApplication?: string;
+    takeawayGraphic?: string;
+  };
 }
 
 export interface LessonPhaseContent {

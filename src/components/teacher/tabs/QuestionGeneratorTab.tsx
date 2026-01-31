@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { BookOpen, BookText, Laptop, BrainCircuit, Wand2, FileText, CheckSquare, Sparkles, AlertCircle, Plus, RefreshCw, Check } from "lucide-react";
+import { BookOpen, BookText, Laptop, BrainCircuit, Wand2, FileText, CheckSquare, Sparkles, AlertCircle, Plus, RefreshCw, Check, Star, Zap } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -58,6 +58,7 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [generatedQuestions, setGeneratedQuestions] = useState<GeminiQuizQuestion[]>([]);
+  const [generatedLesson, setGeneratedLesson] = useState<Lesson | null>(null);
 
   const handleGenerate = async () => {
     setError(null);
@@ -96,11 +97,65 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
           content: [], // Legacy compat
           learningType: learningType,
           lessonStructure: {
-            engage: { title: "Engage", timeInMinutes: 5, content: lessonPlan.phases.engage.activities.map(a => ({ type: 'text', content: a, id: crypto.randomUUID() })) },
-            model: { title: "Model", timeInMinutes: 8, content: lessonPlan.phases.model.activities.map(a => ({ type: 'text', content: a, id: crypto.randomUUID() })) },
-            guidedPractice: { title: "Guided Practice", timeInMinutes: 12, content: lessonPlan.phases.guidedPractice.activities.map(a => ({ type: 'text', content: a, id: crypto.randomUUID() })) },
-            independentPractice: { title: "Independent Practice", timeInMinutes: 10, content: lessonPlan.phases.independentPractice.activities.map(a => ({ type: 'text', content: a, id: crypto.randomUUID() })) },
-            reflect: { title: "Reflect", timeInMinutes: 5, content: lessonPlan.phases.reflect.activities.map(a => ({ type: 'text', content: a, id: crypto.randomUUID() })) }
+            engage: {
+              title: "🎯 ENGAGE",
+              timeInMinutes: 5,
+              content: lessonPlan.phases.engage.activities.map(a => ({ type: 'text', content: a, id: crypto.randomUUID() })),
+              visualMetadata: {
+                visualTheme: lessonPlan.phases.engage.visualTheme,
+                screenLayout: lessonPlan.phases.engage.screenLayout,
+                interactiveHook: lessonPlan.phases.engage.interactiveHook,
+                animations: lessonPlan.phases.engage.animations,
+                audio: lessonPlan.phases.engage.audio
+              }
+            },
+            model: {
+              title: "📚 LEARN",
+              timeInMinutes: 8,
+              content: lessonPlan.phases.learn.activities.map(a => ({ type: 'text', content: a, id: crypto.randomUUID() })),
+              visualMetadata: {
+                visualTheme: lessonPlan.phases.learn.visualTheme,
+                screenLayout: lessonPlan.phases.learn.screenLayout,
+                animations: lessonPlan.phases.learn.animations,
+                visualMetaphor: lessonPlan.phases.learn.visualMetaphor,
+                feedbackSystem: lessonPlan.phases.learn.feedbackSystem
+              }
+            },
+            guidedPractice: {
+              title: "👥 PRACTICE TOGETHER",
+              timeInMinutes: 12,
+              content: lessonPlan.phases.practiceTogether.activities.map(a => ({ type: 'text', content: a, id: crypto.randomUUID() })),
+              visualMetadata: {
+                collaborationInterface: lessonPlan.phases.practiceTogether.collaborationInterface,
+                roleIndicators: lessonPlan.phases.practiceTogether.roleIndicators,
+                progressMap: lessonPlan.phases.practiceTogether.progressMap,
+                workspaceDesign: lessonPlan.phases.practiceTogether.workspaceDesign,
+                celebration: lessonPlan.phases.practiceTogether.celebration
+              }
+            },
+            independentPractice: {
+              title: "✏️ TRY IT YOURSELF",
+              timeInMinutes: 10,
+              content: lessonPlan.phases.tryItYourself.activities.map(a => ({ type: 'text', content: a, id: crypto.randomUUID() })),
+              visualMetadata: {
+                workspaceDesign: lessonPlan.phases.tryItYourself.workspaceDesign,
+                scaffolding: lessonPlan.phases.tryItYourself.scaffolding,
+                selfCheck: lessonPlan.phases.tryItYourself.selfCheck,
+                rewards: lessonPlan.phases.tryItYourself.rewards,
+                errorVisualization: lessonPlan.phases.tryItYourself.errorVisualization
+              }
+            },
+            reflect: {
+              title: "💭 THINK ABOUT IT",
+              timeInMinutes: 5,
+              content: lessonPlan.phases.thinkAboutIt.activities.map(a => ({ type: 'text', content: a, id: crypto.randomUUID() })),
+              visualMetadata: {
+                reflectionInterface: lessonPlan.phases.thinkAboutIt.reflectionInterface,
+                connectionVisualizer: lessonPlan.phases.thinkAboutIt.connectionVisualizer,
+                realWorldApplication: lessonPlan.phases.thinkAboutIt.realWorldApplication,
+                takeawayGraphic: lessonPlan.phases.thinkAboutIt.takeawayGraphic
+              }
+            }
           },
           accessCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
           createdBy: 'AI',
@@ -108,8 +163,9 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
           isPublic: false
         };
 
-        onCreateLesson(newLesson);
-        toast({ title: "Lesson Created", description: "Lesson plan added to your dashboard." });
+        setGeneratedLesson(newLesson);
+        setGeneratedQuestions([]);
+        toast({ title: "Lesson Generated!", description: "Review your visual lesson plan below." });
       }
     } catch (err: any) {
       console.error(err);
@@ -256,7 +312,7 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
             </Alert>
           )}
 
-          {generatedQuestions.length === 0 ? (
+          {generatedQuestions.length === 0 && !generatedLesson ? (
             /* Input Form */
             <div className="space-y-6 animate-in slide-in-from-bottom-2 duration-300">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -347,6 +403,109 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
                   </>
                 )}
               </Button>
+            </div>
+          ) : generatedLesson ? (
+            /* Lesson Plan Results Display */
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex justify-between items-center pb-2 border-b border-border">
+                <h3 className="font-bold text-xl text-text-primary flex items-center gap-2">
+                  <Star size={20} className="text-math-purple fill-math-purple/20" />
+                  Visual Lesson Concept
+                </h3>
+                <div className="flex gap-3">
+                  <Button variant="outline" onClick={() => setGeneratedLesson(null)} className="border-border text-text-secondary hover:bg-bg-secondary hover:text-text-primary">
+                    <RefreshCw className="mr-2 h-4 w-4" /> Regenerate
+                  </Button>
+                  <Button onClick={() => {
+                    onCreateLesson(generatedLesson);
+                    toast({ title: "Lesson Saved!", description: "Visual lesson added to your library." });
+                    setGeneratedLesson(null);
+                    setCustomTopic("");
+                  }} className="bg-math-purple hover:bg-math-purple/90 text-white shadow-lg shadow-purple-900/20 border-none transition-all hover:scale-105">
+                    <Plus className="mr-2 h-4 w-4" /> Add to Library
+                  </Button>
+                </div>
+              </div>
+
+              <div className="space-y-6 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                {['engage', 'model', 'guidedPractice', 'independentPractice', 'reflect'].map((phaseKey) => {
+                  const phase = (generatedLesson.lessonStructure as any)[phaseKey];
+                  if (!phase) return null;
+
+                  return (
+                    <Card key={phaseKey} className={`group border-l-4 bg-bg-card border-y border-r border-border hover:bg-bg-secondary/30 transition-all duration-300 ${phaseKey === 'engage' ? 'border-l-orange-500' :
+                      phaseKey === 'model' ? 'border-l-blue-500' :
+                        phaseKey === 'guidedPractice' ? 'border-l-green-500' :
+                          phaseKey === 'independentPractice' ? 'border-l-purple-500' :
+                            'border-l-pink-500'
+                      }`}>
+                      <div className="p-4 bg-bg-secondary/50 border-b border-border flex justify-between items-center">
+                        <h4 className="font-bold text-lg text-text-primary">{phase.title}</h4>
+                        <span className="text-xs font-semibold px-2 py-1 rounded-full bg-bg-card border border-border text-text-secondary">
+                          {phase.timeInMinutes} MIN
+                        </span>
+                      </div>
+                      <CardContent className="p-6 space-y-4">
+                        {/* Visual Metadata Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                          {phase.visualMetadata?.visualTheme && (
+                            <div className="space-y-1">
+                              <span className="text-text-tertiary font-bold uppercase text-[10px] tracking-wider mb-1 block">🎨 Visual Theme</span>
+                              <div className="text-text-primary leading-relaxed bg-bg-secondary/30 p-3 rounded-lg border border-border/50 text-xs italic">
+                                {phase.visualMetadata.visualTheme}
+                              </div>
+                            </div>
+                          )}
+                          {phase.visualMetadata?.screenLayout && (
+                            <div className="space-y-1">
+                              <span className="text-text-tertiary font-bold uppercase text-[10px] tracking-wider mb-1 block">🖥️ Screen Layout</span>
+                              <div className="text-text-primary leading-relaxed bg-bg-secondary/30 p-3 rounded-lg border border-border/50 text-xs">
+                                {phase.visualMetadata.screenLayout}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Interactive Elements */}
+                        {(phase.visualMetadata?.interactiveHook || phase.visualMetadata?.interactiveElements) && (
+                          <div className="space-y-2">
+                            <span className="text-text-tertiary font-bold uppercase text-[10px] tracking-wider block">🖱️ Interaction Design</span>
+                            <div className="text-text-primary leading-relaxed bg-indigo-500/5 p-3 rounded-lg border border-indigo-500/20 text-xs flex gap-2 items-start">
+                              <Zap size={14} className="text-indigo-500 shrink-0 mt-0.5" />
+                              <span>{phase.visualMetadata.interactiveHook || phase.visualMetadata.interactiveElements}</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Animations */}
+                        {phase.visualMetadata?.animations && (
+                          <div className="space-y-2">
+                            <span className="text-text-tertiary font-bold uppercase text-[10px] tracking-wider block">🎬 Animation & Flow</span>
+                            <div className="text-text-primary leading-relaxed bg-bg-secondary/30 p-3 rounded-lg border border-border/50 text-xs">
+                              {phase.visualMetadata.animations}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Activities List */}
+                        <div className="space-y-3 pt-2">
+                          <span className="text-text-tertiary font-bold uppercase text-[10px] tracking-wider block">📝 Visualized Activities</span>
+                          <div className="grid grid-cols-1 gap-2">
+                            {phase.content.map((item: any, idx: number) => (
+                              <div key={idx} className="flex gap-3 text-sm text-text-secondary bg-bg-card p-3 rounded-xl border border-border/30 group-hover:bg-bg-secondary/50 transition-colors">
+                                <div className="h-5 w-5 rounded-full bg-bg-secondary flex items-center justify-center text-[10px] font-bold text-text-tertiary shrink-0 border border-border/50">
+                                  {idx + 1}
+                                </div>
+                                <p className="text-xs leading-relaxed">{item.content}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
             </div>
           ) : (
             /* Results Display */

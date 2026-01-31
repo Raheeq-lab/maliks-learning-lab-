@@ -8,16 +8,55 @@ export interface QuizQuestion {
     explanation: string;
 }
 
+export interface LessonPlanPhase {
+    duration: string;
+    visualTheme?: string;
+    screenLayout?: string;
+    interactiveHook?: string;
+    interactiveElements?: string;
+    animations?: string;
+    audio?: string;
+    contentVisualization?: string;
+    feedbackSystem?: string;
+    visualMetaphor?: string;
+    collaborationInterface?: string;
+    roleIndicators?: string;
+    progressMap?: string;
+    workspaceDesign?: string;
+    celebration?: string;
+    scaffolding?: string;
+    selfCheck?: string;
+    rewards?: string;
+    errorVisualization?: string;
+    reflectionInterface?: string;
+    connectionVisualizer?: string;
+    realWorldApplication?: string;
+    takeawayGraphic?: string;
+    activities: string[];
+}
+
 export interface LessonPlan {
     subject: string;
     grade: string;
     topic: string;
     phases: {
-        engage: { duration: string; activities: string[] };
-        model: { duration: string; activities: string[] };
-        guidedPractice: { duration: string; activities: string[] };
-        independentPractice: { duration: string; activities: string[] };
-        reflect: { duration: string; activities: string[] };
+        engage: LessonPlanPhase;
+        learn: LessonPlanPhase;
+        practiceTogether: LessonPlanPhase;
+        tryItYourself: LessonPlanPhase;
+        thinkAboutIt: LessonPlanPhase;
+    };
+    visualAssets: {
+        primaryColors: string;
+        iconSet: string;
+        characterTheme: string;
+        animationTypes: string;
+        interactiveComponents: string;
+    };
+    differentiation: {
+        struggling: string;
+        advanced: string;
+        accessibility: string;
     };
 }
 
@@ -166,20 +205,77 @@ export const generateLessonPlan = async (
     topic: string
 ): Promise<LessonPlan> => {
     const prompt = `
-    Create a 40-minute structured lesson plan for ${grade} ${subject} on the topic "${topic}".
-    Use the 5-phase teaching model: Engage (5min), Model (8min), Guided Practice (12min), Independent Practice (10min), Reflect (5min).
+    You are a VISUAL EDUCATIONAL DESIGNER AI. Your specialty is transforming standard lesson content into visually stunning, interactive learning experiences.
     
-    Strictly follow this JSON format:
+    Create a complete visual lesson plan for ${grade} ${subject} on the topic "${topic}" with exactly 5 timed phases: 
+    ENGAGE (5 min), LEARN (8 min), PRACTICE TOGETHER (12 min), TRY IT YOURSELF (10 min), THINK ABOUT IT (5 min).
+
+    CRITICAL INSTRUCTION: For EVERY element, describe the VISUAL appearance, not just the activity. 
+    Instead of "do addition problems" write "🎨 Colorful animated number blocks that snap together with particle effects when the correct sum is reached." 
+    Instead of "discuss answers" write "💬 Speech bubble interface where student responses appear with avatar pictures, color-coded by correctness."
+
+    The output must be a JSON object following this structure:
     {
       "subject": "${subject}",
       "grade": "${grade}",
       "topic": "${topic}",
       "phases": {
-        "engage": { "duration": "5 minutes", "activities": ["Activity 1", "Activity 2"] },
-        "model": { "duration": "8 minutes", "activities": ["Direct instruction", "Demonstration"] },
-        "guidedPractice": { "duration": "12 minutes", "activities": ["Group work", "Scaffolding"] },
-        "independentPractice": { "duration": "10 minutes", "activities": ["Individual task"] },
-        "reflect": { "duration": "5 minutes", "activities": ["Exit ticket"] }
+        "engage": {
+          "duration": "5 minutes",
+          "visualTheme": "description of hex colors and style",
+          "screenLayout": "arrangement of elements and animations",
+          "interactiveHook": "what students physically do (click, drag, etc.)",
+          "animations": "description of introductory animations",
+          "audio": "sound effects or music suggestions",
+          "activities": ["List of activities with visual descriptions"]
+        },
+        "learn": {
+          "duration": "8 minutes",
+          "contentVisualization": "how concepts are shown visually",
+          "animations": "step-by-step visual learning breakdown",
+          "interactiveElements": "what students manipulate",
+          "feedbackSystem": "how correct understanding is shown visually",
+          "visualMetaphor": "main visual theme (e.g. puzzle pieces)",
+          "activities": ["List of activities with visual descriptions"]
+        },
+        "practiceTogether": {
+          "duration": "12 minutes",
+          "collaborationInterface": "how group work appears on screen",
+          "roleIndicators": "how student roles are shown",
+          "progressMap": "visualization of group progress",
+          "workspaceDesign": "what the collaborative area looks like",
+          "celebration": "animation when group completes task",
+          "activities": ["List of activities with visual descriptions"]
+        },
+        "tryItYourself": {
+          "duration": "10 minutes",
+          "workspaceDesign": "individual activity area appearance",
+          "scaffolding": "how hints/help appear when needed",
+          "selfCheck": "visual way students check their own work",
+          "rewards": "visual rewards upon completion",
+          "errorVisualization": "how mistakes are shown constructively",
+          "activities": ["List of activities with visual descriptions"]
+        },
+        "thinkAboutIt": {
+          "duration": "5 minutes",
+          "reflectionInterface": "thought bubble/exit ticket visual design",
+          "connectionVisualizer": "how ideas link together graphically",
+          "realWorldApplication": "visual showing practical use",
+          "takeawayGraphic": "what students take with them visually",
+          "activities": ["List of activities with visual descriptions"]
+        }
+      },
+      "visualAssets": {
+        "primaryColors": "Hex codes for each phase",
+        "iconSet": "Specific emojis/icons for each activity",
+        "characterTheme": "Consistent visual characters or theme",
+        "animationTypes": "List of specific animations needed",
+        "interactiveComponents": "Drag-drop, sliders, drawing tools, etc."
+      },
+      "differentiation": {
+        "struggling": "Visual simplifications",
+        "advanced": "Visual extensions",
+        "accessibility": "High contrast, text-to-speech indicators"
       }
     }
   `;
