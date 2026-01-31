@@ -90,9 +90,11 @@ const callGemini = async (apiKey: string, prompt: string): Promise<GenerationRes
     // Updated configurations based on user's available models (Early Access/Preview)
     // Removed 1.5 models as they are returning 404s for this key.
     const configurations = [
-        { version: 'v1beta', model: 'gemini-2.0-flash-exp' },
-        { version: 'v1beta', model: 'gemini-1.5-flash' },
-        { version: 'v1beta', model: 'gemini-1.5-pro' }
+        { version: 'v1beta', model: 'gemini-2.5-flash' },
+        { version: 'v1beta', model: 'gemini-2.5-flash-lite-preview-09-2025' },
+        { version: 'v1beta', model: 'gemini-2.0-flash' },
+        { version: 'v1beta', model: 'gemini-3-flash-preview' },
+        { version: 'v1beta', model: 'gemini-3-pro-preview' }
     ];
 
     let firstError = '';
