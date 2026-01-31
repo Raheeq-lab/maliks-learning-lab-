@@ -137,7 +137,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
   const [title, setTitle] = useState(initialData?.title || '');
   const [description, setDescription] = useState(initialData?.description || '');
   const [gradeLevel, setGradeLevel] = useState<number>(initialData?.gradeLevel || grades[0] || 1);
-  const [topic, setTopic] = useState<string>('');
+  const [topic, setTopic] = useState<string>(initialData?.topic || '');
   const [selectedLearningType, setSelectedLearningType] = useState<string>(initialData?.learningType || 'scaffolded-lesson');
   const [lessonStructure, setLessonStructure] = useState<LessonStructure>(initialData?.lessonStructure || initialLessonStructure);
   const [activePhase, setActivePhase] = useState<keyof LessonStructure | 'research'>(initialData?.researchNotes ? 'research' : 'engage');
@@ -523,6 +523,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
       createdAt: initialData?.createdAt || new Date().toISOString(),
       accessCode: initialData?.accessCode || generateAccessCode(),
       learningType: selectedLearningType,
+      topic,
       researchNotes,
       visualTheme,
       assessmentSettings,

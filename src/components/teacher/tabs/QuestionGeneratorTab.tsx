@@ -51,7 +51,7 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
   // Let's place the GradeSelector at the top.
 
   const [activeTab, setActiveTab] = useState<"quiz" | "lesson">("quiz");
-  const [learningType, setLearningType] = useState<string>("scaffolded");
+  const [learningType, setLearningType] = useState<string>("scaffolded-lesson");
 
   // Quiz State
   const [customTopic, setCustomTopic] = useState("");
@@ -100,6 +100,7 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
           subject: subject,
           content: [], // Legacy compat
           learningType: learningType,
+          topic: customTopic,
           researchNotes: lessonPlan.researchNotes,
           visualTheme: lessonPlan.visualTheme,
           assessmentSettings: lessonPlan.assessment,

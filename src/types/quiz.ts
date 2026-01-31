@@ -56,6 +56,7 @@ export interface Lesson {
   description: string;
   gradeLevel: number;
   subject: "math" | "english" | "ict";
+  topic?: string;
   content: LessonContent[];
   createdBy: string;
   createdAt: string;

@@ -536,7 +536,7 @@ const TeacherDashboard: React.FC = () => {
                 onCopyCode={handleCopyCode}
                 onEditLesson={(l) => {
                   setEditingLesson(l);
-                  if (l.learningType === 'scaffolded') {
+                  if (l.learningType === 'scaffolded' || l.learningType === 'scaffolded-lesson') {
                     setShowScaffoldedLessonBuilder(true);
                   } else {
                     setShowLessonBuilder(true);
