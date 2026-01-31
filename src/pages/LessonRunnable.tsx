@@ -560,6 +560,42 @@ const LessonRunnable: React.FC = () => {
                             )}
                         </CardContent>
 
+                        {/* Research Lab - Lesson-Level Guidance */}
+                        {lesson?.researchNotes && (
+                            <div className="mx-6 mb-6 p-4 bg-math-purple/5 border border-math-purple/10 rounded-xl animate-in fade-in duration-1000">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <BrainCircuit size={18} className="text-math-purple" />
+                                    <h4 className="text-sm font-bold text-math-purple uppercase tracking-wider">Research Foundation Lab</h4>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {lesson.researchNotes.strategies && lesson.researchNotes.strategies.length > 0 && (
+                                        <div className="space-y-2">
+                                            <span className="text-[10px] font-bold text-text-tertiary uppercase tracking-normal flex items-center gap-1">
+                                                <Zap size={10} /> Teaching Strategies
+                                            </span>
+                                            <ul className="text-xs text-text-secondary space-y-1 list-disc list-inside">
+                                                {lesson.researchNotes.strategies.map((s: string, i: number) => (
+                                                    <li key={i}>{s}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                    {lesson.researchNotes.realWorldConnections && lesson.researchNotes.realWorldConnections.length > 0 && (
+                                        <div className="space-y-2">
+                                            <span className="text-[10px] font-bold text-text-tertiary uppercase tracking-normal flex items-center gap-1">
+                                                <Globe size={10} /> Real-World Context
+                                            </span>
+                                            <ul className="text-xs text-text-secondary space-y-1 list-disc list-inside">
+                                                {lesson.researchNotes.realWorldConnections.map((c: string, i: number) => (
+                                                    <li key={i}>{c}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
                         {/* Footer Navigation */}
                         <CardFooter className="p-6 mt-6 bg-bg-card border-t border-border rounded-b-xl flex justify-between items-center sticky bottom-0 z-10 shadow-[0_-5px_15px_-5px_rgba(0,0,0,0.05)]">
                             <Button
