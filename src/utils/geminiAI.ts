@@ -46,7 +46,16 @@ export interface LessonPlanPhase {
     exitTicket?: string;
     realWorldConnection?: string;
     takeawayGraphic?: string;
-    imagePrompt?: string; // New: Prompt for image generation
+    imagePrompt?: string;
+    // High-Fidelity Activity Data
+    activityType?: "poll" | "brainstorm" | "flashcards" | "steps" | "categorization" | "scaffolded" | "exit-ticket";
+    activityData?: {
+        pollOptions?: string[];
+        flashcards?: { front: string; back: string }[];
+        steps?: string[];
+        categorizationGroups?: { title: string; items: string[] }[];
+        scaffoldedLevels?: { level: number; question: string; hint?: string; solution: string }[];
+    };
 }
 
 export interface LessonPlan {
@@ -233,86 +242,104 @@ export const generateLessonPlan = async (
     topic: string
 ): Promise<LessonPlan> => {
     const prompt = `
-    You are a RESEARCH-BASED VISUAL LESSON DESIGNER. For the topic "${topic}" (${grade} ${subject}), follow this exact 6-step research pipeline to create a stunning visual lesson:
+    You are an EXPERT EDUCATIONAL DESIGNER and FULL-STACK DEVELOPER. Your goal is to create a COMPLETE RESEARCH-BASED interactive lesson for the topic "${topic}" (${grade} ${subject}).
+    
+    You must follow the 5-phase structure exactly and provide structured data for high-fidelity interactive elements.
 
-    ## RESEARCH PIPELINE
-    1. GET TOPIC → Understand the exact learning objective
-    2. DO RESEARCH → Find age-appropriate content, common misconceptions, best practices
-    3. WRITE OUTLINE → Structure the 5-phase lesson with timing
-    4. CREATE VISUAL DESIGN → Design banners, colors, animations, interactive elements
-    5. WRITE LESSON → Create the actual lesson content with visuals
-    6. DISPLAY LESSON → Format for beautiful presentation
+    ## PHASE 1: 🎯 ENGAGE (5 mins)
+    - Primary Goal: Activate prior knowledge & spark curiosity.
+    - Required Activity: A "poll" with 3 options OR a "brainstorm" board activity.
+    - JSON required: "activityType": "poll" (with pollOptions) or "brainstorm".
 
-    The output must be a JSON object following this structure:
+    ## PHASE 2: 📚 LEARN (8 mins)
+    - Primary Goal: Reduce cognitive load, multimodal presentation.
+    - Required Activity: "steps" (4 sequential concept chunks) OR "flashcards" (3-4 items).
+    - JSON required: "activityType": "steps" (with steps array) or "flashcards" (with front/back objects).
+
+    ## PHASE 3: 👥 PRACTICE TOGETHER (12 mins)
+    - Primary Goal: Collaborative mastery.
+    - Required Activity: "categorization" game with 2 groups and 4+ items.
+    - JSON required: "activityType": "categorization" (with categorizationGroups).
+
+    ## PHASE 4: ✏️ TRY IT YOURSELF (10 mins)
+    - Primary Goal: Independent practice & scaffolding.
+    - Required Activity: "scaffolded" questions (3 levels: Level 1 with hint, Level 2, Level 3 challenge).
+    - JSON required: "activityType": "scaffolded" (with scaffoldedLevels matching the levels/hints).
+
+    ## PHASE 5: 💭 THINK ABOUT IT (5 mins)
+    - Primary Goal: Metacognition & real-world connection.
+    - Required Activity: "exit-ticket" (Standard 3-2-1 prompt mapping).
+    - JSON required: "activityType": "exit-ticket".
+
+    The output must be a JSON object following this EXACT structure:
     {
       "subject": "${subject}",
       "grade": "${grade}",
       "topic": "${topic}",
       "researchNotes": {
-        "misconceptions": ["List of common student misconceptions"],
-        "strategies": ["List of age-appropriate strategies"],
-        "realWorldConnections": ["How this connects to real life"],
-        "vocabulary": ["Key terms needed"],
-        "priorKnowledge": ["What students should know already"]
+        "misconceptions": ["List 3 common misconceptions"],
+        "strategies": ["List 3 pedagogical strategies"],
+        "realWorldConnections": ["How this connects to life"],
+        "vocabulary": ["4 key terms"],
+        "priorKnowledge": ["What they should know"]
       },
       "visualTheme": {
-        "primaryTheme": "e.g., Space Exploration, Jungle Safari",
-        "colorPalette": "5 hex codes for each phase",
-        "characters": "Consistent visual characters",
-        "animationStyle": "e.g., Smooth transitions, bouncy, minimalist",
-        "soundTheme": "audio cues suggestions"
+        "primaryTheme": "Detailed visual theme (e.g. Cyberpunk Lab, Enchanted Forest)",
+        "colorPalette": "5 Hex codes for each phase",
+        "characters": "Description of guiding characters",
+        "animationStyle": "e.g. Smooth, bouncy, minimalist",
+        "soundTheme": "Audio cue suggestions"
       },
       "phases": {
         "engage": {
           "duration": "5 minutes",
-          "researchHook": "research-based physical/digital hook",
-          "visualTheme": "visual style description",
-          "screenLayout": "screen arrangement",
-          "interactiveHook": "what students physically do",
-          "misconceptionAddressed": "how to tackle a misconception early",
-          "animations": "opening animation description",
-          "audio": "opening sound theme",
-          "imagePrompt": "A detailed, cinemagraphic prompt for an AI image generator describing a visual for this phase (exclude LaTeX)",
-          "activities": ["List of activities with visual descriptions"]
+          "researchHook": "Research-based hook description",
+          "imagePrompt": "A detailed DALL-E style prompt for this phase visual",
+          "activities": ["Description of brainstorm/poll activity"],
+          "activityType": "poll",
+          "activityData": { "pollOptions": ["Option A", "Option B", "Option C"] }
         },
         "learn": {
           "duration": "8 minutes",
-          "researchContent": "pedagogically sound instructional approach",
-          "animations": "step-by-step visual learning breakdown",
-          "researchInsight": "e.g., Chunking, multimodal presentation",
-          "interactiveLearning": "student manipulation of concepts",
-          "checkForUnderstanding": "visual feedback system",
-          "imagePrompt": "A detailed, cinemagraphic prompt for an AI image generator describing the instructional visual (exclude LaTeX)",
-          "activities": ["List of activities with visual descriptions"]
+          "researchContent": "Instructional approach description",
+          "imagePrompt": "A detailed DALL-E style prompt for instructional visual",
+          "activities": ["Description of steps/flashcards"],
+          "activityType": "steps",
+          "activityData": { "steps": ["Step 1 content", "Step 2 content", "Step 3 content", "Step 4 content"] }
         },
         "practiceTogether": {
           "duration": "12 minutes",
-          "researchStrategy": "collaborative learning method",
-          "collaborationInterface": "group workspace design",
-          "differentiation": "how roles help mixed-ability groups",
-          "progressVisualization": "how groups see progress",
-          "celebration": "positive reinforcement animation",
-          "imagePrompt": "A detailed prompt for a collaborative activity visual (exclude LaTeX)",
-          "activities": ["List of activities with visual descriptions"]
+          "researchStrategy": "Collaboration strategy description",
+          "imagePrompt": "A detailed DALL-E style prompt for practice visual",
+          "activities": ["Description of categorization task"],
+          "activityType": "categorization",
+          "activityData": { 
+            "categorizationGroups": [
+              { "title": "Group A", "items": ["Item 1", "Item 2"] },
+              { "title": "Group B", "items": ["Item 3", "Item 4"] }
+            ] 
+          }
         },
         "tryItYourself": {
           "duration": "10 minutes",
-          "researchPractice": "optimal practice structure",
-          "workspaceDesign": "individual activity area appearance",
-          "scaffoldingSystem": "gradual release visual cues",
-          "selfAssessment": "visual self-check methods",
-          "errorRecovery": "constructive mistake handling",
-          "imagePrompt": "A detailed prompt for the independent practice visual (exclude LaTeX)",
-          "activities": ["List of activities with visual descriptions"]
+          "researchPractice": "Practice structure description",
+          "imagePrompt": "A detailed DALL-E style prompt for independent practice visual",
+          "activities": ["Description of scaffolded problems"],
+          "activityType": "scaffolded",
+          "activityData": {
+            "scaffoldedLevels": [
+              { "level": 1, "question": "Simple problem", "hint": "Useful hint", "solution": "Correct answer" },
+              { "level": 2, "question": "Standard problem", "solution": "Correct answer" },
+              { "level": 3, "question": "Challenge problem", "solution": "Correct answer" }
+            ]
+          }
         },
         "thinkAboutIt": {
           "duration": "5 minutes",
-          "researchReflection": "effective reflection technique",
-          "exitTicket": "reflection interface design",
-          "realWorldConnection": "applied learning visualization",
-          "takeawayGraphic": "visual summary takeaway",
-          "imagePrompt": "A detailed prompt for a reflective takeaway visual (exclude LaTeX)",
-          "activities": ["List of activities with visual descriptions"]
+          "researchReflection": "Reflection technique description",
+          "imagePrompt": "A detailed DALL-E style prompt for reflection visual",
+          "activities": ["Description of 3-2-1 exit ticket"],
+          "activityType": "exit-ticket"
         }
       },
       "assessment": {
@@ -322,10 +349,10 @@ export const generateLessonPlan = async (
         "accessibility": "alt-text, high contrast notes"
       },
       "resources": {
-        "visualAssets": "required images/animations",
-        "interactiveTools": "digital manipulatives",
-        "props": "optional physical items",
-        "teacherNotes": "research citations and pedagogical notes"
+        "visualAssets": "required assets",
+        "interactiveTools": "required tools",
+        "props": "optional items",
+        "teacherNotes": "pedagogical citations and notes"
       }
     }
   `;
@@ -340,32 +367,32 @@ export const generateWorksheet = async (
     learningObjectives: string[]
 ): Promise<{ title: string; content: string }> => {
     const prompt = `
-    You are an expert worksheet designer. Create a comprehensive, student-friendly worksheet for "${topic}" (${grade} ${subject}).
+    You are an expert worksheet designer.Create a comprehensive, student - friendly worksheet for "${topic}"(${grade} ${subject}).
     
     Learning Objectives:
     ${learningObjectives.map(obj => `- ${obj}`).join('\n')}
     
     The worksheet should include:
-    1. A clear Title.
-    2. A brief, engaging introduction (2-3 sentences).
-    3. 3-4 structured activities/exercises (e.g., matching, fill-in-the-blanks, problem-solving).
+1. A clear Title.
+    2. A brief, engaging introduction(2 - 3 sentences).
+    3. 3 - 4 structured activities / exercises(e.g., matching, fill -in -the - blanks, problem - solving).
     4. A "Challenge" question for advanced students.
     
     Format the output as a JSON object:
-    {
-      "title": "Worksheet Title",
-      "content": "The full worksheet content in Markdown format, with clear headings, spacing, and instructions."
-    }
-  `;
+{
+    "title": "Worksheet Title",
+        "content": "The full worksheet content in Markdown format, with clear headings, spacing, and instructions."
+}
+`;
 
     return await callGeminiAPI(prompt);
 };
 
 export const generateTextContent = async (prompt: string): Promise<string> => {
-    const fullPrompt = `You are a helpful assistant for teachers. Generate clear, educational content based on the user's request. 
-  Do not wrap in JSON. Just provide the text content directly.
+    const fullPrompt = `You are a helpful assistant for teachers.Generate clear, educational content based on the user's request. 
+  Do not wrap in JSON.Just provide the text content directly.
   
-  User Request: ${prompt}`;
+  User Request: ${prompt} `;
 
     try {
         const result = await callGeminiAPI(fullPrompt);

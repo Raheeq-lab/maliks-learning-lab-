@@ -162,7 +162,7 @@ export interface LessonPhase {
 
 export interface LessonPhaseContent {
   id: string;
-  type: "text" | "image" | "video" | "quiz" | "activity" | "resource" | "file";
+  type: "text" | "image" | "video" | "quiz" | "activity" | "resource" | "file" | "poll" | "brainstorm" | "flashcards" | "steps" | "diagram" | "timer" | "categorization" | "whiteboard" | "scaffolded" | "fill-blank" | "mapping" | "slider" | "exit-ticket";
   content: string;
   imageUrl?: string;
   videoUrl?: string;
@@ -171,7 +171,14 @@ export interface LessonPhaseContent {
   quizQuestions?: QuizQuestion[];
   resourceUrl?: string;
   aiToolUsed?: string;
-  activity?: ActivitySettings; // Added activity settings to lesson phase content
+  activity?: ActivitySettings;
+  // Specific data for new interactive types
+  pollOptions?: string[];
+  pollResults?: Record<string, number>;
+  flashcards?: { front: string; back: string }[];
+  steps?: string[];
+  categorizationGroups?: { title: string; items: string[] }[];
+  scaffoldedLevels?: { level: number; question: string; hint?: string; solution: string }[];
 }
 
 // Activity settings interface

@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import {
     Play, Pause, SkipForward, ArrowLeft, RotateCcw, Clock,
     BookOpen, PenTool, FileText, Brain, Check, Lock, Globe, File, Layout,
-    Sparkles, Zap, AlertCircle, BrainCircuit, Download
+    Sparkles, Zap, AlertCircle, BrainCircuit, Download,
+    Plus, Star
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/lib/supabase';
@@ -31,6 +32,18 @@ const LessonRunnable: React.FC = () => {
     const [totalPhaseTime, setTotalPhaseTime] = useState(0);
 
     const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Interactive State
+    const [pollVotes, setPollVotes] = useState<Record<string, number>>({});
+    const [userVoted, setUserVoted] = useState(false);
+    const [brainstormNotes, setBrainstormNotes] = useState<{ id: string, text: string, color: string }[]>([]);
+    const [currentStep, setCurrentStep] = useState(0);
+    const [flippedCards, setFlippedCards] = useState<number[]>([]);
+    const [categorizedItems, setCategorizedItems] = useState<Record<string, string[]>>({});
+    const [currentLevel, setCurrentLevel] = useState(1);
+    const [levelFeedback, setLevelFeedback] = useState<Record<number, { isCorrect: boolean, showHint: boolean }>>({});
+    const [exitTicketData, setExitTicketData] = useState({ learnings: ['', '', ''], questions: ['', ''], insight: '' });
+    const [confidence, setConfidence] = useState(50);
 
     useEffect(() => {
         fetchLesson();
@@ -557,6 +570,389 @@ const LessonRunnable: React.FC = () => {
                                                                 </a>
                                                             )}
                                                         </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* NEW INTERACTIVE TYPES */}
+
+                                            {/* POLL */}
+                                            {content.type === "poll" && (
+                                                <div className="space-y-4">
+                                                    <h4 className="font-bold text-xl text-text-primary">{content.content}</h4>
+                                                    <div className="grid grid-cols-1 gap-3">
+                                                        {(content.pollOptions || []).map((option, i) => {
+                                                            const votes = pollVotes[option] || 0;
+                                                            const totalVotes = Object.values(pollVotes).reduce((a, b) => a + b, 0) || 1;
+                                                            const percentage = Math.round((votes / totalVotes) * 100);
+                                                            return (
+                                                                <div
+                                                                    key={i}
+                                                                    onClick={() => {
+                                                                        if (!userVoted) {
+                                                                            setPollVotes(prev => ({ ...prev, [option]: (prev[option] || 0) + 1 }));
+                                                                            setUserVoted(true);
+                                                                            toast({ title: "Vote Cast!", description: "Your prediction has been recorded." });
+                                                                        }
+                                                                    }}
+                                                                    className={`relative p-4 rounded-xl border-2 transition-all cursor-pointer group ${userVoted ? 'border-border' : 'border-gray-200 hover:border-focus-blue hover:bg-focus-blue/5'}`}
+                                                                >
+                                                                    {userVoted && (
+                                                                        <div
+                                                                            className="absolute inset-0 bg-focus-blue/10 transition-all duration-1000"
+                                                                            style={{ width: `${percentage}%` }}
+                                                                        ></div>
+                                                                    )}
+                                                                    <div className="relative flex justify-between items-center">
+                                                                        <span className="font-medium text-text-primary">{option}</span>
+                                                                        {userVoted && <span className="font-bold text-focus-blue">{percentage}%</span>}
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                    {!userVoted && <p className="text-xs text-text-tertiary text-center italic">Select an option to see class results</p>}
+                                                </div>
+                                            )}
+
+                                            {/* BRAINSTORM */}
+                                            {content.type === "brainstorm" && (
+                                                <div className="space-y-4">
+                                                    <div className="flex justify-between items-center">
+                                                        <h4 className="font-bold text-xl text-text-primary">{content.content}</h4>
+                                                        <Button
+                                                            size="sm"
+                                                            className="bg-math-purple hover:bg-math-purple/90"
+                                                            onClick={() => {
+                                                                const text = prompt("Enter your idea:");
+                                                                if (text) {
+                                                                    setBrainstormNotes(prev => [...prev, {
+                                                                        id: Math.random().toString(),
+                                                                        text,
+                                                                        color: ['bg-yellow-100', 'bg-blue-100', 'bg-green-100', 'bg-pink-100'][Math.floor(Math.random() * 4)]
+                                                                    }]);
+                                                                }
+                                                            }}
+                                                        >
+                                                            <Plus className="mr-2 h-4 w-4" /> Add Note
+                                                        </Button>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 min-h-[200px] p-4 bg-bg-secondary/20 rounded-xl border-2 border-dashed border-border">
+                                                        {brainstormNotes.map(note => (
+                                                            <div key={note.id} className={`${note.color} p-4 rounded-lg shadow-sm transform rotate-${Math.random() > 0.5 ? '1' : '-1'} hover:rotate-0 transition-transform cursor-pointer border border-black/5`}>
+                                                                <p className="text-sm font-medium text-gray-800 leading-tight">{note.text}</p>
+                                                            </div>
+                                                        ))}
+                                                        {brainstormNotes.length === 0 && (
+                                                            <div className="col-span-full flex items-center justify-center text-text-tertiary italic">
+                                                                No ideas shared yet. Be the first!
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* STEPS */}
+                                            {content.type === "steps" && (
+                                                <div className="space-y-6">
+                                                    <h4 className="font-bold text-xl text-text-primary text-center mb-8">{content.content}</h4>
+                                                    <div className="relative">
+                                                        {/* Connection Line */}
+                                                        <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-100 -translate-y-1/2 z-0"></div>
+                                                        <div
+                                                            className="absolute top-1/2 left-0 h-1 bg-focus-blue -translate-y-1/2 z-0 transition-all duration-500"
+                                                            style={{ width: `${(currentStep / ((content.steps?.length || 1) - 1)) * 100}%` }}
+                                                        ></div>
+
+                                                        <div className="relative z-10 flex justify-between">
+                                                            {(content.steps || []).map((step, i) => (
+                                                                <div
+                                                                    key={i}
+                                                                    onClick={() => setCurrentStep(i)}
+                                                                    className={`
+                                                                        w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 border-4
+                                                                        ${i <= currentStep ? 'bg-focus-blue border-focus-blue text-white shadow-lg shadow-blue-200' : 'bg-white border-gray-100 text-text-tertiary'}
+                                                                    `}
+                                                                >
+                                                                    {i + 1}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                    <div className="mt-8 bg-bg-secondary/30 p-8 rounded-2xl border border-border animate-in fade-in zoom-in-95 duration-500">
+                                                        <Badge className="mb-4 bg-focus-blue">Step {currentStep + 1}</Badge>
+                                                        <p className="text-xl font-medium text-text-primary leading-relaxed">
+                                                            {content.steps?.[currentStep]}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex justify-between">
+                                                        <Button
+                                                            variant="outline"
+                                                            disabled={currentStep === 0}
+                                                            onClick={() => setCurrentStep(prev => prev - 1)}
+                                                        >
+                                                            Previous
+                                                        </Button>
+                                                        <Button
+                                                            className="bg-focus-blue"
+                                                            disabled={currentStep === (content.steps?.length || 1) - 1}
+                                                            onClick={() => setCurrentStep(prev => prev + 1)}
+                                                        >
+                                                            Next Step
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* FLASHCARDS */}
+                                            {content.type === "flashcards" && (
+                                                <div className="space-y-6">
+                                                    <h4 className="font-bold text-xl text-text-primary text-center">{content.content}</h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                        {(content.flashcards || []).map((card, i) => (
+                                                            <div
+                                                                key={i}
+                                                                onClick={() => setFlippedCards(prev => prev.includes(i) ? prev.filter(id => id !== i) : [...prev, i])}
+                                                                className="h-48 cursor-pointer perspective-1000 group"
+                                                            >
+                                                                <div className={`relative w-full h-full transition-all duration-500 preserve-3d ${flippedCards.includes(i) ? 'rotate-y-180' : ''}`}>
+                                                                    {/* Front */}
+                                                                    <div className="absolute inset-0 backface-hidden bg-bg-card border-2 border-focus-blue/20 rounded-2xl flex items-center justify-center p-6 shadow-sm group-hover:shadow-md transition-shadow">
+                                                                        <p className="text-xl font-bold text-focus-blue text-center">{card.front}</p>
+                                                                        <Badge className="absolute bottom-4 right-4 bg-focus-blue/10 text-focus-blue border-none">Click to flip</Badge>
+                                                                    </div>
+                                                                    {/* Back */}
+                                                                    <div className="absolute inset-0 backface-hidden rotate-y-180 bg-focus-blue text-white rounded-2xl flex items-center justify-center p-6 shadow-xl">
+                                                                        <p className="text-lg font-medium text-center leading-relaxed">{card.back}</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* CATEGORIZATION */}
+                                            {content.type === "categorization" && (
+                                                <div className="space-y-6">
+                                                    <h4 className="font-bold text-xl text-text-primary">{content.content}</h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                                        {(content.categorizationGroups || []).map((group, i) => (
+                                                            <div key={i} className="space-y-4">
+                                                                <div className={`p-4 rounded-xl border-2 flex items-center gap-3 ${i === 0 ? 'bg-math-purple/5 border-math-purple/20' : 'bg-ict-orange/5 border-ict-orange/20'}`}>
+                                                                    <div className={`w-3 h-3 rounded-full ${i === 0 ? 'bg-math-purple' : 'bg-ict-orange'}`}></div>
+                                                                    <h5 className="font-bold text-lg text-text-primary">{group.title}</h5>
+                                                                </div>
+                                                                <div className="min-h-[150px] p-4 bg-bg-secondary/20 rounded-xl border-2 border-dashed border-border flex flex-wrap gap-2">
+                                                                    {categorizedItems[group.title]?.map((item, idx) => (
+                                                                        <Badge key={idx} className={`${i === 0 ? 'bg-math-purple' : 'bg-ict-orange'} px-4 py-2 text-sm shadow-sm animate-in zoom-in-90`}>{item}</Badge>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <div className="mt-8 p-6 bg-bg-card border border-border rounded-2xl shadow-inner text-center">
+                                                        <h6 className="text-sm font-bold text-text-tertiary uppercase tracking-widest mb-4">Items to Categorize</h6>
+                                                        <div className="flex flex-wrap justify-center gap-3">
+                                                            {(content.categorizationGroups || []).flatMap(g => g.items).filter(item => !Object.values(categorizedItems).flat().includes(item)).map((item, idx) => (
+                                                                <div key={idx} className="flex gap-1">
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        className="rounded-full hover:bg-math-purple hover:text-white hover:border-math-purple transition-all"
+                                                                        onClick={() => {
+                                                                            const groupTitle = content.categorizationGroups?.[0].title || '';
+                                                                            setCategorizedItems(prev => ({ ...prev, [groupTitle]: [...(prev[groupTitle] || []), item] }));
+                                                                        }}
+                                                                    >
+                                                                        {item}
+                                                                        <div className="w-2 h-2 rounded-full bg-math-purple ml-2"></div>
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        className="rounded-full hover:bg-ict-orange hover:text-white hover:border-ict-orange transition-all"
+                                                                        onClick={() => {
+                                                                            const groupTitle = content.categorizationGroups?.[1].title || '';
+                                                                            setCategorizedItems(prev => ({ ...prev, [groupTitle]: [...(prev[groupTitle] || []), item] }));
+                                                                        }}
+                                                                    >
+                                                                        <div className="w-2 h-2 rounded-full bg-ict-orange mr-2"></div>
+                                                                    </Button>
+                                                                </div>
+                                                            ))}
+                                                            {(content.categorizationGroups || []).flatMap(g => g.items).filter(item => !Object.values(categorizedItems).flat().includes(item)).length === 0 && (
+                                                                <div className="flex items-center gap-2 text-success-green font-bold">
+                                                                    <Check size={20} /> All items categorized correctly!
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* SCAFFOLDED */}
+                                            {content.type === "scaffolded" && (
+                                                <div className="space-y-6">
+                                                    <div className="flex justify-between items-center bg-bg-secondary/30 p-4 rounded-xl border border-border">
+                                                        <h4 className="font-bold text-xl text-text-primary">Practice Levels</h4>
+                                                        <div className="flex gap-2">
+                                                            {[1, 2, 3].map(level => (
+                                                                <div
+                                                                    key={level}
+                                                                    className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm border-2 ${currentLevel === level ? 'bg-math-purple border-math-purple text-white shadow-md' : levelFeedback[level]?.isCorrect ? 'bg-success-green/20 border-success-green text-success-green' : 'bg-white border-gray-200 text-gray-400'}`}
+                                                                >
+                                                                    {level}
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="min-h-[250px] p-8 bg-bg-card rounded-2xl border-2 border-math-purple/10 shadow-sm animate-in fade-in slide-in-from-right-4 duration-500">
+                                                        {content.scaffoldedLevels?.filter(l => l.level === currentLevel).map((levelData, i) => (
+                                                            <div key={i} className="space-y-6">
+                                                                <Badge className="bg-math-purple/10 text-math-purple border-none font-bold">Level {currentLevel}: {currentLevel === 1 ? 'Foundation' : currentLevel === 2 ? 'Standard' : 'Challenge'}</Badge>
+                                                                <h5 className="text-2xl font-bold text-text-primary leading-tight">{levelData.question}</h5>
+
+                                                                {levelFeedback[currentLevel]?.showHint && levelData.hint && (
+                                                                    <div className="p-4 bg-warning-amber-light/20 border border-warning-amber/30 rounded-xl flex items-start gap-3 animate-in slide-in-from-top-2">
+                                                                        <Zap size={20} className="text-warning-amber mt-1" />
+                                                                        <p className="text-text-primary italic"><span className="font-bold">Hint:</span> {levelData.hint}</p>
+                                                                    </div>
+                                                                )}
+
+                                                                <div className="flex gap-4 pt-4">
+                                                                    <Button
+                                                                        className="h-12 flex-1 bg-math-purple hover:bg-math-purple/90 shadow-md transform active:scale-95 transition-all"
+                                                                        onClick={() => {
+                                                                            setLevelFeedback(prev => ({ ...prev, [currentLevel]: { ...prev[currentLevel], isCorrect: true, showHint: false } }));
+                                                                            toast({ title: "Correct!", description: `Great work on Level ${currentLevel}!` });
+                                                                            if (currentLevel < 3) setTimeout(() => setCurrentLevel(prev => prev + 1), 1500);
+                                                                        }}
+                                                                    >
+                                                                        Verify Solution
+                                                                    </Button>
+                                                                    {levelData.hint && !levelFeedback[currentLevel]?.showHint && (
+                                                                        <Button
+                                                                            variant="outline"
+                                                                            className="h-12 px-6 border-warning-amber text-warning-amber hover:bg-warning-amber-light/10"
+                                                                            onClick={() => setLevelFeedback(prev => ({ ...prev, [currentLevel]: { ...prev[currentLevel], showHint: true } }))}
+                                                                        >
+                                                                            Need a Hint?
+                                                                        </Button>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                        {levelFeedback[3]?.isCorrect && (
+                                                            <div className="h-full flex flex-col items-center justify-center text-center space-y-4 py-8 animate-in zoom-in-95">
+                                                                <div className="bg-success-green/10 p-6 rounded-full text-success-green">
+                                                                    <Star size={64} fill="currentColor" />
+                                                                </div>
+                                                                <h5 className="text-2xl font-bold text-text-primary">Mastery Achieved!</h5>
+                                                                <p className="text-text-secondary">You've completed all levels of this challenge.</p>
+                                                                <Button variant="ghost" className="text-math-purple font-bold" onClick={() => { setCurrentLevel(1); setLevelFeedback({}); }}>Reset Practice</Button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* EXIT TICKET */}
+                                            {content.type === "exit-ticket" && (
+                                                <div className="space-y-8 p-4">
+                                                    <div className="text-center space-y-2">
+                                                        <h4 className="font-bold text-3xl text-text-primary">3-2-1 Exit Ticket</h4>
+                                                        <p className="text-text-secondary">Reflect on your learning journey today</p>
+                                                    </div>
+
+                                                    <div className="space-y-8 max-w-2xl mx-auto">
+                                                        {/* 3 Learnings */}
+                                                        <div className="space-y-4">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-8 h-8 rounded-full bg-success-green text-white flex items-center justify-center font-bold">3</div>
+                                                                <h5 className="font-bold text-lg text-text-primary">Things I learned today</h5>
+                                                            </div>
+                                                            <div className="grid grid-cols-1 gap-2 pl-11">
+                                                                {[0, 1, 2].map(i => (
+                                                                    <input
+                                                                        key={i}
+                                                                        value={exitTicketData.learnings[i]}
+                                                                        onChange={(e) => {
+                                                                            const newLearnings = [...exitTicketData.learnings];
+                                                                            newLearnings[i] = e.target.value;
+                                                                            setExitTicketData(prev => ({ ...prev, learnings: newLearnings }));
+                                                                        }}
+                                                                        placeholder={`Learning ${i + 1}...`}
+                                                                        className="bg-bg-secondary/50 border-b-2 border-border focus:border-success-green outline-none p-2 text-text-primary transition-all rounded-t-lg hover:bg-bg-secondary"
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* 2 Questions */}
+                                                        <div className="space-y-4">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-8 h-8 rounded-full bg-focus-blue text-white flex items-center justify-center font-bold">2</div>
+                                                                <h5 className="font-bold text-lg text-text-primary">Questions I still have</h5>
+                                                            </div>
+                                                            <div className="grid grid-cols-1 gap-2 pl-11">
+                                                                {[0, 1].map(i => (
+                                                                    <input
+                                                                        key={i}
+                                                                        value={exitTicketData.questions[i]}
+                                                                        onChange={(e) => {
+                                                                            const newQs = [...exitTicketData.questions];
+                                                                            newQs[i] = e.target.value;
+                                                                            setExitTicketData(prev => ({ ...prev, questions: newQs }));
+                                                                        }}
+                                                                        placeholder={`Question ${i + 1}...`}
+                                                                        className="bg-bg-secondary/50 border-b-2 border-border focus:border-focus-blue outline-none p-2 text-text-primary transition-all rounded-t-lg hover:bg-bg-secondary"
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* 1 Insight */}
+                                                        <div className="space-y-4">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-8 h-8 rounded-full bg-math-purple text-white flex items-center justify-center font-bold">1</div>
+                                                                <h5 className="font-bold text-lg text-text-primary">Central discovery or insight</h5>
+                                                            </div>
+                                                            <div className="pl-11">
+                                                                <textarea
+                                                                    value={exitTicketData.insight}
+                                                                    onChange={(e) => setExitTicketData(prev => ({ ...prev, insight: e.target.value }))}
+                                                                    placeholder="My single most important takeaway..."
+                                                                    className="w-full bg-bg-secondary/50 border-2 border-border focus:border-math-purple outline-none p-4 rounded-xl text-text-primary h-32 transition-all hover:bg-bg-secondary"
+                                                                />
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Confidence Slider */}
+                                                        <div className="space-y-4 pt-4 border-t border-border">
+                                                            <div className="flex justify-between items-center text-sm font-bold text-text-secondary uppercase tracking-widest">
+                                                                <span>Not Confident</span>
+                                                                <span className="text-math-purple bg-math-purple/10 px-3 py-1 rounded-full">Level: {confidence}%</span>
+                                                                <span>Total Mastery</span>
+                                                            </div>
+                                                            <input
+                                                                type="range"
+                                                                min="0"
+                                                                max="100"
+                                                                value={confidence}
+                                                                onChange={(e) => setConfidence(parseInt(e.target.value))}
+                                                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-math-purple"
+                                                            />
+                                                            <p className="text-center text-lg font-bold text-text-primary animate-pulse">
+                                                                {confidence < 30 ? "😰 I need more help!" : confidence < 70 ? "💪 I'm getting there!" : "🚀 I've got this!"}
+                                                            </p>
+                                                        </div>
+
+                                                        <Button
+                                                            className="w-full h-14 text-lg font-bold bg-success-green hover:bg-success-green/90 text-white shadow-lg shadow-green-900/10 rounded-2xl"
+                                                            onClick={() => toast({ title: "Reflection Shared!", description: "Your exit ticket has been sent to the teacher." })}
+                                                        >
+                                                            Finalize Lesson & Submit
+                                                        </Button>
                                                     </div>
                                                 </div>
                                             )}

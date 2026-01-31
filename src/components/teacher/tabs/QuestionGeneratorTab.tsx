@@ -108,7 +108,15 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
             engage: {
               title: "🎯 ENGAGE",
               timeInMinutes: 5,
-              content: lessonPlan.phases.engage.activities.map(a => ({ type: 'text', content: a, id: crypto.randomUUID() })),
+              content: [
+                ...lessonPlan.phases.engage.activities.map(a => ({ type: 'text' as const, content: a, id: crypto.randomUUID() })),
+                ...(lessonPlan.phases.engage.activityType ? [{
+                  id: crypto.randomUUID(),
+                  type: lessonPlan.phases.engage.activityType as any,
+                  content: `Interactive ${lessonPlan.phases.engage.activityType}`,
+                  pollOptions: lessonPlan.phases.engage.activityData?.pollOptions
+                }] : [])
+              ],
               visualMetadata: {
                 visualTheme: lessonPlan.phases.engage.visualTheme,
                 screenLayout: lessonPlan.phases.engage.screenLayout,
@@ -116,54 +124,91 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
                 animations: lessonPlan.phases.engage.animations,
                 audio: lessonPlan.phases.engage.audio,
                 researchHook: lessonPlan.phases.engage.researchHook,
-                misconceptionAddressed: lessonPlan.phases.engage.misconceptionAddressed
+                misconceptionAddressed: lessonPlan.phases.engage.misconceptionAddressed,
+                imagePrompt: lessonPlan.phases.engage.imagePrompt
               }
             },
             model: {
               title: "📚 LEARN",
               timeInMinutes: 8,
-              content: lessonPlan.phases.learn.activities.map(a => ({ type: 'text', content: a, id: crypto.randomUUID() })),
+              content: [
+                ...lessonPlan.phases.learn.activities.map(a => ({ type: 'text' as const, content: a, id: crypto.randomUUID() })),
+                ...(lessonPlan.phases.learn.activityType ? [{
+                  id: crypto.randomUUID(),
+                  type: lessonPlan.phases.learn.activityType as any,
+                  content: `Interactive ${lessonPlan.phases.learn.activityType}`,
+                  steps: lessonPlan.phases.learn.activityData?.steps,
+                  flashcards: lessonPlan.phases.learn.activityData?.flashcards
+                }] : [])
+              ],
               visualMetadata: {
                 researchContent: lessonPlan.phases.learn.researchContent,
                 animations: lessonPlan.phases.learn.animations,
                 researchInsight: lessonPlan.phases.learn.researchInsight,
                 interactiveLearning: lessonPlan.phases.learn.interactiveLearning,
-                checkForUnderstanding: lessonPlan.phases.learn.checkForUnderstanding
+                checkForUnderstanding: lessonPlan.phases.learn.checkForUnderstanding,
+                imagePrompt: lessonPlan.phases.learn.imagePrompt
               }
             },
             guidedPractice: {
               title: "👥 PRACTICE TOGETHER",
               timeInMinutes: 12,
-              content: lessonPlan.phases.practiceTogether.activities.map(a => ({ type: 'text', content: a, id: crypto.randomUUID() })),
+              content: [
+                ...lessonPlan.phases.practiceTogether.activities.map(a => ({ type: 'text' as const, content: a, id: crypto.randomUUID() })),
+                ...(lessonPlan.phases.practiceTogether.activityType ? [{
+                  id: crypto.randomUUID(),
+                  type: lessonPlan.phases.practiceTogether.activityType as any,
+                  content: `Interactive ${lessonPlan.phases.practiceTogether.activityType}`,
+                  categorizationGroups: lessonPlan.phases.practiceTogether.activityData?.categorizationGroups
+                }] : [])
+              ],
               visualMetadata: {
                 researchStrategy: lessonPlan.phases.practiceTogether.researchStrategy,
                 collaborationInterface: lessonPlan.phases.practiceTogether.collaborationInterface,
                 differentiation: lessonPlan.phases.practiceTogether.differentiation,
                 progressVisualization: lessonPlan.phases.practiceTogether.progressVisualization,
-                celebration: lessonPlan.phases.practiceTogether.celebration
+                celebration: lessonPlan.phases.practiceTogether.celebration,
+                imagePrompt: lessonPlan.phases.practiceTogether.imagePrompt
               }
             },
             independentPractice: {
               title: "✏️ TRY IT YOURSELF",
               timeInMinutes: 10,
-              content: lessonPlan.phases.tryItYourself.activities.map(a => ({ type: 'text', content: a, id: crypto.randomUUID() })),
+              content: [
+                ...lessonPlan.phases.tryItYourself.activities.map(a => ({ type: 'text' as const, content: a, id: crypto.randomUUID() })),
+                ...(lessonPlan.phases.tryItYourself.activityType ? [{
+                  id: crypto.randomUUID(),
+                  type: lessonPlan.phases.tryItYourself.activityType as any,
+                  content: `Interactive ${lessonPlan.phases.tryItYourself.activityType}`,
+                  scaffoldedLevels: lessonPlan.phases.tryItYourself.activityData?.scaffoldedLevels
+                }] : [])
+              ],
               visualMetadata: {
                 researchPractice: lessonPlan.phases.tryItYourself.researchPractice,
                 workspaceDesign: lessonPlan.phases.tryItYourself.workspaceDesign,
                 scaffoldingSystem: lessonPlan.phases.tryItYourself.scaffoldingSystem,
                 selfAssessment: lessonPlan.phases.tryItYourself.selfAssessment,
-                errorRecovery: lessonPlan.phases.tryItYourself.errorRecovery
+                errorRecovery: lessonPlan.phases.tryItYourself.errorRecovery,
+                imagePrompt: lessonPlan.phases.tryItYourself.imagePrompt
               }
             },
             reflect: {
               title: "💭 THINK ABOUT IT",
               timeInMinutes: 5,
-              content: lessonPlan.phases.thinkAboutIt.activities.map(a => ({ type: 'text', content: a, id: crypto.randomUUID() })),
+              content: [
+                ...lessonPlan.phases.thinkAboutIt.activities.map(a => ({ type: 'text' as const, content: a, id: crypto.randomUUID() })),
+                ...(lessonPlan.phases.thinkAboutIt.activityType ? [{
+                  id: crypto.randomUUID(),
+                  type: lessonPlan.phases.thinkAboutIt.activityType as any,
+                  content: `Interactive ${lessonPlan.phases.thinkAboutIt.activityType}`
+                }] : [])
+              ],
               visualMetadata: {
                 researchReflection: lessonPlan.phases.thinkAboutIt.researchReflection,
                 exitTicket: lessonPlan.phases.thinkAboutIt.exitTicket,
                 realWorldConnection: lessonPlan.phases.thinkAboutIt.realWorldConnection,
-                takeawayGraphic: lessonPlan.phases.thinkAboutIt.takeawayGraphic
+                takeawayGraphic: lessonPlan.phases.thinkAboutIt.takeawayGraphic,
+                imagePrompt: lessonPlan.phases.thinkAboutIt.imagePrompt
               }
             }
           },
