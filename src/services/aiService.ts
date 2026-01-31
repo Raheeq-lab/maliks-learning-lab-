@@ -88,11 +88,13 @@ export const generateContent = async (
 const callGemini = async (apiKey: string, prompt: string): Promise<GenerationResponse> => {
     // Configurations to try in order. Prioritize stable 1.5 models.
     // Updated configurations based on user's available models (Early Access/Preview)
+    // Removed 1.5 models as they are returning 404s for this key.
     const configurations = [
+        { version: 'v1beta', model: 'gemini-2.5-flash-lite-preview-09-2025' }, // Try Lite first (likely faster/higher quota)
         { version: 'v1beta', model: 'gemini-2.5-flash-preview-09-2025' },
         { version: 'v1beta', model: 'gemini-3-flash-preview' },
-        { version: 'v1beta', model: 'gemini-1.5-flash' }, // Fallback to 1.5 if available later
-        { version: 'v1beta', model: 'gemini-1.5-pro' }
+        { version: 'v1beta', model: 'gemini-3-pro-preview' },
+        { version: 'v1beta', model: 'nano-banana-pro-preview' }
     ];
 
     let firstError = '';
@@ -129,6 +131,11 @@ const callGemini = async (apiKey: string, prompt: string): Promise<GenerationRes
                     firstError = errorMessage;
                 }
 
+                if (response.status === 429) {
+                    console.warn(`Rate limit hit for ${config.model}. Waiting 2s before trying next model...`);
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                }
+
                 continue; // Try next config
             }
 
@@ -143,6 +150,13 @@ const callGemini = async (apiKey: string, prompt: string): Promise<GenerationRes
     }
 
     // If we get here, all configs failed
+    // Enhance error message if it was a rate limit
+    if (firstError.includes('429') || firstError.includes('quota')) {
+        return {
+            content: '',
+            error: `Rate limit exceeded on all available models. Please wait 30 seconds and try again. (Details: ${firstError})`
+        };
+    }
     return {
         content: '',
         error: `Unable to connect to Gemini. (Primary Error: ${firstError})`

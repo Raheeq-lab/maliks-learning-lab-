@@ -975,11 +975,11 @@ const LessonRunnable: React.FC = () => {
 
                                             {/* UNIVERSAL ENGAGE */}
                                             {content.type === "universal-engage" && (
-                                                <div className="space-y-8 rounded-xl overflow-hidden border border-border shadow-lg bg-white">
+                                                <div className="space-y-8 rounded-xl overflow-hidden border border-border shadow-lg bg-bg-card text-text-primary transition-colors duration-200">
                                                     {/* Header */}
-                                                    <div className="bg-[#FF6B35] p-6 text-white flex justify-between items-center">
+                                                    <div className="bg-[#FF6B35] dark:bg-orange-800 p-6 text-white flex justify-between items-center">
                                                         <h2 className="text-2xl font-bold tracking-tight">🎯 ENGAGE - First 5 Minutes</h2>
-                                                        <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-lg backdrop-blur-sm">
+                                                        <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-lg backdrop-blur-sm shadow-sm">
                                                             <Clock size={20} className="animate-pulse" />
                                                             <span className="font-mono text-xl font-bold">{timeLeft > 0 ? formattedTime() : "0:00"}</span>
                                                         </div>
@@ -988,24 +988,46 @@ const LessonRunnable: React.FC = () => {
                                                     <div className="p-8 space-y-12">
                                                         {/* Section 1: Visual Hook */}
                                                         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                                            <h3 className="text-xl font-bold text-[#FF6B35] flex items-center gap-2">
-                                                                <span className="bg-[#FF6B35] text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">1</span>
-                                                                Step 1: Grab Attention with an Image
-                                                            </h3>
-                                                            <p className="text-lg font-medium text-text-primary">"Upload a puzzling picture related to your topic here:"</p>
+                                                            <div className="flex justify-between items-start">
+                                                                <h3 className="text-xl font-bold text-[#FF6B35] dark:text-orange-400 flex items-center gap-2">
+                                                                    <span className="bg-[#FF6B35] dark:bg-orange-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">1</span>
+                                                                    Step 1: Grab Attention with an Image
+                                                                </h3>
 
-                                                            <div className="relative aspect-video bg-gray-100 rounded-xl overflow-hidden border-2 border-dashed border-gray-300 flex items-center justify-center group cursor-pointer hover:bg-gray-50 transition-colors">
-                                                                {content.universalEngage?.visualHookImage ? (
-                                                                    <img src={content.universalEngage.visualHookImage} alt="Hook" className="w-full h-full object-cover" />
-                                                                ) : (
-                                                                    <div className="text-center p-6">
-                                                                        <ImageIcon size={48} className="mx-auto text-gray-400 mb-2 group-hover:scale-110 transition-transform" />
-                                                                        <p className="text-text-tertiary">Click to upload visual hook</p>
+                                                                {/* AI Suggestion */}
+                                                                {lesson?.lessonStructure?.engage?.visualMetadata?.imagePrompt && (
+                                                                    <div className="bg-bg-secondary p-3 rounded-lg border border-border max-w-md text-sm shadow-sm">
+                                                                        <div className="flex items-center gap-2 mb-1 text-[#FF6B35] dark:text-orange-400 font-bold text-xs uppercase tracking-wider">
+                                                                            <Sparkles size={12} />
+                                                                            AI Suggested Photo
+                                                                        </div>
+                                                                        <p className="text-text-secondary italic line-clamp-2 hover:line-clamp-none transition-all">"{lesson.lessonStructure.engage.visualMetadata.imagePrompt}"</p>
                                                                     </div>
                                                                 )}
                                                             </div>
-                                                            <div className="bg-[#FF6B35]/10 p-4 rounded-lg text-sm text-text-secondary border-l-4 border-[#FF6B35]">
-                                                                <span className="font-bold text-[#FF6B35]">Teacher Tip:</span> Download an image showing something incomplete, mysterious, or counterintuitive about your topic. Examples: for science - an unexpected experiment result; for math - a visual pattern; for history - an artifact; for language - a word puzzle.
+                                                            <p className="text-lg font-medium text-text-primary">"Upload a puzzling picture related to your topic here:"</p>
+
+                                                            <div className="relative aspect-video bg-bg-secondary rounded-xl overflow-hidden border-2 border-dashed border-border flex items-center justify-center group">
+                                                                {content.universalEngage?.visualHookImage ? (
+                                                                    <img src={content.universalEngage.visualHookImage} alt="Hook" className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <div className="text-center p-8 w-full h-full flex flex-col items-center justify-center">
+                                                                        <div className="bg-bg-card p-4 rounded-full mb-4 shadow-sm group-hover:scale-110 transition-transform">
+                                                                            <ImageIcon size={48} className="text-text-tertiary" />
+                                                                        </div>
+                                                                        <h4 className="font-bold text-lg text-text-primary mb-2">Upload Visual Hook</h4>
+                                                                        <p className="text-text-tertiary mb-6 max-w-sm">
+                                                                            Drag and drop an image here, or use the button below to browse.
+                                                                        </p>
+                                                                        <Button className="bg-[#FF6B35] hover:bg-orange-600 text-white dark:bg-orange-600 dark:hover:bg-orange-700 font-bold shadow-lg shadow-orange-900/10">
+                                                                            <Download className="mr-2 h-4 w-4" />
+                                                                            Select Photo
+                                                                        </Button>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div className="bg-[#FF6B35]/10 dark:bg-orange-900/20 p-4 rounded-lg text-sm text-text-secondary border-l-4 border-[#FF6B35] dark:border-orange-500">
+                                                                <span className="font-bold text-[#FF6B35] dark:text-orange-400">Teacher Tip:</span> Download an image showing something incomplete, mysterious, or counterintuitive about your topic. Examples: for science - an unexpected experiment result; for math - a visual pattern; for history - an artifact; for language - a word puzzle.
                                                             </div>
                                                         </div>
 

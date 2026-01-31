@@ -99,11 +99,13 @@ export interface LessonPlan {
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
+// Updated configurations for Preview Access Keys
 const MODELS = [
+    { model: "gemini-2.5-flash-lite-preview-09-2025", version: "v1beta" },
     { model: "gemini-2.5-flash-preview-09-2025", version: "v1beta" },
     { model: "gemini-3-flash-preview", version: "v1beta" },
-    { model: "gemini-1.5-flash", version: "v1beta" },
-    { model: "gemini-1.5-pro", version: "v1beta" }
+    { model: "gemini-3-pro-preview", version: "v1beta" },
+    { model: "nano-banana-pro-preview", version: "v1beta" }
 ];
 
 /**
@@ -412,6 +414,12 @@ export const generateTextContent = async (prompt: string): Promise<string> => {
             });
 
             if (!response.ok) {
+                if (response.status === 429) {
+                    console.warn(`[Gemini API] Rate limit hit for ${model}. Waiting 2s...`);
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    lastError = new Error("Rate limit exceeded");
+                    continue; // Try next model
+                }
                 const errorData = await response.json();
                 throw new Error(errorData.error?.message || `Status ${response.status}`);
             }
@@ -422,6 +430,10 @@ export const generateTextContent = async (prompt: string): Promise<string> => {
             console.warn(`[Gemini API] generateTextContent failed with model ${model}:`, error.message);
             lastError = error;
         }
+    }
+
+    if (lastError?.message?.includes('Rate limit')) {
+        throw new Error("Rate limit exceeded on all models. Please wait 30 seconds and try again.");
     }
 
     throw new Error(`Failed to generate text content. Last error: ${lastError?.message || "Unknown error"}`);
