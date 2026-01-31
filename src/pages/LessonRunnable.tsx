@@ -8,11 +8,13 @@ import {
     Play, Pause, SkipForward, ArrowLeft, RotateCcw, Clock,
     BookOpen, PenTool, FileText, Brain, Check, Lock, Globe, File, Layout,
     Sparkles, Zap, AlertCircle, BrainCircuit, Download,
-    Plus, Star, Image as ImageIcon
+    Plus, Star, Image as ImageIcon, MoreHorizontal
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/lib/supabase';
 import { Lesson, LessonStructure } from '@/types/quiz';
+import { generateContent, AIConfig } from "@/services/aiService";
+
 
 const PHASES = ['engage', 'model', 'guidedPractice', 'independentPractice', 'reflect'] as const;
 
@@ -42,8 +44,11 @@ const LessonRunnable: React.FC = () => {
     const [categorizedItems, setCategorizedItems] = useState<Record<string, string[]>>({});
     const [currentLevel, setCurrentLevel] = useState(1);
     const [levelFeedback, setLevelFeedback] = useState<Record<number, { isCorrect: boolean, showHint: boolean }>>({});
+    const [universalEngageResponses, setUniversalEngageResponses] = useState({ notice: '', wonder: '', prediction: '', question: '' });
     const [exitTicketData, setExitTicketData] = useState({ learnings: ['', '', ''], questions: ['', ''], insight: '' });
     const [confidence, setConfidence] = useState(50);
+    const [generatingImage, setGeneratingImage] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         fetchLesson();
@@ -119,6 +124,86 @@ const LessonRunnable: React.FC = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const updateUniversalEngageImage = async (imageUrl: string) => {
+        if (!lesson) return;
+
+        // Optimistic update
+        const updatedLesson = { ...lesson };
+        if (updatedLesson.lessonStructure?.engage?.content) {
+            const engageContent = updatedLesson.lessonStructure.engage.content as any[];
+            const universalBlock = engageContent.find(c => c.type === 'universal-engage');
+            if (universalBlock) {
+                if (!universalBlock.universalEngage) universalBlock.universalEngage = {};
+                universalBlock.universalEngage.visualHookImage = imageUrl;
+            }
+        }
+        setLesson(updatedLesson);
+
+        // Persist to DB
+        try {
+            const { error } = await supabase
+                .from('lessons')
+                .update({ lesson_structure: updatedLesson.lessonStructure })
+                .eq('id', lesson.id);
+
+            if (error) throw error;
+        } catch (error) {
+            console.error("Failed to save image update:", error);
+            toast({ title: "Save Failed", description: "Could not persist image change.", variant: "destructive" });
+        }
+    };
+
+    const handleAIForgeImage = async () => {
+        const apiKey = localStorage.getItem('aiApiKey') || import.meta.env.VITE_GEMINI_API_KEY;
+        if (!apiKey) {
+            toast({ title: "API Key Required", description: "Please configure your API key settings.", variant: "destructive" });
+            return;
+        }
+
+        setGeneratingImage(true);
+        try {
+            const config: AIConfig = { provider: 'gemini', apiKey };
+            const topic = lesson?.topic || "science";
+            const imagePrompt = lesson?.lessonStructure?.engage?.visualMetadata?.imagePrompt || `Educational illustration for ${topic}`;
+
+            const response = await generateContent(config, `Provide a high-quality, professional educational image URL link (Unsplash preferred) related to: "${imagePrompt}". RETURN ONLY THE URL starting with http.`, 'text');
+
+            const content = response.content.trim();
+            if (content.startsWith('http')) {
+                await updateUniversalEngageImage(content);
+                toast({ title: "Image Generated", description: "Visual hook updated successfully!" });
+            } else {
+                // Determine if it was a rate limit error or general failure
+                if (response.error) {
+                    toast({ title: "Forge Failed", description: response.error, variant: "destructive" });
+                } else {
+                    toast({ title: "Generation Failed", description: "Could not retrieve a valid image URL.", variant: "destructive" });
+                }
+            }
+        } catch (error) {
+            toast({ title: "Error", description: "AI Forge encountered an error.", variant: "destructive" });
+        } finally {
+            setGeneratingImage(false);
+        }
+    };
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            toast({ title: "File too large", description: "Image must be under 5MB", variant: "destructive" });
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const base64 = event.target?.result as string;
+            updateUniversalEngageImage(base64);
+        };
+        reader.readAsDataURL(file);
     };
 
     const handleToggleTimer = () => {
@@ -1017,12 +1102,32 @@ const LessonRunnable: React.FC = () => {
                                                                         </div>
                                                                         <h4 className="font-bold text-lg text-text-primary mb-2">Upload Visual Hook</h4>
                                                                         <p className="text-text-tertiary mb-6 max-w-sm">
-                                                                            Drag and drop an image here, or use the button below to browse.
+                                                                            Drag and drop an image here, or use the buttons below.
                                                                         </p>
-                                                                        <Button className="bg-[#FF6B35] hover:bg-orange-600 text-white dark:bg-orange-600 dark:hover:bg-orange-700 font-bold shadow-lg shadow-orange-900/10">
-                                                                            <Download className="mr-2 h-4 w-4" />
-                                                                            Select Photo
-                                                                        </Button>
+                                                                        <div className="flex gap-3">
+                                                                            <input
+                                                                                type="file"
+                                                                                ref={fileInputRef}
+                                                                                className="hidden"
+                                                                                accept="image/*"
+                                                                                onChange={handleFileUpload}
+                                                                            />
+                                                                            <Button
+                                                                                onClick={() => fileInputRef.current?.click()}
+                                                                                className="bg-[#FF6B35] hover:bg-orange-600 text-white dark:bg-orange-600 dark:hover:bg-orange-700 font-bold shadow-lg shadow-orange-900/10"
+                                                                            >
+                                                                                <Download className="mr-2 h-4 w-4" />
+                                                                                Select Photo
+                                                                            </Button>
+                                                                            <Button
+                                                                                onClick={handleAIForgeImage}
+                                                                                disabled={generatingImage}
+                                                                                className="bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-lg shadow-purple-900/10"
+                                                                            >
+                                                                                {generatingImage ? <MoreHorizontal className="animate-pulse mr-2 h-4 w-4" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                                                                                AI Forge
+                                                                            </Button>
+                                                                        </div>
                                                                     </div>
                                                                 )}
                                                             </div>
@@ -1040,11 +1145,21 @@ const LessonRunnable: React.FC = () => {
                                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                                 <div className="space-y-2">
                                                                     <label className="font-bold text-text-primary">Students: Type your observations here:</label>
-                                                                    <textarea className="w-full p-4 rounded-lg bg-bg-secondary border border-border focus:border-[#FF6B35] focus:dark:border-orange-500 h-32 resize-none transition-all text-text-primary placeholder:text-text-tertiary" placeholder="I notice..." />
+                                                                    <textarea
+                                                                        value={universalEngageResponses.notice}
+                                                                        onChange={(e) => setUniversalEngageResponses(prev => ({ ...prev, notice: e.target.value }))}
+                                                                        className="w-full p-4 rounded-lg bg-bg-secondary border border-border focus:border-[#FF6B35] focus:dark:border-orange-500 h-32 resize-none transition-all text-text-primary placeholder:text-text-tertiary"
+                                                                        placeholder="I notice..."
+                                                                    />
                                                                 </div>
                                                                 <div className="space-y-2">
                                                                     <label className="font-bold text-text-primary">Students: What questions does this raise?</label>
-                                                                    <textarea className="w-full p-4 rounded-lg bg-bg-secondary border border-border focus:border-[#FF6B35] focus:dark:border-orange-500 h-32 resize-none transition-all text-text-primary placeholder:text-text-tertiary" placeholder="I wonder..." />
+                                                                    <textarea
+                                                                        value={universalEngageResponses.wonder}
+                                                                        onChange={(e) => setUniversalEngageResponses(prev => ({ ...prev, wonder: e.target.value }))}
+                                                                        className="w-full p-4 rounded-lg bg-bg-secondary border border-border focus:border-[#FF6B35] focus:dark:border-orange-500 h-32 resize-none transition-all text-text-primary placeholder:text-text-tertiary"
+                                                                        placeholder="I wonder..."
+                                                                    />
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1078,7 +1193,12 @@ const LessonRunnable: React.FC = () => {
                                                                     <Sparkles size={16} className="text-[#FF6B35] dark:text-orange-400" />
                                                                     Based on this image and our discussion, predict what we'll learn today:
                                                                 </label>
-                                                                <textarea className="w-full p-4 rounded-lg bg-bg-secondary border border-border focus:border-[#FF6B35] focus:dark:border-orange-500 h-24 resize-none transition-all text-text-primary placeholder:text-text-tertiary" placeholder="My prediction is..." />
+                                                                <textarea
+                                                                    value={universalEngageResponses.prediction}
+                                                                    onChange={(e) => setUniversalEngageResponses(prev => ({ ...prev, prediction: e.target.value }))}
+                                                                    className="w-full p-4 rounded-lg bg-bg-secondary border border-border focus:border-[#FF6B35] focus:dark:border-orange-500 h-24 resize-none transition-all text-text-primary placeholder:text-text-tertiary"
+                                                                    placeholder="My prediction is..."
+                                                                />
                                                             </div>
                                                         </div>
 
@@ -1091,7 +1211,12 @@ const LessonRunnable: React.FC = () => {
                                                             <div className="bg-[#FF6B35]/5 dark:bg-orange-500/10 p-6 rounded-xl border border-[#FF6B35]/20 dark:border-orange-500/20">
                                                                 <label className="font-bold text-lg text-text-primary block mb-3">What's the one question you most want answered today?</label>
                                                                 <div className="flex gap-2">
-                                                                    <input className="flex-1 p-4 rounded-lg border border-border focus:border-[#FF6B35] focus:dark:border-orange-500 outline-none shadow-sm bg-bg-secondary text-text-primary placeholder:text-text-tertiary" placeholder="My burning question..." />
+                                                                    <input
+                                                                        value={universalEngageResponses.question}
+                                                                        onChange={(e) => setUniversalEngageResponses(prev => ({ ...prev, question: e.target.value }))}
+                                                                        className="flex-1 p-4 rounded-lg border border-border focus:border-[#FF6B35] focus:dark:border-orange-500 outline-none shadow-sm bg-bg-secondary text-text-primary placeholder:text-text-tertiary"
+                                                                        placeholder="My burning question..."
+                                                                    />
                                                                     <Button className="bg-[#FF6B35] hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-700 text-white h-auto px-6 font-bold shadow-md">Ask!</Button>
                                                                 </div>
                                                                 <p className="text-sm text-[#FF6B35] dark:text-orange-400 mt-3 font-medium italic">"These questions will guide our lesson!"</p>
