@@ -105,6 +105,16 @@ const LessonCard: React.FC<LessonCardProps> = ({
                 </Button>
 
                 <div className="flex gap-2 w-full">
+                    {accessCode && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className={`flex-1 h-8 text-xs border-dashed border-border ${copied ? 'text-green-600 bg-green-50' : 'text-text-tertiary'} hover:bg-bg-secondary`}
+                            onClick={(e) => { e.stopPropagation(); handleCopy(); }}
+                        >
+                            {copied ? <span className="font-bold">Copied!</span> : <><Copy size={12} className="mr-1" /> {accessCode}</>}
+                        </Button>
+                    )}
                     <Button variant="outline" size="sm" className="flex-1 h-8 text-xs border-border text-text-secondary hover:bg-bg-secondary hover:text-text-primary" onClick={(e) => { e.stopPropagation(); onEdit(); }}>
                         <Edit size={12} className="mr-1" /> Edit
                     </Button>

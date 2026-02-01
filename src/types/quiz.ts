@@ -60,7 +60,7 @@ export interface Lesson {
   content: LessonContent[];
   createdBy: string;
   createdAt: string;
-  accessCode: string;
+  accessCode?: string;
   learningType: string; // Added learningType property
   lessonStructure?: LessonStructure; // Added new lesson structure
   researchNotes?: {

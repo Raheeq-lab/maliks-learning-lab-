@@ -242,7 +242,8 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
               }
             }
           },
-          accessCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
+          // accessCode: Removed for teacher-led lessons as per user request
+
           createdBy: 'AI',
           createdAt: new Date().toISOString(),
           isPublic: false
