@@ -269,8 +269,13 @@ export const generateLessonPlan = async (
 
     ## PHASE 3: 👥 PRACTICE TOGETHER (12 mins)
     - Primary Goal: Collaborative mastery.
-    - Required Activity: "categorization" game with 2 groups and 4+ items.
-    - JSON required: "activityType": "categorization" (with categorizationGroups).
+    - Required Activity: Universal "Collaborative Concept Map".
+    - Structure:
+      1) Center: "${topic}" in whiteboard center.
+      2) Build out: Key ideas (3 min), Connections (4 min), Examples/evidence (4 min), Questions (1 min).
+    - Features: Countdown timer, collaborative drawing, color-coded notes.
+    - Theme: Blue (#45B7D1).
+    - JSON required: "activityType": "collaborative-map" (with steps describing the 4 phases).
 
     ## PHASE 4: ✏️ TRY IT YOURSELF (10 mins)
     - Primary Goal: Independent practice & scaffolding.
