@@ -564,7 +564,7 @@ const TeacherDashboard: React.FC = () => {
               />
             </TabsContent>
 
-            <TabsContent value="generate">
+            <TabsContent value="generate" forceMount={true} className={activeTab === "generate" ? "" : "hidden"}>
               <QuestionGeneratorTab
                 availableGrades={availableGrades}
                 subject={selectedSubject}
