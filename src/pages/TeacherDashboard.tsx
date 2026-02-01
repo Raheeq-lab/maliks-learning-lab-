@@ -205,7 +205,7 @@ const TeacherDashboard: React.FC = () => {
         grade_level: Number(lesson.gradeLevel),
         subject: lesson.subject,
         content: lesson.content,
-        access_code: lesson.accessCode.toUpperCase(),
+        access_code: lesson.accessCode ? lesson.accessCode.toUpperCase() : null,
         learning_type: lesson.learningType || 'scaffolded',
         lesson_structure: lesson.lessonStructure || {},
         research_notes: lesson.researchNotes || null,
@@ -231,7 +231,8 @@ const TeacherDashboard: React.FC = () => {
           .insert([payload]);
 
         if (error) throw error;
-        toast({ title: "Lesson created!", description: "Access code: " + payload.access_code });
+        const desc = payload.access_code ? "Access code: " + payload.access_code : "Teacher-led lesson created.";
+        toast({ title: "Lesson created!", description: desc });
       }
 
       setShowLessonBuilder(false);
