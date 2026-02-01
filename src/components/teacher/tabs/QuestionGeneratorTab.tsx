@@ -119,7 +119,7 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
                     pollOptions: ["I've seen something like this before", "This reminds me of...", "This is completely new to me"]
                   }
                 },
-                ...lessonPlan.phases.engage.activities.map(a => ({ type: 'text' as const, content: a, id: crypto.randomUUID() })),
+                ...lessonPlan.phases.engage.activities.map(a => ({ type: 'text' as const, content: typeof a === 'string' ? a : JSON.stringify(a), id: crypto.randomUUID() })),
                 ...(lessonPlan.phases.engage.activityType ? [{
                   id: crypto.randomUUID(),
                   type: lessonPlan.phases.engage.activityType as any,
@@ -142,7 +142,7 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
               title: "📚 LEARN",
               timeInMinutes: 8,
               content: [
-                ...lessonPlan.phases.learn.activities.map(a => ({ type: 'text' as const, content: a, id: crypto.randomUUID() })),
+                ...lessonPlan.phases.learn.activities.map(a => ({ type: 'text' as const, content: typeof a === 'string' ? a : JSON.stringify(a), id: crypto.randomUUID() })),
                 ...(lessonPlan.phases.learn.activityType ? [{
                   id: crypto.randomUUID(),
                   type: lessonPlan.phases.learn.activityType as any,
@@ -164,7 +164,7 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
               title: "👥 PRACTICE TOGETHER",
               timeInMinutes: 12,
               content: [
-                ...lessonPlan.phases.practiceTogether.activities.map(a => ({ type: 'text' as const, content: a, id: crypto.randomUUID() })),
+                ...lessonPlan.phases.practiceTogether.activities.map(a => ({ type: 'text' as const, content: typeof a === 'string' ? a : JSON.stringify(a), id: crypto.randomUUID() })),
                 ...(lessonPlan.phases.practiceTogether.activityType ? [{
                   id: crypto.randomUUID(),
                   type: lessonPlan.phases.practiceTogether.activityType as any,
@@ -185,7 +185,7 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
               title: "✏️ TRY IT YOURSELF",
               timeInMinutes: 10,
               content: [
-                ...lessonPlan.phases.tryItYourself.activities.map(a => ({ type: 'text' as const, content: a, id: crypto.randomUUID() })),
+                ...lessonPlan.phases.tryItYourself.activities.map(a => ({ type: 'text' as const, content: typeof a === 'string' ? a : JSON.stringify(a), id: crypto.randomUUID() })),
                 ...(lessonPlan.phases.tryItYourself.activityType ? [{
                   id: crypto.randomUUID(),
                   type: lessonPlan.phases.tryItYourself.activityType as any,
@@ -206,7 +206,7 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
               title: "💭 THINK ABOUT IT",
               timeInMinutes: 5,
               content: [
-                ...lessonPlan.phases.thinkAboutIt.activities.map(a => ({ type: 'text' as const, content: a, id: crypto.randomUUID() })),
+                ...lessonPlan.phases.thinkAboutIt.activities.map(a => ({ type: 'text' as const, content: typeof a === 'string' ? a : JSON.stringify(a), id: crypto.randomUUID() })),
                 ...(lessonPlan.phases.thinkAboutIt.activityType ? [{
                   id: crypto.randomUUID(),
                   type: lessonPlan.phases.thinkAboutIt.activityType as any,
