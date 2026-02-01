@@ -101,8 +101,28 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
           content: [], // Legacy compat
           learningType: learningType,
           topic: customTopic,
-          researchNotes: lessonPlan.researchNotes,
-          visualTheme: lessonPlan.visualTheme,
+          researchNotes: {
+            misconceptions: Array.isArray(lessonPlan.researchNotes?.misconceptions)
+              ? lessonPlan.researchNotes.misconceptions.map((m: any) => typeof m === 'string' ? m : JSON.stringify(m))
+              : [],
+            strategies: Array.isArray(lessonPlan.researchNotes?.strategies)
+              ? lessonPlan.researchNotes.strategies.map((s: any) => typeof s === 'string' ? s : JSON.stringify(s))
+              : [],
+            realWorldConnections: Array.isArray(lessonPlan.researchNotes?.realWorldConnections)
+              ? lessonPlan.researchNotes.realWorldConnections.map((r: any) => typeof r === 'string' ? r : JSON.stringify(r))
+              : [],
+            vocabulary: Array.isArray(lessonPlan.researchNotes?.vocabulary)
+              ? lessonPlan.researchNotes.vocabulary.map((v: any) => typeof v === 'string' ? v : JSON.stringify(v))
+              : [],
+            priorKnowledge: []
+          },
+          visualTheme: {
+            primaryTheme: typeof lessonPlan.visualTheme?.primaryTheme === 'string' ? lessonPlan.visualTheme.primaryTheme : "Standard",
+            colorPalette: typeof lessonPlan.visualTheme?.colorPalette === 'string' ? lessonPlan.visualTheme.colorPalette : "Blue/White",
+            characters: typeof lessonPlan.visualTheme?.characters === 'string' ? lessonPlan.visualTheme.characters : "None",
+            animationStyle: typeof lessonPlan.visualTheme?.animationStyle === 'string' ? lessonPlan.visualTheme.animationStyle : "Minimal",
+            soundTheme: typeof lessonPlan.visualTheme?.soundTheme === 'string' ? lessonPlan.visualTheme.soundTheme : "Quiet"
+          },
           assessmentSettings: lessonPlan.assessment,
           requiredResources: lessonPlan.resources,
           lessonStructure: {
