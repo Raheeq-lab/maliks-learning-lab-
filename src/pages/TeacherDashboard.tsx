@@ -205,7 +205,7 @@ const TeacherDashboard: React.FC = () => {
         grade_level: Number(lesson.gradeLevel),
         subject: lesson.subject,
         content: lesson.content,
-        access_code: lesson.accessCode ? lesson.accessCode.toUpperCase() : null,
+        access_code: lesson.accessCode ? lesson.accessCode.toUpperCase() : Math.random().toString(36).substring(2, 8).toUpperCase(),
         learning_type: lesson.learningType || 'scaffolded',
         lesson_structure: lesson.lessonStructure || {},
         research_notes: lesson.researchNotes || null,
