@@ -130,6 +130,7 @@ export interface LessonPhase {
   title: string;
   timeInMinutes: number;
   content: LessonPhaseContent[];
+  activityType?: string; // e.g. "poll", "steps", "collaborative-map"
   visualMetadata?: {
     visualTheme?: string;
     screenLayout?: string;

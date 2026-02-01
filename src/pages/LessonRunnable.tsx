@@ -14,6 +14,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/lib/supabase';
 import { Lesson, LessonStructure } from '@/types/quiz';
 import { generateContent, AIConfig } from "@/services/aiService";
+import { CollaborativeMap } from '@/components/teacher/CollaborativeMap';
 
 
 const PHASES = ['engage', 'model', 'guidedPractice', 'independentPractice', 'reflect'] as const;
@@ -1260,13 +1261,33 @@ const LessonRunnable: React.FC = () => {
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-center py-24 bg-bg-card rounded-2xl border border-dashed border-border">
-                                    <div className="bg-bg-secondary w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 text-text-tertiary">
-                                        <Layout size={40} />
+                                currentPhaseData.activityType === "collaborative-map" ? (
+                                    <div className="animate-in fade-in duration-700">
+                                        <div className="bg-bg-secondary p-4 rounded-xl mb-4 border border-border">
+                                            <div className="flex items-start gap-3">
+                                                <div className="bg-focus-blue/10 p-2 rounded-lg text-focus-blue">
+                                                    <BrainCircuit size={24} />
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-bold text-lg text-text-primary">Collaborative Concept Mapping</h3>
+                                                    <p className="text-text-secondary text-sm">
+                                                        "Let's build a map of what we know about <strong>{lesson.topic}</strong>.
+                                                        We'll start with key ideas, then draw connections, add examples, and finally note our questions."
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <CollaborativeMap topic={lesson.topic || lesson.title} />
                                     </div>
-                                    <h3 className="text-2xl font-bold text-text-secondary">No content added yet</h3>
-                                    <p className="text-text-tertiary mt-2">Check the Lesson Builder to add activities for this phase.</p>
-                                </div>
+                                ) : (
+                                    <div className="text-center py-24 bg-bg-card rounded-2xl border border-dashed border-border">
+                                        <div className="bg-bg-secondary w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 text-text-tertiary">
+                                            <Layout size={40} />
+                                        </div>
+                                        <h3 className="text-2xl font-bold text-text-secondary">No content added yet</h3>
+                                        <p className="text-text-tertiary mt-2">Check the Lesson Builder to add activities for this phase.</p>
+                                    </div>
+                                )
                             )}
                         </CardContent>
 
