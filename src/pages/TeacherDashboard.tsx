@@ -199,23 +199,25 @@ const TeacherDashboard: React.FC = () => {
 
       // Handle file uploads if any (skipping for this iteration as it wasn't explicitly requested, but good to note)
 
-      const payload = {
+      const payload: any = {
         title: lesson.title,
         description: lesson.description || '',
-        grade_level: Number(lesson.gradeLevel),
+        grade_level: Number(lesson.gradeLevel) || 1,
         subject: lesson.subject,
-        content: lesson.content,
+        content: lesson.content || [],
         access_code: lesson.accessCode ? lesson.accessCode.toUpperCase() : Math.random().toString(36).substring(2, 8).toUpperCase(),
         learning_type: lesson.learningType || 'scaffolded',
         lesson_structure: lesson.lessonStructure || {},
-        research_notes: lesson.researchNotes || null,
-        visual_theme: lesson.visualTheme || null,
-        assessment_settings: lesson.assessmentSettings || null,
-        required_resources: lesson.requiredResources || null,
-        activity: lesson.activity || null,
         created_by: user.id,
         is_public: false
       };
+
+      // Add optional fields only if they are defined
+      if (lesson.researchNotes) payload.research_notes = lesson.researchNotes;
+      if (lesson.visualTheme) payload.visual_theme = lesson.visualTheme;
+      if (lesson.assessmentSettings) payload.assessment_settings = lesson.assessmentSettings;
+      if (lesson.requiredResources) payload.required_resources = lesson.requiredResources;
+      if (lesson.activity) payload.activity = lesson.activity;
 
       if (editingLesson) {
         const { error } = await supabase
