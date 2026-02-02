@@ -276,7 +276,9 @@ export const generateLessonPlan = async (
       2) Station 2 (HEART): Connect & Question (emotional/personal connection).
       3) Station 3 (HANDS): Solve & Create (practical application).
       4) Station 4 (VOICE): Judge & Defend (critical evaluation).
-    - JSON required: "activityType": "carousel" (with carouselStations array for the 4 stations).
+    - JSON required: "activityType": "carousel" and "activityData": { "carouselStations": [...] }.
+    - DO NOT just list activities in the "activities" array. You MUST populate "carouselStations".
+    - DO NOT return a single generic summary like "Students rotate through stations...". You MUST provide specific content for ALL 4 stations.
     - Content: Specific tasks/questions for EACH station related to ${topic}.
 
     ## PHASE 4: ✏️ TRY IT YOURSELF (10 mins)
@@ -331,6 +333,7 @@ export const generateLessonPlan = async (
           "imagePrompt": "A detailed DALL-E style prompt for practice visual",
           "activities": ["Students rotate through 4 stations: Brain (Define), Heart (Connect), Hands (Solve), Voice (Argue)"],
           "activityType": "carousel",
+          "activities": [],
           "activityData": { 
             "carouselStations": [
               { "station": "BRAIN", "task": "Define & Describe", "content": "Specific question..." },

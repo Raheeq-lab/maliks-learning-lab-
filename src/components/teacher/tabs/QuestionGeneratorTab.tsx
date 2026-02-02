@@ -191,7 +191,15 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
                   type: (lessonPlan.phases.practiceTogether.activityType === 'carousel' ? 'carousel' : lessonPlan.phases.practiceTogether.activityType) as any,
                   content: `Interactive ${lessonPlan.phases.practiceTogether.activityType}`,
                   categorizationGroups: lessonPlan.phases.practiceTogether.activityData?.categorizationGroups,
-                  carouselStations: lessonPlan.phases.practiceTogether.activityData?.carouselStations
+                  carouselStations: lessonPlan.phases.practiceTogether.activityData?.carouselStations ||
+                    (Array.isArray(lessonPlan.phases.practiceTogether.activities) && lessonPlan.phases.practiceTogether.activities.length === 4
+                      ? lessonPlan.phases.practiceTogether.activities.map((act, i) => ({ station: ["BRAIN", "HEART", "HANDS", "VOICE"][i], task: "Station Task", content: typeof act === 'string' ? act : JSON.stringify(act) }))
+                      : [
+                        { station: "BRAIN", task: "Define & Describe", content: `Define the core concept of ${customTopic} in your own words.` },
+                        { station: "HEART", task: "Connect & Question", content: "How does this topic connect to your daily life? What questions do you still have?" },
+                        { station: "HANDS", task: "Solve & Create", content: "Create a visual representation or solve a practice problem related to this topic." },
+                        { station: "VOICE", task: "Judge & Defend", content: "Debate a key statement or misconception about this topic. Explain your reasoning." }
+                      ])
                 }] : [])
               ],
               visualMetadata: {
