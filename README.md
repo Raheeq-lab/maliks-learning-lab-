@@ -26,7 +26,11 @@ Malik's Learning Lab is a comprehensive educational platform designed to empower
 - **Advanced Quiz Management**:
   - Create custom multiple-choice quizzes with image support
   - **AI Content Generator**: Built-in AI assistant to generate lesson content and quiz questions
-  - Real-time student performance tracking
+  - **Live Race Mode**: Real-time competitive quiz mode with synchronized starts and live leaderboards
+- **Research-Based Lesson Designer**:
+  - **AI Asset Forge**: Generate custom educational images and worksheets on the fly
+  - **5-Phase Framework**: Engage (Universal Hook), Learn, Practice Together (4-Carousel Challenge), Try It Yourself, Reflect
+  - **Pedagogical Insights**: AI-generated teaching strategies and real-world connections for every lesson
 - **Classroom Management**:
   - Support for grades 1-11
   - Multi-subject support (Math, English, ICT)
@@ -107,8 +111,10 @@ npm run dev
 - Advanced analytics dashboard with student insights
 - Exportable student reports (PDF/CSV)
 - Parent portal for progress tracking
-- Dark/Light mode toggle
-- Multi-language support
+- [x] Dark/Light mode toggle
+- [x] Live Race Mode
+- [x] Research-Based Design System
+- [x] AI Image & Worksheet Generation
 
 ## Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
