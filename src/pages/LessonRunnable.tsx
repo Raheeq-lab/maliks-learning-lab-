@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/lib/supabase';
+import { QuizQuestion as GeminiQuizQuestion } from "@/utils/geminiAI";
+import { CarouselActivity } from "@/components/teacher/CarouselActivity";
 import { Lesson, LessonStructure } from '@/types/quiz';
 import { generateContent, AIConfig } from "@/services/aiService";
 import { CollaborativeMap } from '@/components/teacher/CollaborativeMap';
@@ -1268,7 +1270,16 @@ const LessonRunnable: React.FC = () => {
                                     ))}
                                 </div>
                             ) : (
-                                currentPhaseData && currentPhaseData.activityType === "collaborative-map" ? (
+                                currentPhaseData && currentPhaseData.activityType === "carousel" ? (
+                                    <CarouselActivity
+                                        stations={
+                                            currentPhaseData.content.find((c) => c.type === 'carousel')?.carouselStations ||
+                                            currentPhaseData.content.find((c) => c.carouselStations)?.carouselStations ||
+                                            (currentPhaseData as any).activityData?.carouselStations
+                                        }
+                                        topic={lesson.topic || lesson.title}
+                                    />
+                                ) : currentPhaseData && currentPhaseData.activityType === "collaborative-map" ? (
                                     <div className="animate-in fade-in duration-700">
                                         <div className="bg-bg-secondary p-4 rounded-xl mb-4 border border-border">
                                             <div className="flex items-start gap-3">

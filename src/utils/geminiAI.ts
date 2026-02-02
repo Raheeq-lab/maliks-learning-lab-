@@ -48,13 +48,14 @@ export interface LessonPlanPhase {
     takeawayGraphic?: string;
     imagePrompt?: string;
     // High-Fidelity Activity Data
-    activityType?: "poll" | "brainstorm" | "flashcards" | "steps" | "categorization" | "scaffolded" | "exit-ticket";
+    activityType?: "poll" | "brainstorm" | "flashcards" | "steps" | "categorization" | "scaffolded" | "exit-ticket" | "carousel";
     activityData?: {
         pollOptions?: string[];
         flashcards?: { front: string; back: string }[];
         steps?: string[];
         categorizationGroups?: { title: string; items: string[] }[];
         scaffoldedLevels?: { level: number; question: string; hint?: string; solution: string }[];
+        carouselStations?: { station: string; task: string; content: string }[];
     };
 }
 
@@ -269,13 +270,14 @@ export const generateLessonPlan = async (
 
     ## PHASE 3: 👥 PRACTICE TOGETHER (12 mins)
     - Primary Goal: Collaborative mastery.
-    - Required Activity: Universal "Collaborative Concept Map".
+    - Required Activity: "4-Carousel Challenge" (Group Setup).
     - Structure:
-      1) Center: "${topic}" in whiteboard center.
-      2) Build out: Key ideas (3 min), Connections (4 min), Examples/evidence (4 min), Questions (1 min).
-    - Features: Countdown timer, collaborative drawing, color-coded notes.
-    - Theme: Blue (#45B7D1).
-    - JSON required: "activityType": "collaborative-map" (with steps describing the 4 phases).
+      1) Station 1 (BRAIN): Define & Describe the core concept.
+      2) Station 2 (HEART): Connect & Question (emotional/personal connection).
+      3) Station 3 (HANDS): Solve & Create (practical application).
+      4) Station 4 (VOICE): Judge & Defend (critical evaluation).
+    - JSON required: "activityType": "carousel" (with carouselStations array for the 4 stations).
+    - Content: Specific tasks/questions for EACH station related to ${topic}.
 
     ## PHASE 4: ✏️ TRY IT YOURSELF (10 mins)
     - Primary Goal: Independent practice & scaffolding.
@@ -325,14 +327,16 @@ export const generateLessonPlan = async (
         },
         "practiceTogether": {
           "duration": "12 minutes",
-          "researchStrategy": "Collaboration strategy description",
+          "researchStrategy": "Rotational group collaboration",
           "imagePrompt": "A detailed DALL-E style prompt for practice visual",
-          "activities": ["Description of categorization task"],
-          "activityType": "categorization",
+          "activities": ["Students rotate through 4 stations: Brain (Define), Heart (Connect), Hands (Solve), Voice (Argue)"],
+          "activityType": "carousel",
           "activityData": { 
-            "categorizationGroups": [
-              { "title": "Group A", "items": ["Item 1", "Item 2"] },
-              { "title": "Group B", "items": ["Item 3", "Item 4"] }
+            "carouselStations": [
+              { "station": "BRAIN", "task": "Define & Describe", "content": "Specific question..." },
+              { "station": "HEART", "task": "Connect & Question", "content": "Specific question..." },
+              { "station": "HANDS", "task": "Solve & Create", "content": "Specific problem..." },
+              { "station": "VOICE", "task": "Judge & Defend", "content": "Specific debate prompt..." }
             ] 
           }
         },

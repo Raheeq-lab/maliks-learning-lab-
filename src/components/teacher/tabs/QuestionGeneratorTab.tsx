@@ -183,13 +183,15 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
             guidedPractice: {
               title: "👥 PRACTICE TOGETHER",
               timeInMinutes: 12,
+              activityType: lessonPlan.phases.practiceTogether.activityType,
               content: [
                 ...(Array.isArray(lessonPlan.phases.practiceTogether.activities) ? lessonPlan.phases.practiceTogether.activities : []).map(a => ({ type: 'text' as const, content: typeof a === 'string' ? a : JSON.stringify(a), id: crypto.randomUUID() })),
                 ...(lessonPlan.phases.practiceTogether.activityType ? [{
                   id: crypto.randomUUID(),
-                  type: lessonPlan.phases.practiceTogether.activityType as any,
+                  type: (lessonPlan.phases.practiceTogether.activityType === 'carousel' ? 'carousel' : lessonPlan.phases.practiceTogether.activityType) as any,
                   content: `Interactive ${lessonPlan.phases.practiceTogether.activityType}`,
-                  categorizationGroups: lessonPlan.phases.practiceTogether.activityData?.categorizationGroups
+                  categorizationGroups: lessonPlan.phases.practiceTogether.activityData?.categorizationGroups,
+                  carouselStations: lessonPlan.phases.practiceTogether.activityData?.carouselStations
                 }] : [])
               ],
               visualMetadata: {
