@@ -62,72 +62,82 @@ const TeacherDashboard: React.FC = () => {
     if (!user) return;
     setIsLoading(true);
     try {
-      // 1. Fetch Quizzes (RLS will filter by created_by = user.id)
-      const { data: quizzesData, error: quizzesError } = await supabase
-        .from('quizzes')
-        .select('id, title, description, grade_level, subject, time_limit, access_code, created_by, created_at, is_public, is_live_session, live_status, questions')
-        .eq('created_by', user.id)
-        .order('created_at', { ascending: false });
+      try {
+        // Execute all fetches in parallel
+        const [quizzesResponse, lessonsResponse, resultsResponse] = await Promise.all([
+          supabase
+            .from('quizzes')
+            .select('id, title, description, grade_level, subject, time_limit, access_code, created_by, created_at, is_public, is_live_session, live_status, questions')
+            .eq('created_by', user.id)
+            .order('created_at', { ascending: false }),
 
-      if (quizzesError) throw quizzesError;
+          supabase
+            .from('lessons')
+            .select('*')
+            .eq('created_by', user.id)
+            .order('createdat', { ascending: false }),
 
-      const mappedQuizzes = (quizzesData || []).map((q: any) => ({
-        ...q,
-        gradeLevel: q.grade_level,
-        timeLimit: q.time_limit,
-        accessCode: q.access_code,
-        createdBy: q.created_by,
-        isPublic: q.is_public
-      }));
+          supabase
+            .from('quiz_results')
+            .select('*')
+            .limit(1000)
+        ]);
 
-      setQuizzes(mappedQuizzes);
+        // Process Quizzes
+        const { data: quizzesData, error: quizzesError } = quizzesResponse;
+        if (quizzesError) {
+          console.warn("Error fetching quizzes:", quizzesError);
+        } else {
+          setQuizzes((quizzesData || []).map((q: any) => ({
+            ...q,
+            gradeLevel: q.grade_level,
+            timeLimit: q.time_limit,
+            accessCode: q.access_code,
+            createdBy: q.created_by,
+            isPublic: q.is_public
+          })));
+        }
 
-      // 2. Fetch Lessons (RLS will filter by created_by = user.id)
-      const { data: lessonsData, error: lessonsError } = await supabase
-        .from('lessons')
-        .select('*')
-        .eq('created_by', user.id) // Restore select('*') to avoid 400 on missing cols
-        .order('createdat', { ascending: false });
+        // Process Lessons
+        const { data: lessonsData, error: lessonsError } = lessonsResponse;
+        if (lessonsError) {
+          console.warn('Error fetching lessons:', lessonsError);
+        } else {
+          setLessons((lessonsData || []).map((l: any) => ({
+            ...l,
+            gradeLevel: l.grade_level || l.gradelevel,
+            timeLimit: l.time_limit,
+            learningType: l.learning_type || l.learningtype,
+            lessonStructure: l.lesson_structure || l.lessonstructure,
+            researchNotes: l.research_notes || l.researchnotes,
+            visualTheme: l.visual_theme || l.visualtheme,
+            assessmentSettings: l.assessment_settings || l.assessmentsettings,
+            requiredResources: l.required_resources || l.requiredresources,
+            accessCode: l.access_code || l.accesscode,
+            createdBy: l.created_by || l.createdby,
+            createdAt: l.created_at || l.createdat
+          })));
+        }
 
-      if (lessonsError) {
-        console.warn('Error fetching lessons:', lessonsError);
-      } else {
-        const mappedLessons = (lessonsData || []).map((l: any) => ({
-          ...l,
-          // Handle both cases just to be robust
-          gradeLevel: l.grade_level || l.gradelevel,
-          timeLimit: l.time_limit,
-          learningType: l.learning_type || l.learningtype, // Just in case
-          lessonStructure: l.lesson_structure || l.lessonstructure,
-          researchNotes: l.research_notes || l.researchnotes,
-          visualTheme: l.visual_theme || l.visualtheme,
-          assessmentSettings: l.assessment_settings || l.assessmentsettings,
-          requiredResources: l.required_resources || l.requiredresources,
-          accessCode: l.access_code || l.accesscode,
-          createdBy: l.created_by || l.createdby,
-          createdAt: l.created_at || l.createdat
-        }));
-        setLessons(mappedLessons);
+        // Process Results
+        const { data: resultsData, error: resultsError } = resultsResponse;
+        if (!resultsError && resultsData) {
+          setResults(resultsData);
+        }
+
+      } catch (error: any) {
+        console.error('Error loading dashboard data:', error);
+        toast({
+          title: "Error loading data",
+          description: error.message,
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
       }
-
-      // 3. Fetch Results
-      const { data: resultsData, error: resultsError } = await supabase
-        .from('quiz_results')
-        .select('*')
-        .limit(1000);
-
-      if (!resultsError && resultsData) {
-        setResults(resultsData);
-      }
-
     } catch (error: any) {
-      console.error('Error loading dashboard data:', error);
-      toast({
-        title: "Error loading data",
-        description: error.message,
-        variant: "destructive"
-      });
-    } finally {
+      // Fallback for any other errors outside the Promise.all
+      console.error('Unexpected error:', error);
       setIsLoading(false);
     }
   };
