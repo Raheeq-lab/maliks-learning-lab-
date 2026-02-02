@@ -65,7 +65,7 @@ const TeacherDashboard: React.FC = () => {
       // 1. Fetch Quizzes (RLS will filter by created_by = user.id)
       const { data: quizzesData, error: quizzesError } = await supabase
         .from('quizzes')
-        .select('*')
+        .select('id, title, description, grade_level, subject, time_limit, access_code, created_by, created_at, is_public, is_live_session, live_status, questions')
         .eq('created_by', user.id)
         .order('created_at', { ascending: false });
 
@@ -85,9 +85,14 @@ const TeacherDashboard: React.FC = () => {
       // 2. Fetch Lessons (RLS will filter by created_by = user.id)
       const { data: lessonsData, error: lessonsError } = await supabase
         .from('lessons')
-        .select('*')
+        .select(`
+          id, title, description, grade_level, subject, access_code, 
+          learning_type, created_by, created_at, is_public, 
+          activity,
+          visual_theme, research_notes, lesson_structure, content 
+        `)
         .eq('created_by', user.id)
-        .order('createdat', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (lessonsError) {
         console.warn('Error fetching lessons:', lessonsError);
@@ -113,7 +118,8 @@ const TeacherDashboard: React.FC = () => {
       // 3. Fetch Results
       const { data: resultsData, error: resultsError } = await supabase
         .from('quiz_results')
-        .select('*');
+        .select('*')
+        .limit(1000);
 
       if (!resultsError && resultsData) {
         setResults(resultsData);
