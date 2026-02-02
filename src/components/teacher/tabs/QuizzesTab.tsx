@@ -18,9 +18,10 @@ interface QuizzesTabProps {
   onToggleLive?: (quiz: Quiz) => void;
   onStartQuiz?: (quiz: Quiz) => void;
   subject?: "math" | "english" | "ict";
+  isLoading?: boolean;
 }
 
-const QuizzesTab: React.FC<QuizzesTabProps> = ({ quizzes, onCreateQuiz, onCopyCode, onEditQuiz, onDeleteQuiz, onTogglePublic, onToggleLive, onStartQuiz, subject = "math" }) => {
+const QuizzesTab: React.FC<QuizzesTabProps> = ({ quizzes, onCreateQuiz, onCopyCode, onEditQuiz, onDeleteQuiz, onTogglePublic, onToggleLive, onStartQuiz, subject = "math", isLoading = false }) => {
   const [filterGrade, setFilterGrade] = React.useState<string>("all");
 
   const getSubjectIcon = () => {
@@ -81,7 +82,13 @@ const QuizzesTab: React.FC<QuizzesTabProps> = ({ quizzes, onCreateQuiz, onCopyCo
         </div>
       </div>
 
-      {filteredQuizzes.length === 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-card-gap">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="h-64 rounded-xl bg-bg-secondary animate-pulse border border-border" />
+          ))}
+        </div>
+      ) : filteredQuizzes.length === 0 ? (
         <div className="text-center py-16 bg-bg-card rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center">
           <div className={`p-4 rounded-full bg-bg-secondary mb-4 ${subject === 'math' ? 'text-math-purple' : subject === 'english' ? 'text-english-green' : 'text-ict-orange'
             }`}>
@@ -121,8 +128,9 @@ const QuizzesTab: React.FC<QuizzesTabProps> = ({ quizzes, onCreateQuiz, onCopyCo
             />
           ))}
         </div>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 };
 

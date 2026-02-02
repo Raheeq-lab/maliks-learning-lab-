@@ -39,7 +39,11 @@ const TeacherDashboard: React.FC = () => {
     return localStorage.getItem("activeDashboardTab") || "quizzes";
   });
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isQuizzesLoading, setIsQuizzesLoading] = useState(true);
+  const [isLessonsLoading, setIsLessonsLoading] = useState(true);
+  const [isResultsLoading, setIsResultsLoading] = useState(true);
+
   const [showQuizForm, setShowQuizForm] = useState(false);
   const [showLessonBuilder, setShowLessonBuilder] = useState(false);
   const [showScaffoldedLessonBuilder, setShowScaffoldedLessonBuilder] = useState(false);
@@ -60,35 +64,25 @@ const TeacherDashboard: React.FC = () => {
 
   const loadData = async () => {
     if (!user) return;
-    setIsLoading(true);
+
+    // Set all to loading initially
+    setIsQuizzesLoading(true);
+    setIsLessonsLoading(true);
+    setIsResultsLoading(true);
+
     try {
-      try {
-        // Execute all fetches in parallel
-        const [quizzesResponse, lessonsResponse, resultsResponse] = await Promise.all([
-          supabase
+      // Independent fetch functions
+      const fetchQuizzes = async () => {
+        try {
+          const { data, error } = await supabase
             .from('quizzes')
             .select('id, title, description, grade_level, subject, time_limit, access_code, created_by, created_at, is_public, is_live_session, live_status, questions')
             .eq('created_by', user.id)
-            .order('created_at', { ascending: false }),
+            .order('created_at', { ascending: false });
 
-          supabase
-            .from('lessons')
-            .select('*')
-            .eq('created_by', user.id)
-            .order('createdat', { ascending: false }),
+          if (error) throw error;
 
-          supabase
-            .from('quiz_results')
-            .select('*')
-            .limit(1000)
-        ]);
-
-        // Process Quizzes
-        const { data: quizzesData, error: quizzesError } = quizzesResponse;
-        if (quizzesError) {
-          console.warn("Error fetching quizzes:", quizzesError);
-        } else {
-          setQuizzes((quizzesData || []).map((q: any) => ({
+          setQuizzes((data || []).map((q: any) => ({
             ...q,
             gradeLevel: q.grade_level,
             timeLimit: q.time_limit,
@@ -96,14 +90,21 @@ const TeacherDashboard: React.FC = () => {
             createdBy: q.created_by,
             isPublic: q.is_public
           })));
-        }
+        } catch (e) { console.error("Quizzes fetch error", e); }
+        finally { setIsQuizzesLoading(false); }
+      };
 
-        // Process Lessons
-        const { data: lessonsData, error: lessonsError } = lessonsResponse;
-        if (lessonsError) {
-          console.warn('Error fetching lessons:', lessonsError);
-        } else {
-          setLessons((lessonsData || []).map((l: any) => ({
+      const fetchLessons = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('lessons')
+            .select('*')
+            .eq('created_by', user.id)
+            .order('createdat', { ascending: false });
+
+          if (error) throw error;
+
+          setLessons((data || []).map((l: any) => ({
             ...l,
             gradeLevel: l.grade_level || l.gradelevel,
             timeLimit: l.time_limit,
@@ -117,36 +118,37 @@ const TeacherDashboard: React.FC = () => {
             createdBy: l.created_by || l.createdby,
             createdAt: l.created_at || l.createdat
           })));
-        }
+        } catch (e) { console.error("Lessons fetch error", e); }
+        finally { setIsLessonsLoading(false); }
+      };
 
-        // Process Results
-        const { data: resultsData, error: resultsError } = resultsResponse;
-        if (!resultsError && resultsData) {
-          setResults(resultsData);
-        }
+      const fetchResults = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('quiz_results')
+            .select('*')
+            .limit(1000);
 
-      } catch (error: any) {
-        console.error('Error loading dashboard data:', error);
-        toast({
-          title: "Error loading data",
-          description: error.message,
-          variant: "destructive"
-        });
-      } finally {
-        setIsLoading(false);
-      }
+          if (!error && data) setResults(data);
+        } catch (e) { console.error("Results fetch error", e); }
+        finally { setIsResultsLoading(false); }
+      };
+
+      // Trigger all fetches independently (progressive loading)
+      fetchQuizzes();
+      fetchLessons();
+      fetchResults();
+
     } catch (error: any) {
-      // Fallback for any other errors outside the Promise.all
       console.error('Unexpected error:', error);
-      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    if (user) {
+    if (user?.id) {
       loadData();
     }
-  }, [user]);
+  }, [user?.id]);
 
   const handleLogout = async () => {
     await signOut();
@@ -446,7 +448,7 @@ const TeacherDashboard: React.FC = () => {
     }
   };
 
-  if (authLoading || isLoading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center flex-col gap-4 bg-bg-primary">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-focus-blue"></div>
@@ -540,6 +542,7 @@ const TeacherDashboard: React.FC = () => {
                 onToggleLive={handleToggleLiveQuiz}
                 onStartQuiz={handleStartLiveQuiz}
                 subject={selectedSubject}
+                isLoading={isQuizzesLoading}
               />
             </TabsContent>
 
@@ -560,6 +563,7 @@ const TeacherDashboard: React.FC = () => {
                 onTogglePublic={handleTogglePublicLesson}
                 onRunLesson={(id) => navigate(`/teacher/lesson/${id}/run`)}
                 subject={selectedSubject}
+                isLoading={isLessonsLoading}
               />
             </TabsContent>
 

@@ -16,9 +16,10 @@ interface LessonsTabProps {
   onTogglePublic?: (lesson: Lesson) => void;
   onRunLesson: (lessonId: string) => void;
   subject: "math" | "english" | "ict";
+  isLoading?: boolean;
 }
 
-const LessonsTab: React.FC<LessonsTabProps> = ({ lessons, onCreateLesson, onCopyCode, onEditLesson, onDeleteLesson, onTogglePublic, onRunLesson, subject }) => {
+const LessonsTab: React.FC<LessonsTabProps> = ({ lessons, onCreateLesson, onCopyCode, onEditLesson, onDeleteLesson, onTogglePublic, onRunLesson, subject, isLoading = false }) => {
   const [filterGrade, setFilterGrade] = React.useState<string>("all");
 
   const getSubjectIcon = () => {
@@ -74,7 +75,13 @@ const LessonsTab: React.FC<LessonsTabProps> = ({ lessons, onCreateLesson, onCopy
         </div>
       </div>
 
-      {filteredLessons.length === 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-card-gap">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="h-64 rounded-xl bg-bg-secondary animate-pulse border border-border" />
+          ))}
+        </div>
+      ) : filteredLessons.length === 0 ? (
         <div className="text-center py-12 bg-bg-secondary rounded-lg border border-border">
           <FileText size={48} className="mx-auto mb-4 text-text-tertiary" />
           <p className="text-text-secondary">
