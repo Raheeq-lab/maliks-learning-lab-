@@ -324,7 +324,14 @@ const LessonRunnable: React.FC = () => {
     }
 
     const currentPhaseKey = PHASES[currentPhaseIndex];
-    const currentPhaseData = lesson.lessonStructure[currentPhaseKey];
+    // detailed mapping for AI generation (camelCase keys) vs internal keys
+    const phaseKeyMap: Record<string, string> = {
+        'model': 'learn',
+        'guidedPractice': 'practiceTogether',
+        'independentPractice': 'tryItYourself',
+        'reflect': 'thinkAboutIt'
+    };
+    const currentPhaseData = lesson.lessonStructure[currentPhaseKey] || lesson.lessonStructure[phaseKeyMap[currentPhaseKey]];
     const phaseColors = getPhaseColorDetails(currentPhaseKey);
 
     // Calculate total lesson time
@@ -1261,7 +1268,7 @@ const LessonRunnable: React.FC = () => {
                                     ))}
                                 </div>
                             ) : (
-                                currentPhaseData.activityType === "collaborative-map" ? (
+                                currentPhaseData && currentPhaseData.activityType === "collaborative-map" ? (
                                     <div className="animate-in fade-in duration-700">
                                         <div className="bg-bg-secondary p-4 rounded-xl mb-4 border border-border">
                                             <div className="flex items-start gap-3">
