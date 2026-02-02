@@ -270,15 +270,15 @@ export const generateLessonPlan = async (
 
     ## PHASE 3: 👥 PRACTICE TOGETHER (12 mins)
     - Primary Goal: Collaborative mastery.
-    - Required Activity: "4-Carousel Challenge" (Group Setup).
+    - Required Activity: "4-Carousel Challenge".
     - Structure:
       1) Station 1 (BRAIN): Define & Describe the core concept.
       2) Station 2 (HEART): Connect & Question (emotional/personal connection).
       3) Station 3 (HANDS): Solve & Create (practical application).
       4) Station 4 (VOICE): Judge & Defend (critical evaluation).
     - JSON required: "activityType": "carousel" and "activityData": { "carouselStations": [...] }.
-    - DO NOT just list activities in the "activities" array. You MUST populate "carouselStations".
-    - DO NOT return a single generic summary like "Students rotate through stations...". You MUST provide specific content for ALL 4 stations.
+    - CRITICAL: You MUST provide specific, challenging questions for EACH station in the "carouselStations" array.
+    - FORBIDDEN: Do NOT put a summary in the "activities" array. Leave "activities" empty.
     - Content: Specific tasks/questions for EACH station related to ${topic}.
 
     ## PHASE 4: ✏️ TRY IT YOURSELF (10 mins)
@@ -331,9 +331,8 @@ export const generateLessonPlan = async (
           "duration": "12 minutes",
           "researchStrategy": "Rotational group collaboration",
           "imagePrompt": "A detailed DALL-E style prompt for practice visual",
-          "activities": ["Students rotate through 4 stations: Brain (Define), Heart (Connect), Hands (Solve), Voice (Argue)"],
           "activityType": "carousel",
-          "activities": [],
+          "activities": [], 
           "activityData": { 
             "carouselStations": [
               { "station": "BRAIN", "task": "Define & Describe", "content": "Specific question..." },
