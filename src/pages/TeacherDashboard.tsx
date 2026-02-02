@@ -88,8 +88,8 @@ const TeacherDashboard: React.FC = () => {
         .select(`
           id, title, description, grade_level, subject, access_code, 
           learning_type, created_by, created_at, is_public, 
-          activity,
-          visual_theme, research_notes, lesson_structure, content 
+          visual_theme, research_notes, lesson_structure, content,
+          assessment_settings, required_resources 
         `)
         .eq('created_by', user.id)
         .order('created_at', { ascending: false });
