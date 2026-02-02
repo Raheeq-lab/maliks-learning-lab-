@@ -85,13 +85,8 @@ const TeacherDashboard: React.FC = () => {
       // 2. Fetch Lessons (RLS will filter by created_by = user.id)
       const { data: lessonsData, error: lessonsError } = await supabase
         .from('lessons')
-        .select(`
-          id, title, description, grade_level, subject, access_code, 
-          learning_type, created_by, created_at, is_public, 
-          visual_theme, research_notes, lesson_structure, content,
-          assessment_settings, required_resources 
-        `)
-        .eq('created_by', user.id)
+        .select('*')
+        .eq('created_by', user.id) // Restore select('*') to avoid 400 on missing cols
         .order('created_at', { ascending: false });
 
       if (lessonsError) {
