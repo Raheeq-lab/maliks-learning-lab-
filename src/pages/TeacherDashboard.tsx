@@ -87,7 +87,7 @@ const TeacherDashboard: React.FC = () => {
         .from('lessons')
         .select('*')
         .eq('created_by', user.id) // Restore select('*') to avoid 400 on missing cols
-        .order('created_at', { ascending: false });
+        .order('createdat', { ascending: false });
 
       if (lessonsError) {
         console.warn('Error fetching lessons:', lessonsError);
