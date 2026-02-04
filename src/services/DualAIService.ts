@@ -1,12 +1,13 @@
 
 import { cloudflareService } from './cloudflareAI';
+import { supabase } from '@/lib/supabase';
 
 interface AICacheEntry {
     response: any;
     timestamp: number;
 }
 
-interface AIUsageStats {
+export interface AIUsageStats {
     date: string;
     cloudflare: number;
     gemini: number;
@@ -14,7 +15,6 @@ interface AIUsageStats {
 }
 
 const CACHE_KEY_PREFIX = 'ai_cache_v1_';
-const USAGE_KEY = 'ai_usage_stats';
 const CACHE_TTL = 3600 * 1000; // 1 hour
 
 export class DualAIService {
@@ -30,37 +30,74 @@ export class DualAIService {
         return Math.abs(hash).toString(16);
     }
 
-    private getUsage(): AIUsageStats {
-        const today = new Date().toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles' });
-        const stored = localStorage.getItem(USAGE_KEY);
+    // Initialize with safe defaults, will sync with DB
+    private currentStats: AIUsageStats = {
+        date: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD
+        cloudflare: 0,
+        gemini: 0,
+        cached: 0
+    };
 
-        let stats: AIUsageStats = stored ? JSON.parse(stored) : { date: today, cloudflare: 0, gemini: 0, cached: 0 };
-
-        // Auto-reset if date changed (Pacific Time)
-        if (stats.date !== today) {
-            stats = { date: today, cloudflare: 0, gemini: 0, cached: 0 };
-            this.saveUsage(stats);
-        }
-
-        return stats;
+    constructor() {
+        this.initializeRealtimeStats();
     }
 
-    private saveUsage(stats: AIUsageStats) {
-        localStorage.setItem(USAGE_KEY, JSON.stringify(stats));
-        // Dispatch event for UI updates
+    private async initializeRealtimeStats() {
+        // 1. Fetch initial state
+        const today = new Date().toISOString().split('T')[0]; // Postgres Date format
+
+        const { data, error } = await supabase
+            .from('ai_usage_stats')
+            .select('*')
+            .eq('date', today)
+            .single();
+
+        if (data) {
+            this.updateLocalStats(data);
+        }
+
+        // 2. Subscribe to global changes (Teacher B sees Teacher A's usage)
+        supabase
+            .channel('ai-global-stats')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'ai_usage_stats' },
+                (payload) => {
+                    const newData = payload.new as any;
+                    if (newData && newData.date === today) {
+                        this.updateLocalStats(newData);
+                    }
+                }
+            )
+            .subscribe();
+    }
+
+    private updateLocalStats(dbRecord: any) {
+        this.currentStats = {
+            date: dbRecord.date,
+            cloudflare: dbRecord.cloudflare_count || 0,
+            gemini: dbRecord.gemini_count || 0,
+            cached: dbRecord.cached_count || 0
+        };
+        // Dispatch event for UI
         window.dispatchEvent(new Event('ai-usage-updated'));
     }
 
-    private incrementUsage(provider: 'cloudflare' | 'gemini' | 'cached') {
-        const stats = this.getUsage();
-        stats[provider]++;
-        this.saveUsage(stats);
+    // Call the Postgres RPC function to atomically increment safely
+    private async incrementGlobalUsage(provider: 'cloudflare' | 'gemini' | 'cached') {
+        // Optimistic update locally for speed
+        this.currentStats[provider]++;
+        window.dispatchEvent(new Event('ai-usage-updated'));
+
+        // Fire and forget DB update
+        await supabase.rpc('increment_ai_usage', { provider });
     }
 
     public getStats(): AIUsageStats {
-        return this.getUsage();
+        return this.currentStats;
     }
 
+    // Local Storage Cache acts as a "Client-Side Edge Cache"
     private getFromCache(key: string): any | null {
         const item = localStorage.getItem(CACHE_KEY_PREFIX + key);
         if (!item) return null;
@@ -80,7 +117,6 @@ export class DualAIService {
     }
 
     private setCache(key: string, response: any) {
-        // Limit cache size? For now just simple infinite localStorage (browser limits apply)
         const entry: AICacheEntry = {
             response,
             timestamp: Date.now()
@@ -88,8 +124,7 @@ export class DualAIService {
         try {
             localStorage.setItem(CACHE_KEY_PREFIX + key, JSON.stringify(entry));
         } catch (e) {
-            console.warn("[DualAI] Cache full, clearing old entries");
-            // Simple clear strategy: clear all AI cache if full
+            // If full, clear old cache
             Object.keys(localStorage).forEach(k => {
                 if (k.startsWith(CACHE_KEY_PREFIX)) localStorage.removeItem(k);
             });
@@ -98,10 +133,6 @@ export class DualAIService {
 
     /**
      * Primary generation function
-     * @param prompt The prompt to send
-     * @param fallbackFn The existing Gemini function to call if Cloudflare fails
-     * @param systemPrompt Optional system prompt
-     * @returns The generated response (string or object depending on fallbackFn return type)
      */
     async generateContent(
         prompt: string,
@@ -110,42 +141,31 @@ export class DualAIService {
     ): Promise<any> {
         const cacheKey = this.hashString(prompt + (systemPrompt || ''));
 
-        // 1. Check Cache
+        // 1. Check Local Cache (Fastest)
         const cached = this.getFromCache(cacheKey);
         if (cached) {
-            this.incrementUsage('cached');
+            this.incrementGlobalUsage('cached');
             return cached;
         }
 
         // 2. Try Cloudflare (Primary)
         try {
-            // Check quota first? (10k limit)
-            const stats = this.getUsage();
-            if (stats.cloudflare >= 10000) {
-                throw new Error("Cloudflare daily limit reached");
+            // Check GLOBAL quota
+            if (this.currentStats.cloudflare >= 10000) {
+                throw new Error("Global Cloudflare daily limit reached");
             }
 
             const response = await cloudflareService.generateContent(prompt, systemPrompt);
 
-            // Cloudflare returns string. If the consumer expects JSON, we might need to parse it?
-            // The fallbackFn (Gemini) usually returns an object.
-            // WE need to standardize. 
-            // PROBLEM: Cloudflare returns raw string. Gemini returns parsed JSON often.
-            // Solution: We try to parse Cloudflare response as JSON if it looks like JSON.
-
             let finalResult: any = response;
-
-            // Heuristic: If response looks like JSON code block or object, try parsing
             const cleaned = response.trim().replace(/^```json/, '').replace(/```$/, '');
             if (cleaned.startsWith('{') || cleaned.startsWith('[')) {
                 try {
                     finalResult = JSON.parse(cleaned);
-                } catch (e) {
-                    console.warn("[DualAI] Cloudflare returned JSON-like string but parse failed, returning raw.");
-                }
+                } catch (e) { /* ignore */ }
             }
 
-            this.incrementUsage('cloudflare');
+            this.incrementGlobalUsage('cloudflare');
             this.setCache(cacheKey, finalResult);
             return finalResult;
 
@@ -154,11 +174,8 @@ export class DualAIService {
 
             // 3. Fallback to Gemini
             try {
-                // Check Gemini quota? (20 limit is strict but usually lenient in free tier)
-                // We just let it fail naturally or check usage
-
                 const result = await fallbackFn();
-                this.incrementUsage('gemini');
+                this.incrementGlobalUsage('gemini');
                 this.setCache(cacheKey, result);
                 return result;
             } catch (geminiError) {
