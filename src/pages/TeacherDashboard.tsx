@@ -406,13 +406,16 @@ const TeacherDashboard: React.FC = () => {
     }
   };
 
+  const [targetLiveQuizId, setTargetLiveQuizId] = useState<string | undefined>(undefined);
+
   const handleStartLiveQuiz = async (quiz: Quiz) => {
     try {
-      // Optimistic update
+      // 1. Optimistic update
       setQuizzes(prev => prev.map(q =>
         q.id === quiz.id ? { ...q, live_status: 'active' } : q
       ));
 
+      // 2. Database update
       const { error } = await supabase
         .from('quizzes')
         .update({ live_status: 'active' })
@@ -428,8 +431,14 @@ const TeacherDashboard: React.FC = () => {
 
       toast({
         title: "Quiz Started!",
-        description: "All joined students have been signaled to start."
+        description: "Redirecting to Live Race view..."
       });
+
+      // 3. Auto-navigate
+      setTargetLiveQuizId(quiz.id);
+      setActiveTab('performance');
+      localStorage.setItem("activeDashboardTab", "performance");
+
     } catch (error: any) {
       toast({
         title: "Error starting quiz",
@@ -578,6 +587,7 @@ const TeacherDashboard: React.FC = () => {
                 getTotalCompletions={() => getTotalCompletions(results)}
                 findQuizById={(id) => findQuizById(quizzes, id)}
                 subject={selectedSubject}
+                initialSelectedQuizId={targetLiveQuizId}
               />
             </TabsContent>
 

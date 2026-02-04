@@ -2,7 +2,7 @@ import React from 'react';
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
-import { Zap, Flag } from "lucide-react";
+import { Zap, Flag, Trash2 } from "lucide-react";
 
 interface RaceStudent {
     id: string;
@@ -16,9 +16,10 @@ interface RaceStudent {
 interface LiveRaceViewProps {
     students: RaceStudent[];
     quizTitle: string;
+    onKickStudent?: (id: string) => void;
 }
 
-const LiveRaceView: React.FC<LiveRaceViewProps> = ({ students, quizTitle }) => {
+const LiveRaceView: React.FC<LiveRaceViewProps> = ({ students, quizTitle, onKickStudent }) => {
     const sortedStudents = [...students].sort((a, b) => {
         // Completed students first, then by progress
         if (a.status === 'completed' && b.status !== 'completed') return -1;
@@ -77,6 +78,15 @@ const LiveRaceView: React.FC<LiveRaceViewProps> = ({ students, quizTitle }) => {
                                         <span className={`${student.score > (student.total_questions / 2) ? 'text-green-500' : 'text-text-secondary'}`}>
                                             Score: {student.score}
                                         </span>
+                                        {onKickStudent && (
+                                            <button
+                                                onClick={() => onKickStudent(student.id)}
+                                                className="opacity-0 group-hover:opacity-100 transition-opacity text-error-coral hover:bg-error-coral/10 p-1 rounded"
+                                                title="Remove Student"
+                                            >
+                                                <Trash2 size={14} />
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
 

@@ -17,6 +17,7 @@ interface PerformanceTabProps {
   getTotalCompletions: () => number;
   findQuizById: (id: string) => Quiz | undefined;
   subject?: "math" | "english" | "ict";
+  initialSelectedQuizId?: string;
 }
 
 const PerformanceTab: React.FC<PerformanceTabProps> = ({
@@ -24,7 +25,8 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
   getTotalStudents,
   getTotalCompletions,
   findQuizById,
-  subject = "math"
+  subject = "math",
+  initialSelectedQuizId
 }) => {
   const { toast } = useToast();
   const [selectedQuizId, setSelectedQuizId] = useState<string>("");
@@ -32,6 +34,34 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
   const [liveResults, setLiveResults] = useState<any[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+
+  // Auto-select quiz from prop
+  React.useEffect(() => {
+    if (initialSelectedQuizId) {
+      setSelectedQuizId(initialSelectedQuizId);
+    }
+  }, [initialSelectedQuizId]);
+
+  const handleKickStudent = async (studentId: string) => {
+    if (!confirm("Are you sure you want to remove this student?")) return;
+
+    try {
+      const { error } = await supabase
+        .from('quiz_results')
+        .delete()
+        .eq('id', studentId);
+
+      if (error) throw error;
+
+      // Optimistic update
+      setLiveResults(prev => prev.filter(r => r.id !== studentId));
+
+      toast({ title: "Student Removed", description: "The student has been kicked from the session." });
+    } catch (error: any) {
+      console.error("Error kicking student:", error);
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
 
   const handleClearResults = async () => {
     if (!selectedQuizId) return;
@@ -229,6 +259,12 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
                               )}
                             </p>
                             <p className="text-[10px] text-text-tertiary uppercase font-bold">Synchronized Start</p>
+                            {selectedQuiz?.accessCode && (
+                              <div className="mt-2 px-3 py-1 bg-white border-2 border-dashed border-focus-blue/30 rounded-lg inline-block">
+                                <p className="text-[10px] uppercase font-bold text-text-tertiary">Join Code</p>
+                                <p className="text-xl font-black text-focus-blue tracking-widest">{selectedQuiz.accessCode}</p>
+                              </div>
+                            )}
                           </div>
                           <Switch
                             checked={selectedQuiz?.is_live_session || false}
@@ -319,6 +355,7 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
                     <LiveRaceView
                       students={liveResults}
                       quizTitle={selectedQuiz?.title || "Live Race"}
+                      onKickStudent={handleKickStudent}
                     />
                   </div>
                 ) : (
