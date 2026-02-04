@@ -15,6 +15,7 @@ import QuestionGeneratorTab from '@/components/teacher/tabs/QuestionGeneratorTab
 import LessonsTab from '@/components/teacher/tabs/LessonsTab';
 import PublicLibrary from '@/components/teacher/PublicLibrary';
 import SubjectSelector from '@/components/SubjectSelector';
+import { AIStatusCard } from "@/components/teacher/AIStatusCard";
 // GradeSelector removed
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
