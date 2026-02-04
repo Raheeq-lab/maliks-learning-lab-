@@ -40,7 +40,7 @@ const Index: React.FC = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <div className="min-h-screen flex flex-col font-poppins bg-bg-primary">
+    <div className="min-h-screen flex flex-col font-poppins bg-bg-primary transition-colors duration-300">
       <NavBar />
 
       {/* Hero Section */}
@@ -328,12 +328,12 @@ const Index: React.FC = () => {
         </div>
       </section>
 
-      {/* RICH FOOTER WITH MODALS */}
-      <footer className="bg-gray-900 border-t border-gray-800 text-white py-16 px-4">
+      {/* RICH FOOTER WITH MODALS (THEMED) */}
+      <footer className="bg-gray-100 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 text-text-primary dark:text-white py-16 px-4 transition-colors duration-300">
         <div className="container mx-auto">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl font-bold mb-4 tracking-tight">Malik's Learning Lab</h2>
-            <p className="text-gray-400 mb-8 text-lg">
+            <p className="text-text-secondary mb-8 text-lg">
               Transforming education through interactive learning experiences, powered by color psychology.
             </p>
 
@@ -341,7 +341,7 @@ const Index: React.FC = () => {
 
               {/* About Us */}
               <Dialog>
-                <DialogTrigger className="text-gray-400 hover:text-white transition-colors border-b border-transparent hover:border-white pb-0.5">
+                <DialogTrigger className="text-gray-600 dark:text-gray-300 hover:text-focus-blue dark:hover:text-white transition-colors border-b border-transparent hover:border-focus-blue dark:hover:border-white pb-0.5">
                   About Us
                 </DialogTrigger>
                 <DialogContent className="max-w-3xl bg-white dark:bg-quiz-card dark:text-gray-100 max-h-[85vh] overflow-y-auto">
@@ -364,7 +364,7 @@ const Index: React.FC = () => {
 
               {/* Contact Support */}
               <Dialog>
-                <DialogTrigger className="text-gray-400 hover:text-white transition-colors border-b border-transparent hover:border-white pb-0.5">
+                <DialogTrigger className="text-gray-600 dark:text-gray-300 hover:text-focus-blue dark:hover:text-white transition-colors border-b border-transparent hover:border-focus-blue dark:hover:border-white pb-0.5">
                   Contact Support
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl bg-white dark:bg-quiz-card dark:text-gray-100 text-left">
@@ -384,7 +384,7 @@ const Index: React.FC = () => {
 
               {/* Terms */}
               <Dialog>
-                <DialogTrigger className="text-gray-400 hover:text-white transition-colors border-b border-transparent hover:border-white pb-0.5">Terms of Service</DialogTrigger>
+                <DialogTrigger className="text-gray-600 dark:text-gray-300 hover:text-focus-blue dark:hover:text-white transition-colors border-b border-transparent hover:border-focus-blue dark:hover:border-white pb-0.5">Terms of Service</DialogTrigger>
                 <DialogContent className="max-w-3xl bg-white dark:bg-quiz-card dark:text-gray-100 max-h-[85vh] overflow-y-auto text-left">
                   <DialogHeader><DialogTitle>Terms of Service</DialogTitle></DialogHeader>
                   <Section title="1. Free Tier Promise">10,000+ AI requests/day will always be free. No credit card required.</Section>
@@ -395,7 +395,7 @@ const Index: React.FC = () => {
 
               {/* Privacy */}
               <Dialog>
-                <DialogTrigger className="text-gray-400 hover:text-white transition-colors border-b border-transparent hover:border-white pb-0.5">Privacy Policy</DialogTrigger>
+                <DialogTrigger className="text-gray-600 dark:text-gray-300 hover:text-focus-blue dark:hover:text-white transition-colors border-b border-transparent hover:border-focus-blue dark:hover:border-white pb-0.5">Privacy Policy</DialogTrigger>
                 <DialogContent className="max-w-3xl bg-white dark:bg-quiz-card dark:text-gray-100 max-h-[85vh] overflow-y-auto text-left">
                   <DialogHeader><DialogTitle>Privacy Policy</DialogTitle></DialogHeader>
                   <p className="mb-4">We respect your privacy regarding any information we may collect.</p>
@@ -406,7 +406,7 @@ const Index: React.FC = () => {
 
             </div>
 
-            <div className="pt-8 border-t border-gray-800 text-gray-500 text-sm">
+            <div className="pt-8 border-t border-gray-200 dark:border-gray-800 text-text-secondary text-sm">
               &copy; {currentYear} Malik's Learning Lab. All rights reserved.
             </div>
           </div>
