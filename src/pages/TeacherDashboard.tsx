@@ -478,12 +478,7 @@ const TeacherDashboard: React.FC = () => {
       />
 
       <main className="flex-1 main-container py-5">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-text-primary flex items-center gap-2">
-            <Sparkles size={20} className="text-focus-blue" />
-            Malik's Learning Lab
-          </h1>
-        </div>
+
 
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="w-full sm:w-1/2">
