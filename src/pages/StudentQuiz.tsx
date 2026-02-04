@@ -116,6 +116,22 @@ const StudentQuiz: React.FC = () => {
     return () => { supabase.removeChannel(channel); };
   }, [quiz?.id, quiz?.is_live_session]);
 
+  // 3. Realtime subscription for being kicked (row deleted)
+  useEffect(() => {
+    if (!resultId) return;
+
+    const channel = supabase
+      .channel(`student-kick-${resultId}`)
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'quiz_results', filter: `id=eq.${resultId}` },
+        () => {
+          setSessionTerminated(true);
+          toast({ title: "Removed", description: "You have been removed from the session.", variant: "destructive" });
+        })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [resultId]);
+
   // 3. Timer effect
   useEffect(() => {
     if (isLoading || quizCompleted || sessionTerminated || (quiz?.is_live_session && quiz?.live_status === 'waiting')) return;
@@ -250,7 +266,7 @@ const StudentQuiz: React.FC = () => {
               <PauseCircle size={48} className="text-error-coral" />
             </div>
             <CardTitle className="text-3xl font-bold text-text-primary mb-2">Session Ended</CardTitle>
-            <p className="text-text-secondary text-lg">The teacher has ended this live session.</p>
+            <p className="text-text-secondary text-lg">You have been removed or the session has ended.</p>
           </CardHeader>
           <CardContent className="text-center py-6 px-10">
             <p className="text-text-secondary">Your progress has been saved, but the live race is no longer active.</p>
