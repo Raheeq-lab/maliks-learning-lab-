@@ -27,7 +27,7 @@ import {
 const Section = ({ title, icon: Icon, children }: { title: string, icon?: any, children: React.ReactNode }) => (
   <div className="mb-6 last:mb-0">
     <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-      {Icon && <Icon size={18} className="text-focus-blue" />}
+      {Icon && <Icon size={18} className="text-focus-blue dark:text-blue-400" />}
       {title}
     </h3>
     <div className="text-gray-600 dark:text-gray-300 space-y-2 leading-relaxed text-sm">
@@ -328,7 +328,7 @@ const Index: React.FC = () => {
         </div>
       </section>
 
-      {/* RICH FOOTER WITH MODALS (THEMED) */}
+      {/* RICH FOOTER WITH MODALS (THEME FIXED) */}
       <footer className="bg-gray-100 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 text-text-primary dark:text-white py-16 px-4 transition-colors duration-300">
         <div className="container mx-auto">
           <div className="max-w-4xl mx-auto text-center">
@@ -341,15 +341,15 @@ const Index: React.FC = () => {
 
               {/* About Us */}
               <Dialog>
-                <DialogTrigger className="text-gray-600 dark:text-gray-300 hover:text-focus-blue dark:hover:text-white transition-colors border-b border-transparent hover:border-focus-blue dark:hover:border-white pb-0.5">
+                <DialogTrigger className="text-gray-600 dark:text-gray-400 hover:text-focus-blue dark:hover:text-white transition-colors border-b border-transparent hover:border-focus-blue dark:hover:border-white pb-0.5">
                   About Us
                 </DialogTrigger>
-                <DialogContent className="max-w-3xl bg-white dark:bg-quiz-card dark:text-gray-100 max-h-[85vh] overflow-y-auto">
+                <DialogContent className="max-w-3xl bg-white dark:bg-gray-900 dark:text-gray-100 max-h-[85vh] overflow-y-auto border dark:border-gray-800">
                   <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold flex items-center gap-3 text-focus-blue"><Info className="w-8 h-8" /> About Us</DialogTitle>
+                    <DialogTitle className="text-2xl font-bold flex items-center gap-3 text-focus-blue dark:text-blue-400"><Info className="w-8 h-8" /> About Us</DialogTitle>
                   </DialogHeader>
                   <div className="px-1 text-left">
-                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border-l-4 border-focus-blue mb-6">
+                    <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg border-l-4 border-focus-blue mb-6">
                       <h4 className="font-bold text-blue-900 dark:text-blue-100 mb-1">Founder: Malik Raheeq Tahir</h4>
                       <p className="text-sm text-blue-800 dark:text-blue-200">Teacher & Learning Scientist in Neuroscience-Informed Education</p>
                       <p className="text-sm text-blue-800 dark:text-blue-200 mt-1">📧 raimalik544@gmail.com</p>
@@ -364,18 +364,18 @@ const Index: React.FC = () => {
 
               {/* Contact Support */}
               <Dialog>
-                <DialogTrigger className="text-gray-600 dark:text-gray-300 hover:text-focus-blue dark:hover:text-white transition-colors border-b border-transparent hover:border-focus-blue dark:hover:border-white pb-0.5">
+                <DialogTrigger className="text-gray-600 dark:text-gray-400 hover:text-focus-blue dark:hover:text-white transition-colors border-b border-transparent hover:border-focus-blue dark:hover:border-white pb-0.5">
                   Contact Support
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl bg-white dark:bg-quiz-card dark:text-gray-100 text-left">
+                <DialogContent className="max-w-2xl bg-white dark:bg-gray-900 dark:text-gray-100 text-left border dark:border-gray-800">
                   <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold flex items-center gap-3 text-math-purple"><Mail className="w-8 h-8" /> Contact Support</DialogTitle>
+                    <DialogTitle className="text-2xl font-bold flex items-center gap-3 text-math-purple dark:text-purple-400"><Mail className="w-8 h-8" /> Contact Support</DialogTitle>
                   </DialogHeader>
                   <div className="space-y-6">
                     <div className="bg-purple-50 dark:bg-purple-900/20 p-5 rounded-xl text-center border border-purple-100 dark:border-purple-800">
                       <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">📞 Need Help?</h3>
-                      <div className="inline-block bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-sm text-math-purple font-mono font-bold mb-3">raimalik544@gmail.com</div>
-                      <p className="text-xs text-gray-500">Response Time: 24-48 hours</p>
+                      <div className="inline-block bg-white dark:bg-gray-800 px-4 py-2 rounded-full shadow-sm text-math-purple dark:text-purple-300 font-mono font-bold mb-3">raimalik544@gmail.com</div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Response Time: 24-48 hours</p>
                     </div>
                     <Section title="Support Categories" icon={Info}>Technical Issues, Feature Requests, Teaching Help, Account Issues, AI Questions.</Section>
                   </div>
@@ -384,9 +384,9 @@ const Index: React.FC = () => {
 
               {/* Terms */}
               <Dialog>
-                <DialogTrigger className="text-gray-600 dark:text-gray-300 hover:text-focus-blue dark:hover:text-white transition-colors border-b border-transparent hover:border-focus-blue dark:hover:border-white pb-0.5">Terms of Service</DialogTrigger>
-                <DialogContent className="max-w-3xl bg-white dark:bg-quiz-card dark:text-gray-100 max-h-[85vh] overflow-y-auto text-left">
-                  <DialogHeader><DialogTitle>Terms of Service</DialogTitle></DialogHeader>
+                <DialogTrigger className="text-gray-600 dark:text-gray-400 hover:text-focus-blue dark:hover:text-white transition-colors border-b border-transparent hover:border-focus-blue dark:hover:border-white pb-0.5">Terms of Service</DialogTrigger>
+                <DialogContent className="max-w-3xl bg-white dark:bg-gray-900 dark:text-gray-100 max-h-[85vh] overflow-y-auto text-left border dark:border-gray-800">
+                  <DialogHeader><DialogTitle className="dark:text-white">Terms of Service</DialogTitle></DialogHeader>
                   <Section title="1. Free Tier Promise">10,000+ AI requests/day will always be free. No credit card required.</Section>
                   <Section title="2. Account Management">Teachers must be 18+. Account deletion is permanent.</Section>
                   <Section title="3. Responsibilities">You own your content. Comply with school policies.</Section>
@@ -395,11 +395,20 @@ const Index: React.FC = () => {
 
               {/* Privacy */}
               <Dialog>
-                <DialogTrigger className="text-gray-600 dark:text-gray-300 hover:text-focus-blue dark:hover:text-white transition-colors border-b border-transparent hover:border-focus-blue dark:hover:border-white pb-0.5">Privacy Policy</DialogTrigger>
-                <DialogContent className="max-w-3xl bg-white dark:bg-quiz-card dark:text-gray-100 max-h-[85vh] overflow-y-auto text-left">
-                  <DialogHeader><DialogTitle>Privacy Policy</DialogTitle></DialogHeader>
-                  <p className="mb-4">We respect your privacy regarding any information we may collect.</p>
-                  <Section title="What We Collect">Email (for account). We NEVER collect student names/PII or payment info.</Section>
+                <DialogTrigger className="text-gray-600 dark:text-gray-400 hover:text-focus-blue dark:hover:text-white transition-colors border-b border-transparent hover:border-focus-blue dark:hover:border-white pb-0.5">Privacy Policy</DialogTrigger>
+                <DialogContent className="max-w-3xl bg-white dark:bg-gray-900 dark:text-gray-100 max-h-[85vh] overflow-y-auto text-left border dark:border-gray-800">
+                  <DialogHeader><DialogTitle className="flex items-center gap-2 text-success-green dark:text-green-400"><Shield className="w-5 h-5" /> Privacy Policy</DialogTitle></DialogHeader>
+                  <p className="mb-4 text-gray-600 dark:text-gray-300">We respect your privacy regarding any information we may collect.</p>
+                  <div className="grid md:grid-cols-2 gap-4 mb-4">
+                    <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                      <h4 className="font-bold text-green-800 dark:text-green-300 mb-1">✅ What We Collect</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Email, Name (Optional)</p>
+                    </div>
+                    <div className="bg-red-50 dark:bg-red-900/10 p-4 rounded-lg">
+                      <h4 className="font-bold text-red-800 dark:text-red-300 mb-1">❌ We Never Collect</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Student PII, Grades, Payments</p>
+                    </div>
+                  </div>
                   <Section title="Student Privacy">Anonymous access via codes. Session data deleted after 30 days.</Section>
                 </DialogContent>
               </Dialog>
