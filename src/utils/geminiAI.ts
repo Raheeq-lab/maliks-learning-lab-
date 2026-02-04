@@ -109,10 +109,12 @@ const MODELS = [
     { model: "gemini-3-pro-preview", version: "v1beta" }
 ];
 
+import { dualAIService } from "@/services/DualAIService";
+
 /**
- * Generic function to call Gemini API with fallback mechanisms
+ * Internal function to execute the actual Gemini calls (Fallback logic)
  */
-async function callGeminiAPI(prompt: string): Promise<any> {
+async function _internalGeminiCall(prompt: string): Promise<any> {
     if (!GEMINI_API_KEY) {
         throw new Error("Gemini API Key is missing. Please check your .env file.");
     }
@@ -121,49 +123,33 @@ async function callGeminiAPI(prompt: string): Promise<any> {
 
     for (const { model, version } of MODELS) {
         try {
-            console.log(`[Gemini API] Attempting model: ${model} (${version})`);
-            console.log(`[Gemini API] Prompt preview: ${prompt.substring(0, 50)}...`);
+            console.log(`[Gemini Fallback] Attempting model: ${model} (${version})`);
 
             const isV1 = version === 'v1';
             const generationConfig: any = {
                 temperature: 0.7
             };
 
-            // Only add response_mime_type for v1beta (Gemini 1.5+) models
             if (!isV1) {
                 generationConfig.response_mime_type = "application/json";
             }
 
             const response = await fetch(`https://generativelanguage.googleapis.com/${version}/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{
-                        parts: [{ text: prompt }]
-                    }],
+                    contents: [{ parts: [{ text: prompt }] }],
                     generationConfig: generationConfig,
-                    safetySettings: [
-                        {
-                            category: "HARM_CATEGORY_HARASSMENT",
-                            threshold: "BLOCK_MEDIUM_AND_ABOVE"
-                        }
-                    ]
+                    safetySettings: [{ category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" }]
                 })
             });
 
-            console.log(`[Gemini API] Response Status: ${response.status}`);
-
             if (!response.ok) {
                 const errorData = await response.json();
-                const msg = errorData.error?.message || `Status ${response.status}`;
-                throw new Error(msg);
+                throw new Error(errorData.error?.message || `Status ${response.status}`);
             }
 
             const data = await response.json();
-            // console.log(`[Gemini API] Raw Response:`, JSON.stringify(data).substring(0, 200) + "...");
-
             const candidate = data.candidates?.[0];
 
             if (!candidate || !candidate.content || !candidate.content.parts || !candidate.content.parts[0].text) {
@@ -171,28 +157,62 @@ async function callGeminiAPI(prompt: string): Promise<any> {
             }
 
             const textContent = candidate.content.parts[0].text;
-
-            // Clean markdown code blocks
             const cleanedJson = textContent.replace(/```json\n?|\n?```/g, "").trim();
 
             try {
-                const parsed = JSON.parse(cleanedJson);
-                console.log(`[Gemini API] Successfully parsed JSON`);
-                return parsed;
+                return JSON.parse(cleanedJson);
             } catch (e) {
-                console.error(`[Gemini API] JSON Parse Error:`, e);
-                console.error(`[Gemini API] Failed Content:`, cleanedJson);
+                // If it's v1beta and we asked for JSON, it should be JSON. 
+                // But sometimes models fail.
+                console.warn("[Gemini Fallback] Parsing failed, returning raw text if possible or throwing");
                 throw new Error("Failed to parse Gemini response as JSON");
             }
 
         } catch (error: any) {
-            console.warn(`[Gemini API] Failed with model ${model}:`, error.message);
+            console.warn(`[Gemini Fallback] Failed with model ${model}:`, error.message);
             lastError = error;
-            // Continue to next model
         }
     }
 
     throw new Error(`All Gemini models failed. Last error: ${lastError?.message || "Unknown error"}`);
+}
+
+/**
+ * Main entry point for AI calls - Routes through DualAIService (Cloudflare -> Gemini)
+ */
+async function callGeminiAPI(prompt: string): Promise<any> {
+    try {
+        const result = await dualAIService.generateContent(
+            prompt,
+            () => _internalGeminiCall(prompt)
+        );
+
+        // Ensure we always return an object if the result is a string (Cloudflare might return string)
+        if (typeof result === 'string') {
+            try {
+                // Try aggressive regex extraction if strict parse failed
+                const jsonMatch = result.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+                if (jsonMatch) {
+                    return JSON.parse(jsonMatch[0]);
+                }
+                // If strictly not JSON, maybe the prompt didn't ask for it? 
+                // But this function implies JSON return mostly.
+                // We'll return it as is if it's not parseable, but warn.
+                return JSON.parse(result);
+            } catch (e) {
+                console.warn("[DualAI] Result was string string but failed to parse as JSON. Returning raw string.");
+                // Some callers check Array.isArray(result) so sending a string might crash them.
+                // We'll wrap it in a safe object if it looks like a generation failure?
+                // Or just return the string and let the caller handle it (flexible).
+                return result;
+            }
+        }
+
+        return result;
+    } catch (error) {
+        console.error("Dual AI Service failed completely:", error);
+        throw error;
+    }
 }
 
 export const generateQuizQuestions = async (

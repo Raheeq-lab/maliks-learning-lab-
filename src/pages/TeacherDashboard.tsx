@@ -494,112 +494,115 @@ const TeacherDashboard: React.FC = () => {
         </div>
 
         {!showQuizForm && !showLessonBuilder && !showScaffoldedLessonBuilder ? (
-          <Tabs
-            value={activeTab}
-            onValueChange={(val) => {
-              setActiveTab(val);
-              localStorage.setItem("activeDashboardTab", val);
-            }}
-            className="space-y-6"
-          >
-            <TabsList className="flex-wrap h-auto gap-1 bg-bg-secondary p-1 border border-border rounded-lg shadow-inner">
-              <TabsTrigger
-                value="quizzes"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm data-[state=active]:bg-bg-card data-[state=active]:text-text-primary data-[state=active]:shadow-sm text-text-secondary hover:text-text-primary transition-all rounded-md"
-              >
-                <Book size={14} />
-                <span>Quiz Zone</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="lessons"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm data-[state=active]:bg-bg-card data-[state=active]:text-text-primary data-[state=active]:shadow-sm text-text-secondary hover:text-text-primary transition-all rounded-md"
-              >
-                <FileText size={14} />
-                <span>Lesson Builder</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="library"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm data-[state=active]:bg-bg-card data-[state=active]:text-text-primary data-[state=active]:shadow-sm text-text-secondary hover:text-text-primary transition-all rounded-md"
-              >
-                <Globe size={14} />
-                <span>Public Library</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="performance"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm data-[state=active]:bg-bg-card data-[state=active]:text-text-primary data-[state=active]:shadow-sm text-text-secondary hover:text-text-primary transition-all rounded-md"
-              >
-                <BarChart size={14} />
-                <span>Performance</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="generate"
-                className="flex items-center gap-1.5 px-3 py-1.5 text-sm data-[state=active]:bg-bg-card data-[state=active]:text-text-primary data-[state=active]:shadow-sm text-text-secondary hover:text-text-primary transition-all rounded-md"
-              >
-                {getSubjectIcon()}
-                <span>Content Generator</span>
-              </TabsTrigger>
-            </TabsList>
+          <>
+            <AIStatusCard />
+            <Tabs
+              value={activeTab}
+              onValueChange={(val) => {
+                setActiveTab(val);
+                localStorage.setItem("activeDashboardTab", val);
+              }}
+              className="space-y-6"
+            >
+              <TabsList className="flex-wrap h-auto gap-1 bg-bg-secondary p-1 border border-border rounded-lg shadow-inner">
+                <TabsTrigger
+                  value="quizzes"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm data-[state=active]:bg-bg-card data-[state=active]:text-text-primary data-[state=active]:shadow-sm text-text-secondary hover:text-text-primary transition-all rounded-md"
+                >
+                  <Book size={14} />
+                  <span>Quiz Zone</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="lessons"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm data-[state=active]:bg-bg-card data-[state=active]:text-text-primary data-[state=active]:shadow-sm text-text-secondary hover:text-text-primary transition-all rounded-md"
+                >
+                  <FileText size={14} />
+                  <span>Lesson Builder</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="library"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm data-[state=active]:bg-bg-card data-[state=active]:text-text-primary data-[state=active]:shadow-sm text-text-secondary hover:text-text-primary transition-all rounded-md"
+                >
+                  <Globe size={14} />
+                  <span>Public Library</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="performance"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm data-[state=active]:bg-bg-card data-[state=active]:text-text-primary data-[state=active]:shadow-sm text-text-secondary hover:text-text-primary transition-all rounded-md"
+                >
+                  <BarChart size={14} />
+                  <span>Performance</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="generate"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm data-[state=active]:bg-bg-card data-[state=active]:text-text-primary data-[state=active]:shadow-sm text-text-secondary hover:text-text-primary transition-all rounded-md"
+                >
+                  {getSubjectIcon()}
+                  <span>Content Generator</span>
+                </TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="quizzes">
-              <QuizzesTab
-                quizzes={filteredQuizzes}
-                onCreateQuiz={() => setShowQuizForm(true)}
-                onCopyCode={handleCopyCode}
-                onEditQuiz={(q) => { setEditingQuiz(q); setShowQuizForm(true); }}
-                onDeleteQuiz={handleDeleteQuiz}
-                onTogglePublic={handleTogglePublicQuiz}
-                onToggleLive={handleToggleLiveQuiz}
-                onStartQuiz={handleStartLiveQuiz}
-                subject={selectedSubject}
-                isLoading={isQuizzesLoading}
-              />
-            </TabsContent>
+              <TabsContent value="quizzes">
+                <QuizzesTab
+                  quizzes={filteredQuizzes}
+                  onCreateQuiz={() => setShowQuizForm(true)}
+                  onCopyCode={handleCopyCode}
+                  onEditQuiz={(q) => { setEditingQuiz(q); setShowQuizForm(true); }}
+                  onDeleteQuiz={handleDeleteQuiz}
+                  onTogglePublic={handleTogglePublicQuiz}
+                  onToggleLive={handleToggleLiveQuiz}
+                  onStartQuiz={handleStartLiveQuiz}
+                  subject={selectedSubject}
+                  isLoading={isQuizzesLoading}
+                />
+              </TabsContent>
 
-            <TabsContent value="lessons">
-              <LessonsTab
-                lessons={filteredLessons}
-                onCreateLesson={() => setShowScaffoldedLessonBuilder(true)}
-                onCopyCode={handleCopyCode}
-                onEditLesson={(l) => {
-                  setEditingLesson(l);
-                  if (l.learningType === 'scaffolded' || l.learningType === 'scaffolded-lesson') {
-                    setShowScaffoldedLessonBuilder(true);
-                  } else {
-                    setShowLessonBuilder(true);
-                  }
-                }}
-                onDeleteLesson={handleDeleteLesson}
-                onTogglePublic={handleTogglePublicLesson}
-                onRunLesson={(id) => navigate(`/teacher/lesson/${id}/run`)}
-                subject={selectedSubject}
-                isLoading={isLessonsLoading}
-              />
-            </TabsContent>
+              <TabsContent value="lessons">
+                <LessonsTab
+                  lessons={filteredLessons}
+                  onCreateLesson={() => setShowScaffoldedLessonBuilder(true)}
+                  onCopyCode={handleCopyCode}
+                  onEditLesson={(l) => {
+                    setEditingLesson(l);
+                    if (l.learningType === 'scaffolded' || l.learningType === 'scaffolded-lesson') {
+                      setShowScaffoldedLessonBuilder(true);
+                    } else {
+                      setShowLessonBuilder(true);
+                    }
+                  }}
+                  onDeleteLesson={handleDeleteLesson}
+                  onTogglePublic={handleTogglePublicLesson}
+                  onRunLesson={(id) => navigate(`/teacher/lesson/${id}/run`)}
+                  subject={selectedSubject}
+                  isLoading={isLessonsLoading}
+                />
+              </TabsContent>
 
-            <TabsContent value="library">
-              <PublicLibrary onCopySuccess={loadData} />
-            </TabsContent>
+              <TabsContent value="library">
+                <PublicLibrary onCopySuccess={loadData} />
+              </TabsContent>
 
-            <TabsContent value="performance">
-              <PerformanceTab
-                quizzes={quizzes}
-                getTotalStudents={() => getTotalStudents(results)}
-                getTotalCompletions={() => getTotalCompletions(results)}
-                findQuizById={(id) => findQuizById(quizzes, id)}
-                subject={selectedSubject}
-                initialSelectedQuizId={targetLiveQuizId}
-              />
-            </TabsContent>
+              <TabsContent value="performance">
+                <PerformanceTab
+                  quizzes={quizzes}
+                  getTotalStudents={() => getTotalStudents(results)}
+                  getTotalCompletions={() => getTotalCompletions(results)}
+                  findQuizById={(id) => findQuizById(quizzes, id)}
+                  subject={selectedSubject}
+                  initialSelectedQuizId={targetLiveQuizId}
+                />
+              </TabsContent>
 
-            <TabsContent value="generate" forceMount={true} className={activeTab === "generate" ? "" : "hidden"}>
-              <QuestionGeneratorTab
-                availableGrades={availableGrades}
-                subject={selectedSubject}
-                onCreateQuiz={handleCreateQuiz}
-                onCreateLesson={handleCreateLesson}
-              />
-            </TabsContent>
-          </Tabs>
+              <TabsContent value="generate" forceMount={true} className={activeTab === "generate" ? "" : "hidden"}>
+                <QuestionGeneratorTab
+                  availableGrades={availableGrades}
+                  subject={selectedSubject}
+                  onCreateQuiz={handleCreateQuiz}
+                  onCreateLesson={handleCreateLesson}
+                />
+              </TabsContent>
+            </Tabs>
+          </>
         ) : showQuizForm ? (
           <QuizForm
             grades={availableGrades}
