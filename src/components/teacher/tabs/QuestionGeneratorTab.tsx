@@ -487,7 +487,7 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
 
         <div className="hidden sm:flex items-center gap-2 text-xs font-semibold text-text-secondary bg-bg-secondary/50 px-3 py-1.5 rounded-full border border-border backdrop-blur-md">
           <BrainCircuit size={14} className="text-math-purple" />
-          <span>Powered by Gemini 1.5 Flash</span>
+          <span>AI-Powered Generator</span>
         </div>
       </div>
 
