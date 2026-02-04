@@ -17,48 +17,46 @@ export class CloudflareAIService {
     }
 
     async generateContent(prompt: string, systemPrompt?: string): Promise<string> {
-        if (!this.config.accountId || !this.config.apiToken) {
-            throw new Error("Cloudflare credentials missing");
-        }
-
-        const messages = [
-            ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
-            { role: 'user', content: prompt }
-        ];
+        // Use local proxy if in dev or prod to avoid CORS
+        const endpoint = '/api/cloudflare-proxy';
 
         try {
-            console.log(`[Cloudflare AI] Calling model ${this.config.model}...`);
-            const response = await fetch(
-                `https://api.cloudflare.com/client/v4/accounts/${this.config.accountId}/ai/run/${this.config.model}`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${this.config.apiToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        messages,
-                        temperature: 0.7,
-                        max_tokens: 2048 // Reasonable limit for 3B model
-                    })
-                }
-            );
+            console.log(`[Cloudflare AI] Calling proxy...`);
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    prompt,
+                    systemPrompt,
+                    // Pass specific config if available, but server will prefer env vars
+                    accountId: this.config.accountId,
+                    apiToken: this.config.apiToken,
+                    model: this.config.model
+                })
+            });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.errors?.[0]?.message || `Cloudflare API Error: ${response.status}`);
+                // Try to parse error as text first in case it's not JSON
+                const errorText = await response.text();
+                let errorMsg = `Proxy Error: ${response.status} ${errorText}`;
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    if (errorJson.error) errorMsg = errorJson.error;
+                } catch (e) { }
+
+                throw new Error(errorMsg);
             }
 
             const result = await response.json();
 
             if (!result.success) {
-                throw new Error(result.errors?.[0]?.message || "Unknown Cloudflare error");
+                throw new Error(result.errors?.[0]?.message || "Unknown Cloudflare error from proxy");
             }
 
             return result.result.response;
 
         } catch (error) {
-            console.error("[Cloudflare AI] Generation failed:", error);
+            console.error("[Cloudflare AI] Generation failed via proxy:", error);
             throw error;
         }
     }
