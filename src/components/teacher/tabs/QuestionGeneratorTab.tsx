@@ -139,45 +139,49 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
                     pollOptions: ["I've seen something like this before", "This reminds me of...", "This is completely new to me"]
                   }
                 },
-                ...(Array.isArray(lessonPlan.phases.engage.activities) ? lessonPlan.phases.engage.activities : []).map(a => ({ type: 'text' as const, content: typeof a === 'string' ? a : JSON.stringify(a), id: crypto.randomUUID() })),
-                ...(lessonPlan.phases.engage.activityType ? [{
+                ...(Array.isArray((lessonPlan.phases.engage || (lessonPlan.phases as any).hook)?.activities)
+                  ? (lessonPlan.phases.engage || (lessonPlan.phases as any).hook).activities
+                  : []).map((a: any) => ({ type: 'text' as const, content: typeof a === 'string' ? a : JSON.stringify(a), id: crypto.randomUUID() })),
+                ...((lessonPlan.phases.engage || (lessonPlan.phases as any).hook)?.activityType ? [{
                   id: crypto.randomUUID(),
-                  type: lessonPlan.phases.engage.activityType as any,
-                  content: `Interactive ${lessonPlan.phases.engage.activityType}`,
-                  pollOptions: lessonPlan.phases.engage.activityData?.pollOptions
+                  type: (lessonPlan.phases.engage || (lessonPlan.phases as any).hook).activityType as any,
+                  content: `Interactive ${(lessonPlan.phases.engage || (lessonPlan.phases as any).hook).activityType}`,
+                  pollOptions: (lessonPlan.phases.engage || (lessonPlan.phases as any).hook).activityData?.pollOptions
                 }] : [])
               ],
               visualMetadata: {
-                visualTheme: typeof lessonPlan.phases.engage.visualTheme === 'string' ? lessonPlan.phases.engage.visualTheme : "Detailed visual theme",
-                screenLayout: typeof lessonPlan.phases.engage.screenLayout === 'string' ? lessonPlan.phases.engage.screenLayout : "Standard",
-                interactiveHook: typeof lessonPlan.phases.engage.interactiveHook === 'string' ? lessonPlan.phases.engage.interactiveHook : "",
-                animations: typeof lessonPlan.phases.engage.animations === 'string' ? lessonPlan.phases.engage.animations : "Subtle fade-in",
-                audio: typeof lessonPlan.phases.engage.audio === 'string' ? lessonPlan.phases.engage.audio : "",
-                researchHook: typeof lessonPlan.phases.engage.researchHook === 'string' ? lessonPlan.phases.engage.researchHook : "Activate prior knowledge",
-                misconceptionAddressed: typeof lessonPlan.phases.engage.misconceptionAddressed === 'string' ? lessonPlan.phases.engage.misconceptionAddressed : "",
-                imagePrompt: typeof lessonPlan.phases.engage.imagePrompt === 'string' ? lessonPlan.phases.engage.imagePrompt : `Educational image for ${customTopic}`
+                visualTheme: typeof (lessonPlan.phases.engage || (lessonPlan.phases as any).hook)?.visualTheme === 'string' ? (lessonPlan.phases.engage || (lessonPlan.phases as any).hook).visualTheme : "Detailed visual theme",
+                screenLayout: typeof (lessonPlan.phases.engage || (lessonPlan.phases as any).hook)?.screenLayout === 'string' ? (lessonPlan.phases.engage || (lessonPlan.phases as any).hook).screenLayout : "Standard",
+                interactiveHook: typeof (lessonPlan.phases.engage || (lessonPlan.phases as any).hook)?.interactiveHook === 'string' ? (lessonPlan.phases.engage || (lessonPlan.phases as any).hook).interactiveHook : "",
+                animations: typeof (lessonPlan.phases.engage || (lessonPlan.phases as any).hook)?.animations === 'string' ? (lessonPlan.phases.engage || (lessonPlan.phases as any).hook).animations : "Subtle fade-in",
+                audio: typeof (lessonPlan.phases.engage || (lessonPlan.phases as any).hook)?.audio === 'string' ? (lessonPlan.phases.engage || (lessonPlan.phases as any).hook).audio : "",
+                researchHook: typeof (lessonPlan.phases.engage || (lessonPlan.phases as any).hook)?.researchHook === 'string' ? (lessonPlan.phases.engage || (lessonPlan.phases as any).hook).researchHook : "Activate prior knowledge",
+                misconceptionAddressed: typeof (lessonPlan.phases.engage || (lessonPlan.phases as any).hook)?.misconceptionAddressed === 'string' ? (lessonPlan.phases.engage || (lessonPlan.phases as any).hook).misconceptionAddressed : "",
+                imagePrompt: typeof (lessonPlan.phases.engage || (lessonPlan.phases as any).hook)?.imagePrompt === 'string' ? (lessonPlan.phases.engage || (lessonPlan.phases as any).hook).imagePrompt : `Educational image for ${customTopic}`
               }
             },
             model: {
               title: "📚 LEARN",
               timeInMinutes: 8,
               content: [
-                ...(Array.isArray(lessonPlan.phases.learn.activities) ? lessonPlan.phases.learn.activities : []).map(a => ({ type: 'text' as const, content: typeof a === 'string' ? a : JSON.stringify(a), id: crypto.randomUUID() })),
-                ...(lessonPlan.phases.learn.activityType ? [{
+                ...(Array.isArray((lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction)?.activities)
+                  ? (lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction).activities
+                  : []).map((a: any) => ({ type: 'text' as const, content: typeof a === 'string' ? a : JSON.stringify(a), id: crypto.randomUUID() })),
+                ...((lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction)?.activityType ? [{
                   id: crypto.randomUUID(),
-                  type: lessonPlan.phases.learn.activityType as any,
-                  content: `Interactive ${lessonPlan.phases.learn.activityType}`,
-                  steps: lessonPlan.phases.learn.activityData?.steps,
-                  flashcards: lessonPlan.phases.learn.activityData?.flashcards
+                  type: (lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction).activityType as any,
+                  content: `Interactive ${(lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction).activityType}`,
+                  steps: (lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction).activityData?.steps,
+                  flashcards: (lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction).activityData?.flashcards
                 }] : [])
               ],
               visualMetadata: {
-                researchContent: typeof lessonPlan.phases.learn.researchContent === 'string' ? lessonPlan.phases.learn.researchContent : "",
-                animations: typeof lessonPlan.phases.learn.animations === 'string' ? lessonPlan.phases.learn.animations : "",
-                researchInsight: typeof lessonPlan.phases.learn.researchInsight === 'string' ? lessonPlan.phases.learn.researchInsight : "",
-                interactiveLearning: typeof lessonPlan.phases.learn.interactiveLearning === 'string' ? lessonPlan.phases.learn.interactiveLearning : "",
-                checkForUnderstanding: typeof lessonPlan.phases.learn.checkForUnderstanding === 'string' ? lessonPlan.phases.learn.checkForUnderstanding : "",
-                imagePrompt: typeof lessonPlan.phases.learn.imagePrompt === 'string' ? lessonPlan.phases.learn.imagePrompt : `Educational illustration for ${customTopic}`
+                researchContent: typeof (lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction)?.researchContent === 'string' ? (lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction).researchContent : "",
+                animations: typeof (lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction)?.animations === 'string' ? (lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction).animations : "",
+                researchInsight: typeof (lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction)?.researchInsight === 'string' ? (lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction).researchInsight : "",
+                interactiveLearning: typeof (lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction)?.interactiveLearning === 'string' ? (lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction).interactiveLearning : "",
+                checkForUnderstanding: typeof (lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction)?.checkForUnderstanding === 'string' ? (lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction).checkForUnderstanding : "",
+                imagePrompt: typeof (lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction)?.imagePrompt === 'string' ? (lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction).imagePrompt : `Educational illustration for ${customTopic}`
               }
             },
             guidedPractice: {
@@ -185,15 +189,17 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
               timeInMinutes: 12,
               activityType: 'carousel',
               content: [
-                ...(Array.isArray(lessonPlan.phases.practiceTogether.activities) ? lessonPlan.phases.practiceTogether.activities : []).map(a => ({ type: 'text' as const, content: typeof a === 'string' ? a : JSON.stringify(a), id: crypto.randomUUID() })),
-                ...(lessonPlan.phases.practiceTogether.activityType ? [{
+                ...(Array.isArray((lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice)?.activities)
+                  ? (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).activities
+                  : []).map((a: any) => ({ type: 'text' as const, content: typeof a === 'string' ? a : JSON.stringify(a), id: crypto.randomUUID() })),
+                ...((lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice)?.activityType ? [{
                   id: crypto.randomUUID(),
                   type: 'carousel',
                   content: 'Interactive 4-Carousel Challenge',
-                  categorizationGroups: lessonPlan.phases.practiceTogether.activityData?.categorizationGroups,
-                  carouselStations: lessonPlan.phases.practiceTogether.activityData?.carouselStations ||
-                    (Array.isArray(lessonPlan.phases.practiceTogether.activities) && lessonPlan.phases.practiceTogether.activities.length === 4
-                      ? lessonPlan.phases.practiceTogether.activities.map((act, i) => ({ station: ["BRAIN", "HEART", "HANDS", "VOICE"][i], task: "Station Task", content: typeof act === 'string' ? act : JSON.stringify(act) }))
+                  categorizationGroups: (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).activityData?.categorizationGroups,
+                  carouselStations: (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).activityData?.carouselStations ||
+                    (Array.isArray((lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).activities) && (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).activities.length === 4
+                      ? (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).activities.map((act: any, i: number) => ({ station: ["BRAIN", "HEART", "HANDS", "VOICE"][i], task: "Station Task", content: typeof act === 'string' ? act : JSON.stringify(act) }))
                       : [
                         { station: "BRAIN", task: "Define & Describe", content: `Define the core concept of ${customTopic} in your own words.` },
                         { station: "HEART", task: "Connect & Question", content: "How does this topic connect to your daily life? What questions do you still have?" },
@@ -203,12 +209,12 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
                 }] : [])
               ],
               visualMetadata: {
-                researchStrategy: typeof lessonPlan.phases.practiceTogether.researchStrategy === 'string' ? lessonPlan.phases.practiceTogether.researchStrategy : "",
-                collaborationInterface: typeof lessonPlan.phases.practiceTogether.collaborationInterface === 'string' ? lessonPlan.phases.practiceTogether.collaborationInterface : "",
-                differentiation: typeof lessonPlan.phases.practiceTogether.differentiation === 'string' ? lessonPlan.phases.practiceTogether.differentiation : "",
-                progressVisualization: typeof lessonPlan.phases.practiceTogether.progressVisualization === 'string' ? lessonPlan.phases.practiceTogether.progressVisualization : "",
-                celebration: typeof lessonPlan.phases.practiceTogether.celebration === 'string' ? lessonPlan.phases.practiceTogether.celebration : "",
-                imagePrompt: typeof lessonPlan.phases.practiceTogether.imagePrompt === 'string' ? lessonPlan.phases.practiceTogether.imagePrompt : `Group practice visuals for ${customTopic}`
+                researchStrategy: typeof (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice)?.researchStrategy === 'string' ? (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).researchStrategy : "",
+                collaborationInterface: typeof (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice)?.collaborationInterface === 'string' ? (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).collaborationInterface : "",
+                differentiation: typeof (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice)?.differentiation === 'string' ? (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).differentiation : "",
+                progressVisualization: typeof (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice)?.progressVisualization === 'string' ? (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).progressVisualization : "",
+                celebration: typeof (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice)?.celebration === 'string' ? (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).celebration : "",
+                imagePrompt: typeof (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice)?.imagePrompt === 'string' ? (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).imagePrompt : `Group practice visuals for ${customTopic}`
               }
             },
             independentPractice: {
