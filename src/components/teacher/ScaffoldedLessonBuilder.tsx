@@ -763,6 +763,47 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                 <Trash2 size={16} />
               </Button>
             </div>
+
+            {/* Image Upload for Quiz Question */}
+            <div className="flex items-center gap-2">
+              <input
+                type="file"
+                accept="image/*"
+                ref={(el) => (imageInputRefs.current[content.id] = el)}
+                onChange={(e) => handleImageUpload(phase, content.id, e)}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => imageInputRefs.current[content.id]?.click()}
+                className="flex items-center gap-2 border-border text-text-primary hover:bg-bg-secondary"
+              >
+                <Upload size={16} />
+                Add Photo
+              </Button>
+              {content.imageUrl && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => removeImage(phase, content.id)}
+                  className="text-error-coral hover:text-error-coral-dark"
+                >
+                  <X size={16} className="mr-1" /> Remove Photo
+                </Button>
+              )}
+            </div>
+
+            {content.imageUrl && (
+              <div className="mt-2">
+                <img
+                  src={content.imageUrl}
+                  alt={content.content || "Question image"}
+                  className="max-h-40 rounded border border-border"
+                />
+              </div>
+            )}
+
             <Textarea
               value={content.content}
               onChange={(e) => handleContentChange(phase, content.id, "content", e.target.value)}

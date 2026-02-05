@@ -26,26 +26,26 @@ export const CarouselActivity: React.FC<CarouselActivityProps> = ({ stations, to
     const stationConfig: Record<string, { icon: React.ReactNode, color: string, bg: string, description: string }> = {
         "BRAIN": {
             icon: <Brain size={32} />,
-            color: "text-blue-600",
-            bg: "bg-blue-50 border-blue-200",
+            color: "text-blue-600 dark:text-blue-400",
+            bg: "bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800",
             description: "Define & Describe"
         },
         "HEART": {
             icon: <Heart size={32} />,
-            color: "text-red-500",
-            bg: "bg-red-50 border-red-200",
+            color: "text-red-500 dark:text-red-400",
+            bg: "bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800",
             description: "Connect & Question"
         },
         "HANDS": {
             icon: <Hand size={32} />,
-            color: "text-amber-600",
-            bg: "bg-amber-50 border-amber-200",
+            color: "text-amber-600 dark:text-amber-400",
+            bg: "bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800",
             description: "Solve & Create"
         },
         "VOICE": {
             icon: <Mic size={32} />,
-            color: "text-purple-600",
-            bg: "bg-purple-50 border-purple-200",
+            color: "text-purple-600 dark:text-purple-400",
+            bg: "bg-purple-50 border-purple-200 dark:bg-purple-900/20 dark:border-purple-800",
             description: "Judge & Defend"
         }
     };
@@ -53,8 +53,8 @@ export const CarouselActivity: React.FC<CarouselActivityProps> = ({ stations, to
     const currentStation = stations[currentStationIndex];
     const config = stationConfig[currentStation.station.toUpperCase()] || {
         icon: <RotateCw size={32} />,
-        color: "text-gray-600",
-        bg: "bg-gray-50 border-gray-200",
+        color: "text-slate-600 dark:text-slate-400",
+        bg: "bg-slate-50 border-slate-200 dark:bg-slate-800 dark:border-slate-700",
         description: "Activity Station"
     };
 
@@ -68,23 +68,23 @@ export const CarouselActivity: React.FC<CarouselActivityProps> = ({ stations, to
     return (
         <div className="space-y-6 animate-in fade-in duration-500">
             {/* Header / Context */}
-            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-xl shadow-sm">
                 <div className="flex justify-between items-center mb-4">
                     <div>
-                        <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                            <RotateCw className="text-indigo-600" />
+                        <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                            <RotateCw className="text-indigo-600 dark:text-indigo-400" />
                             4-Carousel Challenge
                         </h3>
-                        <p className="text-gray-600 mt-1">
-                            Topic: <span className="font-bold text-indigo-600">{topic}</span>
+                        <p className="text-slate-600 dark:text-slate-400 mt-1">
+                            Topic: <span className="font-bold text-indigo-600 dark:text-indigo-400">{topic}</span>
                         </p>
                     </div>
-                    <Badge variant="outline" className="px-4 py-2 text-lg bg-indigo-50 border-indigo-200 text-indigo-700">
+                    <Badge variant="outline" className="px-4 py-2 text-lg bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:border-indigo-800 dark:text-indigo-200">
                         Rotation {rotation}
                     </Badge>
                 </div>
 
-                <p className="text-sm text-gray-500 italic">
+                <p className="text-sm text-slate-500 dark:text-slate-400 italic">
                     Instructions: Divide into 4 groups. Start at your assigned station. Complete the task, then rotate clockwise when the timer ends.
                 </p>
             </div>
@@ -106,10 +106,10 @@ export const CarouselActivity: React.FC<CarouselActivityProps> = ({ stations, to
                                     p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 flex items-center gap-3
                                     ${isActive
                                         ? `${sConfig.bg} ${sConfig.color} shadow-md transform scale-105`
-                                        : 'bg-white border-transparent hover:bg-gray-50 text-gray-400 opacity-60 hover:opacity-100'}
+                                        : 'bg-white dark:bg-slate-900 border-transparent hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-400 opacity-60 hover:opacity-100'}
                                 `}
                             >
-                                <div className={`p-2 rounded-lg bg-white/50`}>
+                                <div className={`p-2 rounded-lg bg-white/50 dark:bg-slate-950/30`}>
                                     {React.cloneElement(sConfig.icon as React.ReactElement, { size: 20 })}
                                 </div>
                                 <div>
@@ -126,11 +126,11 @@ export const CarouselActivity: React.FC<CarouselActivityProps> = ({ stations, to
                     <CardHeader className={`${config.bg.split(' ')[0]} pb-6`}>
                         <div className="flex justify-between items-start">
                             <div className="flex items-center gap-4">
-                                <div className={`p-4 rounded-2xl bg-white shadow-sm ${config.color}`}>
+                                <div className={`p-4 rounded-2xl bg-white dark:bg-slate-900 shadow-sm ${config.color}`}>
                                     {config.icon}
                                 </div>
                                 <div>
-                                    <CardTitle className={`text-4xl font-black uppercase tracking-tight text-gray-800`}>
+                                    <CardTitle className={`text-4xl font-black uppercase tracking-tight text-slate-800 dark:text-slate-100`}>
                                         {currentStation.station}
                                     </CardTitle>
                                     <p className={`text-xl font-medium ${config.color} mt-1`}>
@@ -139,27 +139,27 @@ export const CarouselActivity: React.FC<CarouselActivityProps> = ({ stations, to
                                 </div>
                             </div>
                             <div className="text-right hidden md:block">
-                                <div className="text-xs font-bold uppercase text-gray-400 tracking-widest mb-1">Current Task</div>
-                                <div className="font-mono text-3xl font-bold text-gray-700"> Station {currentStationIndex + 1}</div>
+                                <div className="text-xs font-bold uppercase text-slate-400 tracking-widest mb-1">Current Task</div>
+                                <div className="font-mono text-3xl font-bold text-slate-700 dark:text-slate-200"> Station {currentStationIndex + 1}</div>
                             </div>
                         </div>
                     </CardHeader>
 
                     <CardContent className="p-8 space-y-8">
                         <div>
-                            <h5 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                            <h5 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                                 <ArrowRight size={16} /> The Mission
                             </h5>
-                            <p className="text-2xl font-medium text-gray-800 leading-relaxed">
+                            <p className="text-2xl font-medium text-slate-800 dark:text-slate-100 leading-relaxed">
                                 "{currentStation.task}"
                             </p>
                         </div>
 
-                        <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
-                            <h5 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-3">
+                        <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-xl border border-slate-100 dark:border-slate-800">
+                            <h5 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-3">
                                 Guiding Questions / Prompt
                             </h5>
-                            <p className="text-lg text-gray-600 leading-loose">
+                            <p className="text-lg text-slate-600 dark:text-slate-300 leading-loose">
                                 {currentStation.content}
                             </p>
                         </div>
@@ -167,7 +167,7 @@ export const CarouselActivity: React.FC<CarouselActivityProps> = ({ stations, to
                         <div className="flex justify-end pt-4">
                             <Button
                                 onClick={handleNextStation}
-                                className="bg-gray-900 text-white hover:bg-gray-800 h-14 px-8 text-lg font-bold shadow-lg shadow-gray-900/10"
+                                className="bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600 h-14 px-8 text-lg font-bold shadow-lg shadow-slate-900/10"
                             >
                                 Rotate to Next Station <RotateCw className="ml-3" />
                             </Button>

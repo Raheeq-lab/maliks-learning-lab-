@@ -680,6 +680,15 @@ const LessonRunnable: React.FC = () => {
                                             {/* QUIZ CONTENT */}
                                             {content.type === "quiz" && (
                                                 <div className="space-y-6">
+                                                    {content.imageUrl && (
+                                                        <div className="rounded-xl overflow-hidden border border-gray-100 bg-bg-secondary/50 p-2">
+                                                            <img
+                                                                src={content.imageUrl}
+                                                                alt="Question visual"
+                                                                className="max-h-[300px] w-auto mx-auto object-contain rounded-lg"
+                                                            />
+                                                        </div>
+                                                    )}
                                                     <div className="flex items-start gap-4">
                                                         <span className={`bg-focus-blue-light text-focus-blue-darker px-3 py-1 rounded-md text-sm font-bold uppercase mt-1 tracking-wide`}>
                                                             Question
