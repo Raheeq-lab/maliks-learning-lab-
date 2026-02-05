@@ -73,7 +73,7 @@ const LessonRunnable: React.FC = () => {
                         seenStations.add(s.station.toUpperCase());
                     }
                 });
-            } else if (c.type === 'text' && c.content?.trim().startsWith('{') && c.content.includes('"station"')) {
+            } else if (c.content?.trim().startsWith('{') && c.content.includes('"station"')) {
                 try {
                     const parsed = JSON.parse(c.content.trim());
                     if (parsed.station && (parsed.task || parsed.description) && !seenStations.has(parsed.station.toUpperCase())) {
@@ -107,9 +107,10 @@ const LessonRunnable: React.FC = () => {
                         seenLevels.add(l.level);
                     }
                 });
-            } else if (c.type === 'text' && c.content?.trim().startsWith('{') && (c.content.includes('"level"') || c.content.includes('"question"'))) {
+            } else if (c.content?.trim().startsWith('{') && (c.content.includes('"level"') || c.content.includes('"question"'))) {
                 try {
                     const parsed = JSON.parse(c.content.trim());
+                    // Only treat as scaffolded level if it actually has a level property
                     if (parsed.level && parsed.question && !seenLevels.has(parsed.level)) {
                         levels.push({
                             level: parsed.level,
@@ -754,8 +755,7 @@ const LessonRunnable: React.FC = () => {
                                 <div className="space-y-8">
                                     {currentPhaseData.content.map((content, idx) => {
                                         // Skip JSON blocks that have been consolidated into special activities
-                                        const isJsonActivity = content.type === 'text' &&
-                                            content.content?.trim().startsWith('{') &&
+                                        const isJsonActivity = content.content?.trim().startsWith('{') &&
                                             (content.content.includes('"station"') || content.content.includes('"level"'));
 
                                         if (isJsonActivity) return null;
