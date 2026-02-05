@@ -56,6 +56,32 @@ const LessonRunnable: React.FC = () => {
     const [generatingImage, setGeneratingImage] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const carouselStationsFromContent = React.useMemo(() => {
+        if (!lesson?.lessonStructure) return [];
+        const currentPhaseKey = PHASES[currentPhaseIndex];
+        const phaseData = lesson.lessonStructure[currentPhaseKey];
+        if (!phaseData?.content) return [];
+
+        const stations: any[] = [];
+        phaseData.content.forEach(c => {
+            if (c.type === 'carousel' && c.carouselStations) {
+                stations.push(...c.carouselStations);
+            } else if (c.type === 'text' && c.content?.trim().startsWith('{') && c.content.includes('"station"')) {
+                try {
+                    const parsed = JSON.parse(c.content.trim());
+                    if (parsed.station && (parsed.task || parsed.description)) {
+                        stations.push({
+                            station: parsed.station,
+                            task: parsed.task || parsed.description,
+                            content: parsed.content || parsed.prompt || ""
+                        });
+                    }
+                } catch (e) { }
+            }
+        });
+        return stations;
+    }, [currentPhaseIndex, lesson]);
+
     useEffect(() => {
         fetchLesson();
         return () => {
@@ -532,94 +558,31 @@ const LessonRunnable: React.FC = () => {
                         </div>
 
                         <CardContent className="p-0">
-                            {/* Phase-Level Metadata & Research Insights */}
-                            {currentPhaseData?.visualMetadata && (
-                                <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {/* Visual Theme Alert */}
-                                    {currentPhaseData.visualMetadata.visualTheme && (
-                                        <div className="p-6 rounded-3xl bg-gradient-to-br from-math-purple/10 via-math-purple/5 to-transparent border border-math-purple/20 relative overflow-hidden group">
-                                            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                                <Sparkles className="w-20 h-20 text-math-purple" />
+                            {/* SPECIAL ACTIVITY TYPE PRIORITY */}
+                            {(PHASES[currentPhaseIndex] === 'guidedPractice' && carouselStationsFromContent.length > 0) || currentPhaseData?.activityType === "carousel" ? (
+                                <CarouselActivity
+                                    stations={carouselStationsFromContent.length > 0 ? carouselStationsFromContent : (currentPhaseData?.content?.find((c) => c.type === 'carousel')?.carouselStations || [])}
+                                    topic={lesson?.topic || lesson?.title || "Lesson Topic"}
+                                />
+                            ) : currentPhaseData?.activityType === "collaborative-map" ? (
+                                <div className="animate-in fade-in duration-700">
+                                    <div className="bg-bg-secondary p-4 rounded-xl mb-4 border border-border">
+                                        <div className="flex items-start gap-3">
+                                            <div className="bg-focus-blue/10 p-2 rounded-lg text-focus-blue">
+                                                <BrainCircuit size={24} />
                                             </div>
-                                            <div className="relative z-10 flex items-start gap-4">
-                                                <div className="p-3 rounded-2xl bg-math-purple/20 text-math-purple animate-pulse">
-                                                    <Sparkles className="w-6 h-6" />
-                                                </div>
-                                                <div>
-                                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-math-purple/60 mb-1 block">Phase Visual Identity</span>
-                                                    <p className="text-xl font-medium tracking-tight leading-snug italic text-math-purple">
-                                                        "{currentPhaseData.visualMetadata.visualTheme}"
-                                                    </p>
-                                                    {currentPhaseData.visualMetadata.animations && (
-                                                        <div className="mt-2 flex items-center gap-2 text-xs font-bold text-math-purple/50">
-                                                            <Zap className="w-3 h-3" />
-                                                            {currentPhaseData.visualMetadata.animations}
-                                                        </div>
-                                                    )}
-                                                </div>
+                                            <div>
+                                                <h3 className="font-bold text-lg text-text-primary">Collaborative Concept Mapping</h3>
+                                                <p className="text-text-secondary text-sm">
+                                                    "Let's build a map of what we know about <strong>{lesson?.topic || lesson?.title}</strong>.
+                                                    We'll start with key ideas, then draw connections, add examples, and finally note our questions."
+                                                </p>
                                             </div>
                                         </div>
-                                    )}
-
-                                    {/* Pedagogical Research Note */}
-                                    {(currentPhaseData.visualMetadata.researchHook ||
-                                        currentPhaseData.visualMetadata.researchContent ||
-                                        currentPhaseData.visualMetadata.researchStrategy ||
-                                        currentPhaseData.visualMetadata.researchPractice ||
-                                        currentPhaseData.visualMetadata.researchReflection) && (
-                                            <div className="p-6 rounded-3xl bg-gradient-to-br from-focus-blue/10 via-focus-blue/5 to-transparent border border-focus-blue/20 relative overflow-hidden group">
-                                                <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                                                    <BrainCircuit className="w-20 h-20 text-focus-blue" />
-                                                </div>
-                                                <div className="relative z-10 flex items-start gap-4">
-                                                    <div className="p-3 rounded-2xl bg-focus-blue/20 text-focus-blue">
-                                                        <Brain className="w-6 h-6" />
-                                                    </div>
-                                                    <div>
-                                                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-focus-blue/60 mb-1 block">Pedagogical Research Insight</span>
-                                                        <p className="text-lg font-semibold tracking-tight leading-relaxed text-text-primary">
-                                                            {currentPhaseData.visualMetadata.researchHook ||
-                                                                currentPhaseData.visualMetadata.researchContent ||
-                                                                currentPhaseData.visualMetadata.researchStrategy ||
-                                                                currentPhaseData.visualMetadata.researchPractice ||
-                                                                currentPhaseData.visualMetadata.researchReflection ||
-                                                                "Standard pedagogical delivery."}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-                                </div>
-                            )}
-
-                            {/* Misconception Alert */}
-                            {currentPhaseData?.visualMetadata?.misconceptionAddressed && (
-                                <div className="mb-6 bg-error-coral/5 border border-error-coral/20 p-4 rounded-xl flex items-center gap-3">
-                                    <div className="bg-error-coral/10 p-2 rounded-lg text-error-coral">
-                                        <AlertCircle size={20} />
                                     </div>
-                                    <div>
-                                        <h4 className="text-xs font-bold uppercase text-error-coral tracking-widest mb-1">Misconception Alert</h4>
-                                        <p className="text-sm text-text-primary font-medium">{currentPhaseData.visualMetadata.misconceptionAddressed}</p>
-                                    </div>
+                                    <CollaborativeMap topic={lesson?.topic || lesson?.title || "Lesson Topic"} />
                                 </div>
-                            )}
-
-                            {/* AI Generated Phase Visual */}
-                            {currentPhaseData?.visualMetadata?.imageUrl && (
-                                <div className="mb-8 rounded-3xl overflow-hidden shadow-2xl border-4 border-white/50 bg-bg-secondary/50 p-1 group relative">
-                                    <img
-                                        src={currentPhaseData.visualMetadata.imageUrl}
-                                        alt={currentPhaseData.title}
-                                        className="w-full h-auto object-cover rounded-2xl transform transition-transform duration-700 group-hover:scale-[1.02]"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-6">
-                                        <p className="text-white text-sm font-medium italic">AI-Generated Visual Concept for {currentPhaseData.title}</p>
-                                    </div>
-                                </div>
-                            )}
-
-                            {currentPhaseData?.content && currentPhaseData.content.length > 0 ? (
+                            ) : currentPhaseData?.content && currentPhaseData.content.length > 0 ? (
                                 <div className="space-y-8">
                                     {currentPhaseData.content.map((content, idx) => (
                                         <div
@@ -629,6 +592,7 @@ const LessonRunnable: React.FC = () => {
                                                 border-l-[6px] ${phaseColors.border}
                                             `}
                                         >
+
                                             {/* Type Badge */}
                                             <div className="absolute top-4 right-4">
                                                 <Badge variant="secondary" className="bg-bg-secondary text-text-secondary hover:bg-bg-secondary cursor-default">
@@ -1368,43 +1332,15 @@ const LessonRunnable: React.FC = () => {
                                     ))}
                                 </div>
                             ) : (
-                                currentPhaseData && currentPhaseData.activityType === "carousel" ? (
-                                    <CarouselActivity
-                                        stations={
-                                            currentPhaseData.content.find((c) => c.type === 'carousel')?.carouselStations ||
-                                            currentPhaseData.content.find((c) => c.carouselStations)?.carouselStations ||
-                                            (currentPhaseData as any).activityData?.carouselStations
-                                        }
-                                        topic={lesson.topic || lesson.title}
-                                    />
-                                ) : currentPhaseData && currentPhaseData.activityType === "collaborative-map" ? (
-                                    <div className="animate-in fade-in duration-700">
-                                        <div className="bg-bg-secondary p-4 rounded-xl mb-4 border border-border">
-                                            <div className="flex items-start gap-3">
-                                                <div className="bg-focus-blue/10 p-2 rounded-lg text-focus-blue">
-                                                    <BrainCircuit size={24} />
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-bold text-lg text-text-primary">Collaborative Concept Mapping</h3>
-                                                    <p className="text-text-secondary text-sm">
-                                                        "Let's build a map of what we know about <strong>{lesson.topic}</strong>.
-                                                        We'll start with key ideas, then draw connections, add examples, and finally note our questions."
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <CollaborativeMap topic={lesson.topic || lesson.title} />
+                                <div className="text-center py-24 bg-bg-card rounded-2xl border border-dashed border-border">
+                                    <div className="bg-bg-secondary w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 text-text-tertiary">
+                                        <Layout size={40} />
                                     </div>
-                                ) : (
-                                    <div className="text-center py-24 bg-bg-card rounded-2xl border border-dashed border-border">
-                                        <div className="bg-bg-secondary w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 text-text-tertiary">
-                                            <Layout size={40} />
-                                        </div>
-                                        <h3 className="text-2xl font-bold text-text-secondary">No content added yet</h3>
-                                        <p className="text-text-tertiary mt-2">Check the Lesson Builder to add activities for this phase.</p>
-                                    </div>
-                                )
+                                    <h3 className="text-2xl font-bold text-text-secondary">No content added yet</h3>
+                                    <p className="text-text-tertiary mt-2">Check the Lesson Builder to add activities for this phase.</p>
+                                </div>
                             )}
+
                         </CardContent>
 
                         {/* Research Lab - Lesson-Level Guidance */}
