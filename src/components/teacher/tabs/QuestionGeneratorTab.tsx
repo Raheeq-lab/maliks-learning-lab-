@@ -192,21 +192,30 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
                 ...(Array.isArray((lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice)?.activities)
                   ? (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).activities
                   : []).map((a: any) => ({ type: 'text' as const, content: typeof a === 'string' ? a : JSON.stringify(a), id: crypto.randomUUID() })),
-                ...((lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice)?.activityType ? [{
-                  id: crypto.randomUUID(),
-                  type: 'carousel',
-                  content: 'Interactive 4-Carousel Challenge',
-                  categorizationGroups: (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).activityData?.categorizationGroups,
-                  carouselStations: (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).activityData?.carouselStations ||
-                    (Array.isArray((lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).activities) && (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).activities.length === 4
-                      ? (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).activities.map((act: any, i: number) => ({ station: ["BRAIN", "HEART", "HANDS", "VOICE"][i], task: "Station Task", content: typeof act === 'string' ? act : JSON.stringify(act) }))
-                      : [
-                        { station: "BRAIN", task: "Define & Describe", content: `Define the core concept of ${customTopic} in your own words.` },
-                        { station: "HEART", task: "Connect & Question", content: "How does this topic connect to your daily life? What questions do you still have?" },
-                        { station: "HANDS", task: "Solve & Create", content: "Create a visual representation or solve a practice problem related to this topic." },
-                        { station: "VOICE", task: "Judge & Defend", content: "Debate a key statement or misconception about this topic. Explain your reasoning." }
-                      ])
-                }] : [])
+                ...((lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice)?.activityType ? [
+                  (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).activityType === 'presentation'
+                    ? {
+                      id: crypto.randomUUID(),
+                      type: 'presentation' as const,
+                      content: 'Interactive Presentation',
+                      slides: (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).activityData?.slides || []
+                    }
+                    : {
+                      id: crypto.randomUUID(),
+                      type: 'carousel' as const,
+                      content: 'Interactive 4-Carousel Challenge',
+                      categorizationGroups: (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).activityData?.categorizationGroups,
+                      carouselStations: (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).activityData?.carouselStations ||
+                        (Array.isArray((lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).activities) && (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).activities.length === 4
+                          ? (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).activities.map((act: any, i: number) => ({ station: ["BRAIN", "HEART", "HANDS", "VOICE"][i], task: "Station Task", content: typeof act === 'string' ? act : JSON.stringify(act) }))
+                          : [
+                            { station: "BRAIN", task: "Define & Describe", content: `Define the core concept of ${customTopic} in your own words.` },
+                            { station: "HEART", task: "Connect & Question", content: "How does this topic connect to your daily life? What questions do you still have?" },
+                            { station: "HANDS", task: "Solve & Create", content: "Create a visual representation or solve a practice problem related to this topic." },
+                            { station: "VOICE", task: "Judge & Defend", content: "Debate a key statement or misconception about this topic. Explain your reasoning." }
+                          ])
+                    }
+                ] : [])
               ],
               visualMetadata: {
                 researchStrategy: typeof (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice)?.researchStrategy === 'string' ? (lessonPlan.phases.practiceTogether || (lessonPlan.phases as any).guidedPractice).researchStrategy : "",

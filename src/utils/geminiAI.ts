@@ -48,7 +48,7 @@ export interface LessonPlanPhase {
     takeawayGraphic?: string;
     imagePrompt?: string;
     // High-Fidelity Activity Data
-    activityType?: "poll" | "brainstorm" | "flashcards" | "steps" | "categorization" | "scaffolded" | "exit-ticket" | "carousel";
+    activityType?: "poll" | "brainstorm" | "flashcards" | "steps" | "categorization" | "scaffolded" | "exit-ticket" | "carousel" | "presentation";
     activityData?: {
         pollOptions?: string[];
         flashcards?: { front: string; back: string }[];
@@ -56,6 +56,7 @@ export interface LessonPlanPhase {
         categorizationGroups?: { title: string; items: string[] }[];
         scaffoldedLevels?: { level: number; question: string; hint?: string; solution: string }[];
         carouselStations?: { station: string; task: string; content: string }[];
+        slides?: { title: string; bullets: string[]; imagePrompt?: string; speakerNotes?: string }[];
     };
 }
 
@@ -290,16 +291,15 @@ export const generateLessonPlan = async (
 
     ## PHASE 3: 👥 PRACTICE TOGETHER (12 mins)
     - Primary Goal: Collaborative mastery.
-    - Required Activity: "4-Carousel Challenge".
-    - Structure:
-      1) Station 1 (BRAIN): Define & Describe the core concept.
-      2) Station 2 (HEART): Connect & Question (emotional/personal connection).
-      3) Station 3 (HANDS): Solve & Create (practical application).
-      4) Station 4 (VOICE): Judge & Defend (critical evaluation).
-    - JSON required: "activityType": "carousel" and "activityData": { "carouselStations": [...] }.
-    - CRITICAL: You MUST provide specific, challenging questions for EACH station in the "carouselStations" array.
+    - Required Activity: "4-Carousel Challenge" OR "Interactive Slides" (Choose based on topic).
+    - If "Carousel":
+      - JSON: "activityType": "carousel", "activityData": { "carouselStations": [...] }
+      - 4 Stations: BRAIN, HEART, HANDS, VOICE.
+    - If "Presentation" (Slides):
+      - JSON: "activityType": "presentation", "activityData": { "slides": [{ "title": "...", "bullets": ["..."], "imagePrompt": "...", "speakerNotes": "..." }] }
+      - Structure: 4-5 high-impact slides (Intro, Concept 1, Concept 2, Application, Summary).
     - FORBIDDEN: Do NOT put a summary in the "activities" array. Leave "activities" empty.
-    - Content: Specific tasks/questions for EACH station related to ${topic}.
+    - Content: Specific tasks/questions/content for the chosen activity.
 
     ## PHASE 4: ✏️ TRY IT YOURSELF (10 mins)
     - Primary Goal: Independent practice & scaffolding.
@@ -349,9 +349,9 @@ export const generateLessonPlan = async (
         },
         "practiceTogether": {
           "duration": "12 minutes",
-          "researchStrategy": "Rotational group collaboration",
+          "researchStrategy": "Rotational group collaboration OR Interactive Direct Instruction",
           "imagePrompt": "A detailed DALL-E style prompt for practice visual",
-          "activityType": "carousel",
+          "activityType": "carousel", // OR "presentation"
           "activities": [], 
           "activityData": { 
             "carouselStations": [
@@ -359,7 +359,10 @@ export const generateLessonPlan = async (
               { "station": "HEART", "task": "Connect & Question", "content": "Specific question..." },
               { "station": "HANDS", "task": "Solve & Create", "content": "Specific problem..." },
               { "station": "VOICE", "task": "Judge & Defend", "content": "Specific debate prompt..." }
-            ] 
+            ],
+            "slides": [
+               { "title": "Slide 1", "bullets": ["Point 1", "Point 2"], "imagePrompt": "Visual...", "speakerNotes": "Notes..." }
+            ]
           }
         },
         "tryItYourself": {

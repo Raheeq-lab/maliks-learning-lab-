@@ -164,7 +164,7 @@ export interface LessonPhase {
 
 export interface LessonPhaseContent {
   id: string;
-  type: "text" | "image" | "video" | "quiz" | "activity" | "resource" | "file" | "poll" | "brainstorm" | "flashcards" | "steps" | "diagram" | "timer" | "categorization" | "whiteboard" | "scaffolded" | "fill-blank" | "mapping" | "slider" | "exit-ticket" | "universal-engage" | "carousel";
+  type: "text" | "image" | "video" | "quiz" | "activity" | "resource" | "file" | "poll" | "brainstorm" | "flashcards" | "steps" | "diagram" | "timer" | "categorization" | "whiteboard" | "scaffolded" | "fill-blank" | "mapping" | "slider" | "exit-ticket" | "universal-engage" | "carousel" | "presentation";
   content: string;
   imageUrl?: string;
   videoUrl?: string;
@@ -187,6 +187,7 @@ export interface LessonPhaseContent {
     pollOptions?: string[];
   };
   carouselStations?: { station: string; task: string; content: string }[];
+  slides?: { title: string; bullets: string[]; imagePrompt?: string; speakerNotes?: string }[];
 }
 
 // Activity settings interface

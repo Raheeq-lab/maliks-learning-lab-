@@ -1163,6 +1163,103 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
             <p className="text-xs text-text-secondary italic">Standardized reflection: 3 Learnings, 2 Questions, 1 Big Insight.</p>
           </div>
         );
+
+      case "presentation":
+        return (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <Label className="text-text-primary">Interactive Slide Deck</Label>
+              <Button type="button" onClick={() => handleRemoveContent(phase, content.id)} variant="ghost" size="sm" className="h-8 w-8 p-0 text-error-coral">
+                <Trash2 size={16} />
+              </Button>
+            </div>
+            <div className="space-y-6">
+              {(content.slides || [{ title: 'Slide 1', bullets: [], imagePrompt: '', speakerNotes: '' }]).map((slide, i) => (
+                <div key={i} className="p-4 border rounded-xl bg-bg-secondary/50 space-y-3 relative group">
+                  <div className="flex justify-between">
+                    <Label className="text-xs font-bold uppercase text-focus-blue">Slide {i + 1}</Label>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        const newSlides = [...(content.slides || [])];
+                        newSlides.splice(i, 1);
+                        handleContentChange(phase, content.id, "slides", newSlides);
+                      }}
+                      className="h-6 w-6 p-0 text-gray-400 hover:text-error-coral"
+                    >
+                      <X size={14} />
+                    </Button>
+                  </div>
+
+                  <Input
+                    value={slide.title}
+                    onChange={(e) => {
+                      const newSlides = [...(content.slides || [])];
+                      newSlides[i] = { ...slide, title: e.target.value };
+                      handleContentChange(phase, content.id, "slides", newSlides);
+                    }}
+                    placeholder="Slide Title"
+                    className="font-bold bg-bg-input border-border"
+                  />
+
+                  <div>
+                    <Label className="text-[10px] text-text-tertiary uppercase">Bullet Points (One per line)</Label>
+                    <Textarea
+                      value={Array.isArray(slide.bullets) ? slide.bullets.join('\n') : slide.bullets}
+                      onChange={(e) => {
+                        const newSlides = [...(content.slides || [])];
+                        // Split by newline to store as array
+                        newSlides[i] = { ...slide, bullets: e.target.value.split('\n') };
+                        handleContentChange(phase, content.id, "slides", newSlides);
+                      }}
+                      placeholder="• Point 1&#10;• Point 2&#10;• Point 3"
+                      rows={4}
+                      className="bg-bg-input border-border text-sm"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-[10px] text-text-tertiary uppercase">Visual Prompt</Label>
+                      <Input
+                        value={slide.imagePrompt || ''}
+                        onChange={(e) => {
+                          const newSlides = [...(content.slides || [])];
+                          newSlides[i] = { ...slide, imagePrompt: e.target.value };
+                          handleContentChange(phase, content.id, "slides", newSlides);
+                        }}
+                        placeholder="Describe the slide visual..."
+                        className="bg-bg-input border-border text-xs"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-[10px] text-text-tertiary uppercase">Speaker Notes</Label>
+                      <Input
+                        value={slide.speakerNotes || ''}
+                        onChange={(e) => {
+                          const newSlides = [...(content.slides || [])];
+                          newSlides[i] = { ...slide, speakerNotes: e.target.value };
+                          handleContentChange(phase, content.id, "slides", newSlides);
+                        }}
+                        placeholder="Notes for you..."
+                        className="bg-bg-input border-border text-xs bg-yellow-50/50"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => handleContentChange(phase, content.id, "slides", [...(content.slides || []), { title: 'New Slide', bullets: [], imagePrompt: '', speakerNotes: '' }])}
+                className="w-full border-dashed"
+              >
+                <Plus size={14} className="mr-2" /> Add Slide
+              </Button>
+            </div>
+          </div>
+        );
     }
   };
 

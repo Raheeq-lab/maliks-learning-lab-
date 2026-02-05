@@ -17,6 +17,7 @@ import { CarouselActivity } from "@/components/teacher/CarouselActivity";
 import { Lesson, LessonStructure } from '@/types/quiz';
 import { generateContent, AIConfig } from "@/services/aiService";
 import { CollaborativeMap } from '@/components/teacher/CollaborativeMap';
+import { PresentationActivity } from '@/components/teacher/PresentationActivity';
 
 
 const PHASES = ['engage', 'model', 'guidedPractice', 'independentPractice', 'reflect'] as const;
@@ -696,6 +697,11 @@ const LessonRunnable: React.FC = () => {
                                             )}
 
                                             {/* NEW INTERACTIVE TYPES */}
+
+                                            {/* PRESENTATION */}
+                                            {content.type === "presentation" && (
+                                                <PresentationActivity slides={content.slides} topic={lesson?.topic || "Lesson Topic"} />
+                                            )}
 
                                             {/* POLL */}
                                             {content.type === "poll" && (
