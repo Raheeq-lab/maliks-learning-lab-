@@ -703,6 +703,14 @@ const LessonRunnable: React.FC = () => {
                                                 <PresentationActivity slides={content.slides} topic={lesson?.topic || "Lesson Topic"} />
                                             )}
 
+                                            {/* CAROUSEL */}
+                                            {content.type === "carousel" && (
+                                                <CarouselActivity
+                                                    stations={content.carouselStations || []}
+                                                    topic={lesson?.topic || "Lesson Topic"}
+                                                />
+                                            )}
+
                                             {/* POLL */}
                                             {content.type === "poll" && (
                                                 <div className="space-y-4">
@@ -1270,6 +1278,14 @@ const LessonRunnable: React.FC = () => {
                                                             </div>
                                                         </div>
                                                     </div>
+                                                </div>
+                                            )}
+
+                                            {/* FALLBACK FOR UNKNOWN TYPES */}
+                                            {!['text', 'image', 'video', 'quiz', 'activity', 'file', 'resource', 'presentation', 'carousel', 'poll', 'brainstorm', 'steps', 'flashcards', 'categorization', 'scaffolded', 'exit-ticket', 'universal-engage'].includes(content.type) && (
+                                                <div className="p-6 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-800">
+                                                    <h4 className="font-bold">Unknown Content Type: {content.type}</h4>
+                                                    <pre className="mt-2 p-2 bg-white rounded text-xs overflow-auto">{JSON.stringify(content, null, 2)}</pre>
                                                 </div>
                                             )}
                                         </div>
