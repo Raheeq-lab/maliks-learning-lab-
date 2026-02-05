@@ -76,7 +76,7 @@ export const CarouselActivity: React.FC<CarouselActivityProps> = ({ stations, to
                             4-Carousel Challenge
                         </h3>
                         <p className="text-slate-600 dark:text-slate-400 mt-1">
-                            Topic: <span className="font-bold text-indigo-600 dark:text-indigo-400">{topic}</span>
+                            Topic: <span className="font-bold text-slate-900 dark:text-slate-100">{topic}</span>
                         </p>
                     </div>
                     <Badge variant="outline" className="px-4 py-2 text-lg bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:border-indigo-800 dark:text-indigo-200">

@@ -63,18 +63,26 @@ const LessonRunnable: React.FC = () => {
         if (!phaseData?.content) return [];
 
         const stations: any[] = [];
+        const seenStations = new Set();
+
         phaseData.content.forEach(c => {
             if (c.type === 'carousel' && c.carouselStations) {
-                stations.push(...c.carouselStations);
+                c.carouselStations.forEach((s: any) => {
+                    if (!seenStations.has(s.station.toUpperCase())) {
+                        stations.push(s);
+                        seenStations.add(s.station.toUpperCase());
+                    }
+                });
             } else if (c.type === 'text' && c.content?.trim().startsWith('{') && c.content.includes('"station"')) {
                 try {
                     const parsed = JSON.parse(c.content.trim());
-                    if (parsed.station && (parsed.task || parsed.description)) {
+                    if (parsed.station && (parsed.task || parsed.description) && !seenStations.has(parsed.station.toUpperCase())) {
                         stations.push({
                             station: parsed.station,
                             task: parsed.task || parsed.description,
                             content: parsed.content || parsed.prompt || ""
                         });
+                        seenStations.add(parsed.station.toUpperCase());
                     }
                 } catch (e) { }
             }
@@ -592,13 +600,6 @@ const LessonRunnable: React.FC = () => {
                                                 border-l-[6px] ${phaseColors.border}
                                             `}
                                         >
-
-                                            {/* Type Badge */}
-                                            <div className="absolute top-4 right-4">
-                                                <Badge variant="secondary" className="bg-bg-secondary text-text-secondary hover:bg-bg-secondary cursor-default">
-                                                    {content.type}
-                                                </Badge>
-                                            </div>
 
                                             {/* TEXT CONTENT */}
                                             {content.type === "text" && (
@@ -1343,8 +1344,8 @@ const LessonRunnable: React.FC = () => {
 
                         </CardContent>
 
-                        {/* Research Lab - Lesson-Level Guidance */}
-                        {lesson?.researchNotes && (
+                        {/* Research Lab - Lesson-Level Guidance (Show mainly in Learn phase to reduce repetition) */}
+                        {lesson?.researchNotes && currentPhaseIndex <= 1 && (
                             <div className="mx-6 mb-6 p-4 bg-math-purple/5 border border-math-purple/10 rounded-xl animate-in fade-in duration-1000">
                                 <div className="flex items-center gap-2 mb-3">
                                     <BrainCircuit size={18} className="text-math-purple" />
