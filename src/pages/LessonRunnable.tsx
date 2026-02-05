@@ -18,6 +18,7 @@ import { Lesson, LessonStructure } from '@/types/quiz';
 import { generateContent, AIConfig } from "@/services/aiService";
 import { CollaborativeMap } from '@/components/teacher/CollaborativeMap';
 import { PresentationActivity } from '@/components/teacher/PresentationActivity';
+import ThemeToggle from '@/components/ThemeToggle';
 
 
 const PHASES = ['engage', 'model', 'guidedPractice', 'independentPractice', 'reflect'] as const;
@@ -342,17 +343,24 @@ const LessonRunnable: React.FC = () => {
         (total, phase) => total + (phase.timeInMinutes || 0), 0
     );
 
+
+
     return (
-        <div className="min-h-screen bg-bg-primary p-6 transition-colors duration-300">
+        <div className="min-h-screen bg-bg-page p-6 transition-colors duration-300"> {/* Fixed background class */}
             <div className="max-w-5xl mx-auto space-y-8">
 
                 {/* Header Navigation */}
                 <div className="flex items-center justify-between">
-                    <Button variant="ghost" className="gap-2 text-text-secondary hover:text-text-primary hover:bg-bg-secondary" onClick={() => navigate('/teacher-dashboard')}>
-                        <ArrowLeft size={20} />
-                        Back to Dashboard
-                    </Button>
                     <div className="flex items-center gap-4">
+                        <Button variant="ghost" className="gap-2 text-text-secondary hover:text-text-primary hover:bg-bg-secondary" onClick={() => navigate('/teacher-dashboard')}>
+                            <ArrowLeft size={20} />
+                            Back to Dashboard
+                        </Button>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                        <ThemeToggle /> {/* Added ThemeToggle */}
+
                         <div className={`bg-bg-card border-border border px-4 py-2 rounded-lg font-mono text-lg font-bold flex items-center gap-2 shadow-sm transition-all ${timeLeft < 60 ? 'border-warning-amber bg-warning-amber-light/20' : ''}`}>
                             <Clock size={18} className={timeLeft < 60 ? "text-warning-amber animate-pulse" : "text-focus-blue"} />
                             <span className={timeLeft < 60 ? "text-warning-amber animate-pulse" : "text-text-primary"}>
