@@ -19,7 +19,7 @@ interface LessonsTabProps {
   isLoading?: boolean;
 }
 
-const LessonsTab: React.FC<LessonsTabProps> = ({ lessons, onCreateLesson, onCopyCode, onEditLesson, onDeleteLesson, onTogglePublic, onRunLesson, subject, isLoading = false }) => {
+const LessonsTab: React.FC<LessonsTabProps> = React.memo(({ lessons, onCreateLesson, onCopyCode, onEditLesson, onDeleteLesson, onTogglePublic, onRunLesson, subject, isLoading = false }) => {
   const [filterGrade, setFilterGrade] = React.useState<string>("all");
 
   const getSubjectIcon = () => {
@@ -119,6 +119,6 @@ const LessonsTab: React.FC<LessonsTabProps> = ({ lessons, onCreateLesson, onCopy
       )}
     </div>
   );
-};
+});
 
 export default LessonsTab;

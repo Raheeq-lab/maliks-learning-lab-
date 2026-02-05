@@ -63,7 +63,7 @@ const TeacherDashboard: React.FC = () => {
     }
   }, [authLoading, user, navigate]);
 
-  const loadData = async () => {
+  const loadData = React.useCallback(async () => {
     if (!user) return;
 
     // Set all to loading initially
@@ -131,20 +131,20 @@ const TeacherDashboard: React.FC = () => {
     } catch (error: any) {
       console.error('Unexpected error:', error);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     if (user?.id) {
       loadData();
     }
-  }, [user?.id]);
+  }, [user?.id, loadData]);
 
   const handleLogout = async () => {
     await signOut();
     navigate('/');
   };
 
-  const handleCreateQuiz = async (quiz: Quiz) => {
+  const handleCreateQuiz = React.useCallback(async (quiz: Quiz) => {
     try {
       if (!user) return;
 
@@ -193,13 +193,10 @@ const TeacherDashboard: React.FC = () => {
         variant: "destructive"
       });
     }
-  };
-
-  const handleCreateLesson = async (lesson: Lesson) => {
+  }, [user, editingQuiz, selectedSubject, loadData, toast]);
+  const handleCreateLesson = React.useCallback(async (lesson: Lesson) => {
     try {
       if (!user) return;
-
-      // Handle file uploads if any (skipping for this iteration as it wasn't explicitly requested, but good to note)
 
       const payload: any = {
         title: lesson.title,
@@ -214,7 +211,6 @@ const TeacherDashboard: React.FC = () => {
         is_public: false
       };
 
-      // Add optional fields only if they are defined
       if (lesson.researchNotes) payload.research_notes = lesson.researchNotes;
       if (lesson.visualTheme) payload.visual_theme = lesson.visualTheme;
       if (lesson.assessmentSettings) payload.assessment_settings = lesson.assessmentSettings;
@@ -251,10 +247,62 @@ const TeacherDashboard: React.FC = () => {
         variant: "destructive"
       });
     }
-  };
+  }, [user, editingLesson, loadData, toast]);
 
-  const handleDeleteQuiz = async (quizId: string) => {
-    if (!confirm("Are you sure?")) return;
+
+  const handleEditQuiz = React.useCallback(async (q: Quiz) => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('quizzes')
+        .select('questions')
+        .eq('id', q.id)
+        .single();
+
+      if (error) throw error;
+
+      setEditingQuiz({ ...q, questions: data.questions });
+      setShowQuizForm(true);
+    } catch (err) {
+      console.error("Error fetching full quiz:", err);
+      toast({ title: "Error", description: "Failed to load quiz details", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const handleEditLesson = React.useCallback(async (l: Lesson) => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('lessons')
+        .select('lesson_structure, content')
+        .eq('id', l.id)
+        .single();
+
+      if (error) throw error;
+
+      const fullLesson = { ...l, ...data };
+      setEditingLesson(fullLesson);
+      if (l.learningType === 'scaffolded' || l.learningType === 'scaffolded-lesson') {
+        setShowScaffoldedLessonBuilder(true);
+      } else {
+        setShowLessonBuilder(true);
+      }
+    } catch (err) {
+      console.error("Error fetching full lesson:", err);
+      toast({ title: "Error", description: "Failed to load lesson details", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const handleRunLesson = React.useCallback((lessonId: string) => {
+    navigate(`/lesson/${lessonId}`);
+  }, [navigate]);
+
+  const handleDeleteQuiz = React.useCallback(async (quizId: string) => {
+    // Removed sync confirm() - now handled by inline UI
     try {
       const { error } = await supabase.from('quizzes').delete().eq('id', quizId);
       if (error) throw error;
@@ -263,10 +311,10 @@ const TeacherDashboard: React.FC = () => {
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     }
-  };
+  }, []);
 
-  const handleDeleteLesson = async (lessonId: string) => {
-    if (!confirm("Are you sure?")) return;
+  const handleDeleteLesson = React.useCallback(async (lessonId: string) => {
+    // Removed sync confirm() - now handled by inline UI
     try {
       const { error } = await supabase.from('lessons').delete().eq('id', lessonId);
       if (error) throw error;
@@ -275,9 +323,9 @@ const TeacherDashboard: React.FC = () => {
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     }
-  };
+  }, []);
 
-  const handleTogglePublicQuiz = async (quiz: Quiz) => {
+  const handleTogglePublicQuiz = React.useCallback(async (quiz: Quiz) => {
     try {
       // Use isPublic (frontend state) as primary source, fallback to is_public
       const currentStatus = quiz.isPublic !== undefined ? quiz.isPublic : (quiz as any).is_public;
@@ -312,9 +360,9 @@ const TeacherDashboard: React.FC = () => {
         variant: "destructive"
       });
     }
-  };
+  }, []);
 
-  const handleTogglePublicLesson = async (lesson: Lesson) => {
+  const handleTogglePublicLesson = React.useCallback(async (lesson: Lesson) => {
     try {
       const currentStatus = lesson.isPublic !== undefined ? lesson.isPublic : (lesson as any).is_public;
       const newStatus = !currentStatus;
@@ -348,16 +396,16 @@ const TeacherDashboard: React.FC = () => {
         variant: "destructive"
       });
     }
-  };
+  }, []);
 
-  const handleCopyCode = (title: string) => {
+  const handleCopyCode = React.useCallback((title: string) => {
     toast({
       title: "Code copied!",
       description: `The access code for "${title}" has been copied to clipboard.`,
     });
-  };
+  }, []);
 
-  const handleToggleLiveQuiz = async (quiz: Quiz) => {
+  const handleToggleLiveQuiz = React.useCallback(async (quiz: Quiz) => {
     try {
       const newLiveStatus = !quiz.is_live_session;
 
@@ -393,7 +441,7 @@ const TeacherDashboard: React.FC = () => {
         variant: "destructive"
       });
     }
-  };
+  }, []);
 
   const [targetLiveQuizId, setTargetLiveQuizId] = useState<string | undefined>(undefined);
 
@@ -531,26 +579,7 @@ const TeacherDashboard: React.FC = () => {
                   quizzes={filteredQuizzes}
                   onCreateQuiz={() => setShowQuizForm(true)}
                   onCopyCode={handleCopyCode}
-                  onEditQuiz={async (q) => {
-                    setIsLoading(true);
-                    try {
-                      const { data, error } = await supabase
-                        .from('quizzes')
-                        .select('questions')
-                        .eq('id', q.id)
-                        .single();
-
-                      if (error) throw error;
-
-                      setEditingQuiz({ ...q, questions: data.questions });
-                      setShowQuizForm(true);
-                    } catch (err) {
-                      console.error("Error fetching full quiz:", err);
-                      toast({ title: "Error", description: "Failed to load quiz details", variant: "destructive" });
-                    } finally {
-                      setIsLoading(false);
-                    }
-                  }}
+                  onEditQuiz={handleEditQuiz}
                   onDeleteQuiz={handleDeleteQuiz}
                   onTogglePublic={handleTogglePublicQuiz}
                   onToggleLive={handleToggleLiveQuiz}
@@ -565,34 +594,10 @@ const TeacherDashboard: React.FC = () => {
                   lessons={filteredLessons}
                   onCreateLesson={() => setShowScaffoldedLessonBuilder(true)}
                   onCopyCode={handleCopyCode}
-                  onEditLesson={async (l) => {
-                    setIsLoading(true);
-                    try {
-                      const { data, error } = await supabase
-                        .from('lessons')
-                        .select('lesson_structure, content')
-                        .eq('id', l.id)
-                        .single();
-
-                      if (error) throw error;
-
-                      const fullLesson = { ...l, ...data };
-                      setEditingLesson(fullLesson);
-                      if (l.learningType === 'scaffolded' || l.learningType === 'scaffolded-lesson') {
-                        setShowScaffoldedLessonBuilder(true);
-                      } else {
-                        setShowLessonBuilder(true);
-                      }
-                    } catch (err) {
-                      console.error("Error fetching full lesson:", err);
-                      toast({ title: "Error", description: "Failed to load lesson details", variant: "destructive" });
-                    } finally {
-                      setIsLoading(false);
-                    }
-                  }}
+                  onEditLesson={handleEditLesson}
                   onDeleteLesson={handleDeleteLesson}
                   onTogglePublic={handleTogglePublicLesson}
-                  onRunLesson={(id) => navigate(`/teacher/lesson/${id}/run`)}
+                  onRunLesson={handleRunLesson}
                   subject={selectedSubject}
                   isLoading={isLessonsLoading}
                 />

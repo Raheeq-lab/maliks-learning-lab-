@@ -21,7 +21,7 @@ interface QuizzesTabProps {
   isLoading?: boolean;
 }
 
-const QuizzesTab: React.FC<QuizzesTabProps> = ({ quizzes, onCreateQuiz, onCopyCode, onEditQuiz, onDeleteQuiz, onTogglePublic, onToggleLive, onStartQuiz, subject = "math", isLoading = false }) => {
+const QuizzesTab: React.FC<QuizzesTabProps> = React.memo(({ quizzes, onCreateQuiz, onCopyCode, onEditQuiz, onDeleteQuiz, onTogglePublic, onToggleLive, onStartQuiz, subject = "math", isLoading = false }) => {
   const [filterGrade, setFilterGrade] = React.useState<string>("all");
 
   const getSubjectIcon = () => {
@@ -132,6 +132,6 @@ const QuizzesTab: React.FC<QuizzesTabProps> = ({ quizzes, onCreateQuiz, onCopyCo
       }
     </div >
   );
-};
+});
 
 export default QuizzesTab;

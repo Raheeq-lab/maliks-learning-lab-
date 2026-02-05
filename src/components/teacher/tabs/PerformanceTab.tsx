@@ -20,7 +20,7 @@ interface PerformanceTabProps {
   initialSelectedQuizId?: string;
 }
 
-const PerformanceTab: React.FC<PerformanceTabProps> = ({
+const PerformanceTab: React.FC<PerformanceTabProps> = React.memo(({
   quizzes,
   getTotalStudents,
   getTotalCompletions,
@@ -376,6 +376,6 @@ const PerformanceTab: React.FC<PerformanceTabProps> = ({
       </Tabs>
     </div >
   );
-};
+});
 
 export default PerformanceTab;

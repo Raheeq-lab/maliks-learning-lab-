@@ -37,6 +37,7 @@ const AccessCodeCard: React.FC<AccessCodeCardProps> = ({
   subject = "math"
 }) => {
   const [copied, setCopied] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleCopy = () => {
     // Ensure we have an access code to copy
@@ -155,15 +156,38 @@ const AccessCodeCard: React.FC<AccessCodeCardProps> = ({
           </Button>
         </div>
         {onDelete && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full gap-1.5 h-8 text-xs font-medium text-error-coral hover:text-error-coral-dark hover:bg-error-coral/10 -mt-1"
-            onClick={onDelete}
-          >
-            <Trash2 size={14} />
-            Delete
-          </Button>
+          <div className="w-full">
+            {showDeleteConfirm ? (
+              <div className="flex gap-2 w-full animate-in fade-in slide-in-from-right-2 duration-200 py-1">
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="flex-1 h-8 text-[10px] font-bold"
+                  onClick={(e) => { e.stopPropagation(); onDelete(); setShowDeleteConfirm(false); }}
+                >
+                  Confirm Delete
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 h-8 text-[10px]"
+                  onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(false); }}
+                >
+                  Cancel
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full gap-1.5 h-8 text-xs font-medium text-error-coral hover:text-error-coral-dark hover:bg-error-coral/10 -mt-1"
+                onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(true); }}
+              >
+                <Trash2 size={14} />
+                Delete
+              </Button>
+            )}
+          </div>
         )}
 
         {isLiveSession && liveStatus === 'waiting' && onStartQuiz && (

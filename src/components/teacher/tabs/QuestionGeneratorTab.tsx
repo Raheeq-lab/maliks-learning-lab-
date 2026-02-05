@@ -22,7 +22,7 @@ interface QuestionGeneratorTabProps {
   onCreateLesson: (lesson: Lesson) => Promise<void>;
 }
 
-const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
+const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = React.memo(({
   availableGrades = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
   subject = "math",
   onCreateQuiz,
@@ -1008,6 +1008,6 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
       </Card>
     </div >
   );
-};
+});
 
 export default QuestionGeneratorTab;

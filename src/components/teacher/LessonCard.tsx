@@ -35,6 +35,7 @@ const LessonCard: React.FC<LessonCardProps> = ({
     researchNotes
 }) => {
     const [copied, setCopied] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     const handleCopy = () => {
         if (accessCode?.trim()) {
@@ -105,31 +106,54 @@ const LessonCard: React.FC<LessonCardProps> = ({
                 </Button>
 
                 <div className="flex gap-2 w-full">
-                    {accessCode && (
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className={`flex-1 h-8 text-xs border-dashed border-border ${copied ? 'text-green-600 bg-green-50' : 'text-text-tertiary'} hover:bg-bg-secondary`}
-                            onClick={(e) => { e.stopPropagation(); handleCopy(); }}
-                        >
-                            {copied ? <span className="font-bold">Copied!</span> : <><Copy size={12} className="mr-1" /> {accessCode}</>}
-                        </Button>
+                    {showDeleteConfirm ? (
+                        <div className="flex gap-2 w-full animate-in fade-in slide-in-from-right-2 duration-200">
+                            <Button
+                                variant="destructive"
+                                size="sm"
+                                className="flex-1 h-8 text-[10px] font-bold"
+                                onClick={(e) => { e.stopPropagation(); onDelete(); setShowDeleteConfirm(false); }}
+                            >
+                                Confirm
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="flex-1 h-8 text-[10px]"
+                                onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(false); }}
+                            >
+                                Cancel
+                            </Button>
+                        </div>
+                    ) : (
+                        <>
+                            {accessCode && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className={`flex-1 h-8 text-xs border-dashed border-border ${copied ? 'text-green-600 bg-green-50' : 'text-text-tertiary'} hover:bg-bg-secondary`}
+                                    onClick={(e) => { e.stopPropagation(); handleCopy(); }}
+                                >
+                                    {copied ? <span className="font-bold">Copied!</span> : <><Copy size={12} className="mr-1" /> {accessCode}</>}
+                                </Button>
+                            )}
+                            <Button variant="outline" size="sm" className="flex-1 h-8 text-xs border-border text-text-secondary hover:bg-bg-secondary hover:text-text-primary" onClick={(e) => { e.stopPropagation(); onEdit(); }}>
+                                <Edit size={12} className="mr-1" /> Edit
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className={`flex-1 h-8 text-xs ${isPublic ? 'text-green-600 dark:text-green-400' : 'text-text-secondary'} hover:bg-bg-secondary`}
+                                onClick={(e) => { e.stopPropagation(); onTogglePublic(); }}
+                            >
+                                {isPublic ? <Globe size={12} className="mr-1" /> : <Lock size={12} className="mr-1" />}
+                                {isPublic ? 'Public' : 'Private'}
+                            </Button>
+                            <Button variant="outline" size="sm" className="flex-1 h-8 text-xs border-border text-error-coral hover:text-white hover:bg-error-coral" onClick={(e) => { e.stopPropagation(); setShowDeleteConfirm(true); }}>
+                                <Trash2 size={12} className="mr-1" />
+                            </Button>
+                        </>
                     )}
-                    <Button variant="outline" size="sm" className="flex-1 h-8 text-xs border-border text-text-secondary hover:bg-bg-secondary hover:text-text-primary" onClick={(e) => { e.stopPropagation(); onEdit(); }}>
-                        <Edit size={12} className="mr-1" /> Edit
-                    </Button>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className={`flex-1 h-8 text-xs ${isPublic ? 'text-green-600 dark:text-green-400' : 'text-text-secondary'} hover:bg-bg-secondary`}
-                        onClick={(e) => { e.stopPropagation(); onTogglePublic(); }}
-                    >
-                        {isPublic ? <Globe size={12} className="mr-1" /> : <Lock size={12} className="mr-1" />}
-                        {isPublic ? 'Public' : 'Private'}
-                    </Button>
-                    <Button variant="outline" size="sm" className="flex-1 h-8 text-xs border-border text-error-coral hover:text-white hover:bg-error-coral" onClick={(e) => { e.stopPropagation(); onDelete(); }}>
-                        <Trash2 size={12} className="mr-1" />
-                    </Button>
                 </div>
             </CardFooter>
         </Card>
