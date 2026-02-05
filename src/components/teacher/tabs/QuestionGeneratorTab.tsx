@@ -190,7 +190,8 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
                   type: (lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction).activityType as any,
                   content: `Interactive ${(lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction).activityType}`,
                   steps: (lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction).activityData?.steps,
-                  flashcards: (lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction).activityData?.flashcards
+                  flashcards: (lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction).activityData?.flashcards,
+                  instructional: (lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction).activityData // Pass all activityData as instructional content source
                 }] : [])
               ],
               visualMetadata: {

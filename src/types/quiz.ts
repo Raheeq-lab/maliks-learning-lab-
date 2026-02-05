@@ -164,7 +164,7 @@ export interface LessonPhase {
 
 export interface LessonPhaseContent {
   id: string;
-  type: "text" | "image" | "video" | "quiz" | "activity" | "resource" | "file" | "poll" | "brainstorm" | "flashcards" | "steps" | "diagram" | "timer" | "categorization" | "whiteboard" | "scaffolded" | "fill-blank" | "mapping" | "slider" | "exit-ticket" | "universal-engage" | "carousel" | "presentation";
+  type: "text" | "image" | "video" | "quiz" | "activity" | "resource" | "file" | "poll" | "brainstorm" | "flashcards" | "steps" | "diagram" | "timer" | "categorization" | "whiteboard" | "scaffolded" | "fill-blank" | "mapping" | "slider" | "exit-ticket" | "universal-engage" | "carousel" | "presentation" | "instructional";
   content: string;
   imageUrl?: string;
   videoUrl?: string;
@@ -188,6 +188,21 @@ export interface LessonPhaseContent {
   };
   carouselStations?: { station: string; task: string; content: string }[];
   slides?: { title: string; bullets: string[]; imagePrompt?: string; speakerNotes?: string }[];
+  // Instructional Content (Learn Phase Overhaul)
+  instructional?: {
+    title: string;
+    history: string;
+    vocabulary: { term: string; definition: string }[];
+    workedExample: {
+      problem: string;
+      steps: { label: string; explanation: string; visual?: string }[];
+    };
+    customContent?: {
+      type: 'image' | 'file';
+      url: string;
+      name: string;
+    };
+  };
 }
 
 // Activity settings interface

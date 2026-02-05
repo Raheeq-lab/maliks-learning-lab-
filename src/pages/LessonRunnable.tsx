@@ -19,6 +19,7 @@ import { generateContent, AIConfig } from "@/services/aiService";
 import { CollaborativeMap } from '@/components/teacher/CollaborativeMap';
 import { PresentationActivity } from '@/components/teacher/PresentationActivity';
 import ThemeToggle from '@/components/ThemeToggle';
+import { InstructionalActivity } from '@/components/teacher/InstructionalActivity';
 
 
 const PHASES = ['engage', 'model', 'guidedPractice', 'independentPractice', 'reflect'] as const;
@@ -158,6 +159,55 @@ const LessonRunnable: React.FC = () => {
             console.error("Failed to save image update:", error);
             toast({ title: "Save Failed", description: "Could not persist image change.", variant: "destructive" });
         }
+    };
+
+    const updateInstructionalContent = async (file: File) => {
+        if (!lesson) return;
+
+        // Convert file to Base64 (for now - in real app would upload to Storage)
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            const base64 = event.target?.result as string;
+
+            // Optimistic update
+            const updatedLesson = { ...lesson };
+            // Find the instructional block in the current phase content
+            // Note: This assumes we are in the 'learn' phase mostly, but we should search correctly.
+            // But since this function is passed TO the component which is rendered inside the map, 
+            // we actually need to know WHICH block invoked it.
+            // A better way is to pass a specialized handler to the mapped item.
+            // But for simplicity, we will search in the 'learn' (model) phase first.
+
+            const learnPhase = updatedLesson.lessonStructure?.model || (updatedLesson.lessonStructure as any)?.learn;
+            if (learnPhase?.content) {
+                const instructionalBlock = (learnPhase.content as any[]).find(c => c.type === 'instructional');
+                if (instructionalBlock) {
+                    if (!instructionalBlock.instructional) instructionalBlock.instructional = {};
+                    instructionalBlock.instructional.customContent = {
+                        type: file.type.startsWith('image/') ? 'image' : 'file',
+                        url: base64,
+                        name: file.name
+                    };
+                }
+            }
+
+            setLesson(updatedLesson);
+
+            // Persist
+            try {
+                const { error } = await supabase
+                    .from('lessons')
+                    .update({ lesson_structure: updatedLesson.lessonStructure })
+                    .eq('id', lesson.id);
+
+                if (error) throw error;
+                toast({ title: "Custom Material Uploaded", description: "Your custom content has been saved." });
+            } catch (error) {
+                console.error("Failed to save instructional update:", error);
+                toast({ title: "Save Failed", description: "Could not persist change.", variant: "destructive" });
+            }
+        };
+        reader.readAsDataURL(file);
     };
 
     const handleAIForgeImage = async () => {
@@ -1289,8 +1339,17 @@ const LessonRunnable: React.FC = () => {
                                                 </div>
                                             )}
 
+                                            {/* INSTRUCTIONAL ACTIVITY (LEARN PHASE OVERHAUL) */}
+                                            {content.type === "instructional" && content.instructional && (
+                                                <InstructionalActivity
+                                                    data={content.instructional}
+                                                    topic={lesson?.topic || "Lesson"}
+                                                    onUploadCustom={updateInstructionalContent}
+                                                />
+                                            )}
+
                                             {/* FALLBACK FOR UNKNOWN TYPES */}
-                                            {!['text', 'image', 'video', 'quiz', 'activity', 'file', 'resource', 'presentation', 'carousel', 'poll', 'brainstorm', 'steps', 'flashcards', 'categorization', 'scaffolded', 'exit-ticket', 'universal-engage'].includes(content.type) && (
+                                            {!['text', 'image', 'video', 'quiz', 'activity', 'file', 'resource', 'presentation', 'carousel', 'poll', 'brainstorm', 'steps', 'flashcards', 'categorization', 'scaffolded', 'exit-ticket', 'universal-engage', 'instructional'].includes(content.type) && (
                                                 <div className="p-6 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-800">
                                                     <h4 className="font-bold">Unknown Content Type: {content.type}</h4>
                                                     <pre className="mt-2 p-2 bg-white rounded text-xs overflow-auto">{JSON.stringify(content, null, 2)}</pre>

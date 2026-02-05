@@ -48,7 +48,7 @@ export interface LessonPlanPhase {
     takeawayGraphic?: string;
     imagePrompt?: string;
     // High-Fidelity Activity Data
-    activityType?: "poll" | "brainstorm" | "flashcards" | "steps" | "categorization" | "scaffolded" | "exit-ticket" | "carousel" | "presentation";
+    activityType?: "poll" | "brainstorm" | "flashcards" | "steps" | "categorization" | "scaffolded" | "exit-ticket" | "carousel" | "presentation" | "instructional";
     activityData?: {
         pollOptions?: string[];
         flashcards?: { front: string; back: string }[];
@@ -57,6 +57,10 @@ export interface LessonPlanPhase {
         scaffoldedLevels?: { level: number; question: string; hint?: string; solution: string }[];
         carouselStations?: { station: string; task: string; content: string }[];
         slides?: { title: string; bullets: string[]; imagePrompt?: string; speakerNotes?: string }[];
+        // Instructional Data
+        history?: string;
+        vocabulary?: { term: string; definition: string }[];
+        workedExample?: { problem: string; steps: { label: string; explanation: string; visual?: string }[] };
     };
 }
 
@@ -284,9 +288,21 @@ export const generateLessonPlan = async (
     - Visual Hook: Must show a puzzling real-world scenario or object related to ${topic}.
 
     ## PHASE 2: 📚 LEARN (8 mins)
-    - Primary Goal: Reduce cognitive load, multimodal presentation.
-    - Required Activity: "steps" (4 sequential concept chunks) OR "flashcards" (3-4 items).
-    - JSON required: "activityType": "steps" (with steps array) or "flashcards" (with front/back objects).
+    - Primary Goal: Direct Instruction & Concept Modeling.
+    - Required Activity: "Instructional Breakdown" (History/Context + Vocabulary + Worked Example).
+    - JSON required: 
+      - "activityType": "instructional"
+      - "activityData": {
+          "history": "Brief 2-3 sentence engaging history or real-world context of this topic.",
+          "vocabulary": [ { "term": "Key Term", "definition": "Simple definition" } ... (3-4 terms) ],
+          "workedExample": {
+             "problem": "A clear, standard example problem or scenario.",
+             "steps": [ 
+                 { "label": "Step 1", "explanation": "What to do first...", "visual": "Simple text visual or description" },
+                 { "label": "Step 2", "explanation": "What to do next...", "visual": "..." }
+             ]
+          }
+      }
 
     ## PHASE 3: 👥 PRACTICE TOGETHER (12 mins)
     - Primary Goal: Collaborative mastery.
@@ -340,11 +356,18 @@ export const generateLessonPlan = async (
         },
         "learn": {
           "duration": "8 minutes",
-          "researchContent": "Instructional approach description",
-          "imagePrompt": "A detailed DALL-E style prompt for instructional visual",
-          "activities": ["Description of steps/flashcards"],
-          "activityType": "steps",
-          "activityData": { "steps": ["Step 1 content", "Step 2 content", "Step 3 content", "Step 4 content"] }
+          "researchContent": "Direct explicit instruction",
+          "imagePrompt": "Educational diagram",
+          "activities": [],
+          "activityType": "instructional",
+          "activityData": {
+             "history": "In 1666, Isaac Newton...",
+             "vocabulary": [{ "term": "Gravity", "definition": "A force that pulls..." }],
+             "workedExample": {
+                 "problem": "Calculate force...",
+                 "steps": [{ "label": "Identify Mass", "explanation": "First, find..." }]
+             }
+          }
         },
         "practiceTogether": {
           "duration": "12 minutes",
