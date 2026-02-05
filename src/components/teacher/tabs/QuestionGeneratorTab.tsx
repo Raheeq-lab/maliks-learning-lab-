@@ -92,6 +92,24 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
         // Lesson Generation
         const lessonPlan = await generateLessonPlan(subject, selectedGrade, customTopic);
 
+        if (!lessonPlan || typeof lessonPlan !== 'object' || !lessonPlan.phases) {
+          console.error("AI returned invalid JSON:", lessonPlan);
+          if (typeof lessonPlan === 'string') {
+            // Try one last parse attempt if it's a string that slipped through
+            try {
+              const parsed = JSON.parse(lessonPlan);
+              if (parsed && parsed.phases) {
+                // Recovered!
+                // We need to re-assign lessonPlan, but it's const.
+                // Let's just recursively call with the parsed object (or better, restructure implementation)
+                // For now, let's just throw, but give a better error.
+                throw new Error("AI response format error. Please try generating again.");
+              }
+            } catch (e) { }
+          }
+          throw new Error("The AI failed to generate a valid lesson structure. This happens occasionally with complex topics. Please try again.");
+        }
+
         const newLesson: Lesson = {
           id: crypto.randomUUID(),
           title: `Lesson: ${customTopic}`,

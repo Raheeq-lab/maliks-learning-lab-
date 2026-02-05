@@ -199,13 +199,12 @@ async function callGeminiAPI(prompt: string): Promise<any> {
                 // If strictly not JSON, maybe the prompt didn't ask for it? 
                 // But this function implies JSON return mostly.
                 // We'll return it as is if it's not parseable, but warn.
-                return JSON.parse(result);
+                const parsed = JSON.parse(result);
+                return parsed;
             } catch (e) {
-                console.warn("[DualAI] Result was string string but failed to parse as JSON. Returning raw string.");
-                // Some callers check Array.isArray(result) so sending a string might crash them.
-                // We'll wrap it in a safe object if it looks like a generation failure?
-                // Or just return the string and let the caller handle it (flexible).
-                return result;
+                console.warn("[DualAI] Failed to parse JSON from AI response:", e);
+                console.warn("Raw response:", result);
+                throw new Error("AI response was not valid JSON.");
             }
         }
 
