@@ -727,7 +727,7 @@ const LessonRunnable: React.FC = () => {
                                             scaffoldedLevelsFromContent.filter(l => l.level === currentLevel).map((levelData, i) => (
                                                 <div key={i} className="space-y-6">
                                                     <Badge className="bg-math-purple/10 text-math-purple border-none font-bold">Level {currentLevel}: {currentLevel === 1 ? 'Foundation' : currentLevel === 2 ? 'Standard' : 'Challenge'}</Badge>
-                                                    <h5 className="text-2xl font-bold text-text-primary leading-tight">{levelData.question}</h5>
+                                                    {/* Image block moved to top */}
 
                                                     {levelData.imageUrl ? (
                                                         <div className="relative group rounded-xl overflow-hidden border border-gray-100 bg-bg-secondary/50 p-2">
@@ -773,6 +773,8 @@ const LessonRunnable: React.FC = () => {
                                                             </div>
                                                         </div>
                                                     )}
+
+                                                    <h5 className="text-2xl font-bold text-text-primary leading-tight">{levelData.question}</h5>
 
                                                     {levelFeedback[currentLevel]?.showHint && levelData.hint && (
                                                         <div className="p-4 bg-warning-amber-light/20 border border-warning-amber/30 rounded-xl flex items-start gap-3 animate-in slide-in-from-top-2">
@@ -808,8 +810,6 @@ const LessonRunnable: React.FC = () => {
                                             currentPhaseData?.content?.filter(c => c.type === 'scaffolded').flatMap(c => c.scaffoldedLevels || []).filter(l => l.level === currentLevel).map((levelData, i) => (
                                                 <div key={i} className="space-y-6">
                                                     <Badge className="bg-math-purple/10 text-math-purple border-none font-bold">Level {currentLevel}: {currentLevel === 1 ? 'Foundation' : currentLevel === 2 ? 'Standard' : 'Challenge'}</Badge>
-                                                    <h5 className="text-2xl font-bold text-text-primary leading-tight">{levelData.question}</h5>
-
                                                     {levelData.imageUrl ? (
                                                         <div className="relative group rounded-xl overflow-hidden border border-gray-100 bg-bg-secondary/50 p-2">
                                                             <img
@@ -854,6 +854,8 @@ const LessonRunnable: React.FC = () => {
                                                             </div>
                                                         </div>
                                                     )}
+
+                                                    <h5 className="text-2xl font-bold text-text-primary leading-tight">{levelData.question}</h5>
 
                                                     {levelFeedback[currentLevel]?.showHint && levelData.hint && (
                                                         <div className="p-4 bg-warning-amber-light/20 border border-warning-amber/30 rounded-xl flex items-start gap-3 animate-in slide-in-from-top-2">
@@ -1349,6 +1351,52 @@ const LessonRunnable: React.FC = () => {
                                                             {content.scaffoldedLevels?.filter(l => l.level === currentLevel).map((levelData, i) => (
                                                                 <div key={i} className="space-y-6">
                                                                     <Badge className="bg-math-purple/10 text-math-purple border-none font-bold">Level {currentLevel}: {currentLevel === 1 ? 'Foundation' : currentLevel === 2 ? 'Standard' : 'Challenge'}</Badge>
+
+                                                                    {levelData.imageUrl ? (
+                                                                        <div className="relative group rounded-xl overflow-hidden border border-gray-100 bg-bg-secondary/50 p-2">
+                                                                            <img
+                                                                                src={levelData.imageUrl}
+                                                                                alt={`Level ${levelData.level} visual`}
+                                                                                className="max-h-[300px] w-auto mx-auto object-contain rounded-lg"
+                                                                            />
+                                                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                                                <Button
+                                                                                    variant="secondary"
+                                                                                    size="sm"
+                                                                                    className="bg-white/90 text-math-purple hover:bg-white font-bold"
+                                                                                    onClick={() => {
+                                                                                        setTargetLevelForUpload(currentLevel);
+                                                                                        setTimeout(() => scaffoldedImageInputRef.current?.click(), 100);
+                                                                                    }}
+                                                                                >
+                                                                                    <ImageIcon size={16} className="mr-2" />
+                                                                                    Change Photo
+                                                                                </Button>
+                                                                            </div>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div className="border-2 border-dashed border-border rounded-xl p-8 flex flex-col items-center justify-center text-center space-y-3 hover:bg-bg-secondary/50 transition-all">
+                                                                            <div className="bg-bg-secondary p-3 rounded-full text-text-tertiary">
+                                                                                <ImageIcon size={32} />
+                                                                            </div>
+                                                                            <div>
+                                                                                <p className="text-sm font-medium text-text-secondary">No visual prompt for Level {currentLevel}</p>
+                                                                                <Button
+                                                                                    variant="ghost"
+                                                                                    size="sm"
+                                                                                    className="mt-2 text-math-purple hover:bg-math-purple/10 font-bold"
+                                                                                    onClick={() => {
+                                                                                        setTargetLevelForUpload(currentLevel);
+                                                                                        setTimeout(() => scaffoldedImageInputRef.current?.click(), 100);
+                                                                                    }}
+                                                                                >
+                                                                                    <Plus size={16} className="mr-1" />
+                                                                                    Add Photo
+                                                                                </Button>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+
                                                                     <h5 className="text-2xl font-bold text-text-primary leading-tight">{levelData.question}</h5>
 
                                                                     {levelFeedback[currentLevel]?.showHint && levelData.hint && (
