@@ -128,6 +128,33 @@ const LessonRunnable: React.FC = () => {
         return levels.sort((a, b) => a.level - b.level);
     }, [currentPhaseIndex, lesson]);
 
+    const reflectionPromptsFromContent = React.useMemo(() => {
+        if (!lesson?.lessonStructure) return [];
+        const currentPhaseKey = PHASES[currentPhaseIndex];
+        const phaseData = lesson.lessonStructure[currentPhaseKey];
+        if (!phaseData?.content) return [];
+
+        const prompts: any[] = [];
+        const seenPrompts = new Set();
+
+        phaseData.content.forEach(c => {
+            if (c.type === 'text' && c.content?.trim().startsWith('{') && c.content.includes('"prompt"')) {
+                try {
+                    const parsed = JSON.parse(c.content.trim());
+                    if (parsed.prompt && !seenPrompts.has(parsed.prompt)) {
+                        prompts.push({
+                            prompt: parsed.prompt,
+                            response: parsed.response || parsed.expectedResponse || "Write your reflection here..."
+                        });
+                        seenPrompts.add(parsed.prompt);
+                    }
+                } catch (e) { }
+            }
+        });
+
+        return prompts;
+    }, [currentPhaseIndex, lesson]);
+
 
     useEffect(() => {
         fetchLesson();
@@ -751,12 +778,50 @@ const LessonRunnable: React.FC = () => {
                                     </div>
                                     <CollaborativeMap topic={lesson?.topic || lesson?.title || "Lesson Topic"} />
                                 </div>
+                            ) : (PHASES[currentPhaseIndex] === 'reflect' && reflectionPromptsFromContent.length > 0) ? (
+                                <div className="space-y-8 p-8">
+                                    <div className="bg-math-purple/5 p-6 rounded-2xl border border-math-purple/20">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            <div className="bg-math-purple p-2.5 rounded-xl text-white shadow-lg shadow-purple-900/10">
+                                                <Brain size={24} />
+                                            </div>
+                                            <div>
+                                                <h3 className="font-bold text-xl text-text-primary">Final Reflection</h3>
+                                                <p className="text-text-secondary text-sm">Consolidate your learning before the lesson ends</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-6 mt-8">
+                                            {reflectionPromptsFromContent.map((item, i) => (
+                                                <div key={i} className="space-y-3 p-6 bg-bg-card rounded-xl border border-border shadow-sm group hover:border-math-purple/30 transition-all">
+                                                    <h5 className="font-bold text-lg text-text-primary">
+                                                        <span className="text-math-purple mr-2">{i + 1}.</span>
+                                                        {item.prompt}
+                                                    </h5>
+                                                    <textarea
+                                                        placeholder={item.response}
+                                                        className="w-full h-24 p-4 rounded-lg bg-bg-secondary/50 border border-border focus:border-math-purple focus:ring-1 focus:ring-math-purple/20 transition-all outline-none text-text-primary resize-none"
+                                                    />
+                                                </div>
+                                            ))}
+
+                                            <Button
+                                                className="w-full h-12 bg-math-purple hover:bg-math-purple/90 text-white font-bold rounded-xl shadow-lg shadow-purple-900/10"
+                                                onClick={() => toast({ title: "Reflection Saved", description: "Your thoughts have been recorded!" })}
+                                            >
+                                                Submit Reflection
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
                             ) : currentPhaseData?.content && currentPhaseData.content.length > 0 ? (
                                 <div className="space-y-8">
                                     {currentPhaseData.content.map((content, idx) => {
                                         // Skip JSON blocks that have been consolidated into special activities
                                         const isJsonActivity = content.content?.trim().startsWith('{') &&
-                                            (content.content.includes('"station"') || content.content.includes('"level"'));
+                                            (content.content.includes('"station"') ||
+                                                content.content.includes('"level"') ||
+                                                content.content.includes('"prompt"'));
 
                                         if (isJsonActivity) return null;
 
