@@ -55,22 +55,22 @@ const initialLessonStructure: LessonStructure = {
     content: [{ id: `engage-${Date.now()}`, type: "text", content: "" }]
   },
   model: {
-    title: "Model",
+    title: "Learn",
     timeInMinutes: 8,
     content: [{ id: `model-${Date.now()}`, type: "text", content: "" }]
   },
   guidedPractice: {
-    title: "Guided Practice",
+    title: "Practice Together",
     timeInMinutes: 12,
     content: [{ id: `guided-${Date.now()}`, type: "text", content: "" }]
   },
   independentPractice: {
-    title: "Independent Practice",
+    title: "Try It Yourself",
     timeInMinutes: 10,
     content: [{ id: `independent-${Date.now()}`, type: "text", content: "" }]
   },
   reflect: {
-    title: "Reflect",
+    title: "Think About It",
     timeInMinutes: 5,
     content: [{ id: `reflect-${Date.now()}`, type: "text", content: "" }]
   }
@@ -1608,28 +1608,28 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                     value="model"
                     className="data-[state=active]:bg-purple-500 data-[state=active]:text-white"
                   >
-                    Model
+                    Learn
                     <span className="ml-1 text-xs">({lessonStructure.model.timeInMinutes}m)</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="guidedPractice"
                     className="data-[state=active]:bg-green-500 data-[state=active]:text-white"
                   >
-                    Guided
+                    Practice Together
                     <span className="ml-1 text-xs">({lessonStructure.guidedPractice.timeInMinutes}m)</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="independentPractice"
                     className="data-[state=active]:bg-orange-500 data-[state=active]:text-white"
                   >
-                    Independent
+                    Try It Yourself
                     <span className="ml-1 text-xs">({lessonStructure.independentPractice.timeInMinutes}m)</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="reflect"
                     className="data-[state=active]:bg-pink-500 data-[state=active]:text-white"
                   >
-                    Reflect
+                    Think About It
                     <span className="ml-1 text-xs">({lessonStructure.reflect.timeInMinutes}m)</span>
                   </TabsTrigger>
                 </TabsList>

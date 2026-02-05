@@ -127,7 +127,7 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
           requiredResources: lessonPlan.resources,
           lessonStructure: {
             engage: {
-              title: "🎯 ENGAGE",
+              title: "Engage",
               timeInMinutes: 5,
               content: [
                 {
@@ -161,7 +161,7 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
               }
             },
             model: {
-              title: "📚 LEARN",
+              title: "Learn",
               timeInMinutes: 8,
               content: [
                 ...(Array.isArray((lessonPlan.phases.learn || (lessonPlan.phases as any).model || (lessonPlan.phases as any).instruction)?.activities)
@@ -185,7 +185,7 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
               }
             },
             guidedPractice: {
-              title: "👥 PRACTICE TOGETHER",
+              title: "Practice Together",
               timeInMinutes: 12,
               activityType: 'carousel',
               content: [
@@ -218,7 +218,7 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
               }
             },
             independentPractice: {
-              title: "✏️ TRY IT YOURSELF",
+              title: "Try It Yourself",
               timeInMinutes: 10,
               content: [
                 ...(Array.isArray(lessonPlan.phases.tryItYourself.activities) ? lessonPlan.phases.tryItYourself.activities : []).map(a => ({ type: 'text' as const, content: typeof a === 'string' ? a : JSON.stringify(a), id: crypto.randomUUID() })),
@@ -239,7 +239,7 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = ({
               }
             },
             reflect: {
-              title: "💭 THINK ABOUT IT",
+              title: "Think About It",
               timeInMinutes: 5,
               content: [
                 ...(Array.isArray(lessonPlan.phases.thinkAboutIt.activities) ? lessonPlan.phases.thinkAboutIt.activities : []).map(a => ({ type: 'text' as const, content: typeof a === 'string' ? a : JSON.stringify(a), id: crypto.randomUUID() })),
