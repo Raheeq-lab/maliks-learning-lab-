@@ -439,44 +439,22 @@ export const generateTextContent = async (prompt: string): Promise<string> => {
   
   User Request: ${prompt}`;
 
-    let lastError = null;
-
-    for (const { model, version } of MODELS) {
-        try {
-            const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-            const response = await fetch(`https://generativelanguage.googleapis.com/${version}/models/${model}:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: fullPrompt }] }],
-                    generationConfig: { temperature: 0.7 }
-                })
-            });
-
-            if (!response.ok) {
-                if (response.status === 429) {
-                    console.warn(`[Gemini API] Rate limit hit for ${model}. Waiting 2s...`);
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                    lastError = new Error("Rate limit exceeded");
-                    continue; // Try next model
-                }
-                const errorData = await response.json();
-                throw new Error(errorData.error?.message || `Status ${response.status}`);
+    try {
+        const response = await dualAIService.generateContent(
+            fullPrompt,
+            async () => {
+                // Internal Fallback to Gemini Logic (simplified for internal call)
+                // Re-use internal logic if strictly needed, or just let dualAIService handle it via its own internal fallback structure if defined.
+                // Actually, dualAIService expects a fallbackFn that DOES the call.
+                // Since we are refactoring, we should make sure we share the single 'callGemini' logic.
+                return await _internalGeminiCall(fullPrompt);
             }
-
-            const data = await response.json();
-            return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-        } catch (error: any) {
-            console.warn(`[Gemini API] generateTextContent failed with model ${model}:`, error.message);
-            lastError = error;
-        }
+        );
+        return typeof response === 'string' ? response : JSON.stringify(response);
+    } catch (error: any) {
+        console.error("Text generation failed:", error);
+        throw new Error("Failed to generate content.");
     }
-
-    if (lastError?.message?.includes('Rate limit')) {
-        throw new Error("Rate limit exceeded on all models. Please wait 30 seconds and try again.");
-    }
-
-    throw new Error(`Failed to generate text content. Last error: ${lastError?.message || "Unknown error"}`);
 };
 
 export const isConfigured = (): boolean => {
