@@ -77,7 +77,7 @@ const TeacherDashboard: React.FC = () => {
         try {
           const { data, error } = await supabase
             .from('quizzes')
-            .select('id, title, description, grade_level, subject, time_limit, access_code, created_by, created_at, is_public, is_live_session, live_status, questions')
+            .select('id, title, description, grade_level, subject, time_limit, access_code, created_by, created_at, is_public, is_live_session, live_status')
             .eq('created_by', user.id)
             .order('created_at', { ascending: false });
 
@@ -99,7 +99,7 @@ const TeacherDashboard: React.FC = () => {
         try {
           const { data, error } = await supabase
             .from('lessons')
-            .select('*')
+            .select('id, title, description, grade_level, gradelevel, subject, time_limit, learning_type, learningtype, research_notes, researchnotes, visual_theme, visualtheme, assessment_settings, assessmentsettings, required_resources, requiredresources, access_code, accesscode, created_by, createdby, created_at, createdat, is_public')
             .eq('created_by', user.id)
             .order('createdat', { ascending: false });
 
@@ -110,7 +110,6 @@ const TeacherDashboard: React.FC = () => {
             gradeLevel: l.grade_level || l.gradelevel,
             timeLimit: l.time_limit,
             learningType: l.learning_type || l.learningtype,
-            lessonStructure: l.lesson_structure || l.lessonstructure,
             researchNotes: l.research_notes || l.researchnotes,
             visualTheme: l.visual_theme || l.visualtheme,
             assessmentSettings: l.assessment_settings || l.assessmentsettings,
@@ -123,22 +122,11 @@ const TeacherDashboard: React.FC = () => {
         finally { setIsLessonsLoading(false); }
       };
 
-      const fetchResults = async () => {
-        try {
-          const { data, error } = await supabase
-            .from('quiz_results')
-            .select('*')
-            .limit(1000);
+      // Results fetch removed as a global fetch - PerformanceTab fetches per quiz
+      setIsResultsLoading(false);
 
-          if (!error && data) setResults(data);
-        } catch (e) { console.error("Results fetch error", e); }
-        finally { setIsResultsLoading(false); }
-      };
-
-      // Trigger all fetches independently (progressive loading)
       fetchQuizzes();
       fetchLessons();
-      fetchResults();
 
     } catch (error: any) {
       console.error('Unexpected error:', error);
@@ -543,7 +531,26 @@ const TeacherDashboard: React.FC = () => {
                   quizzes={filteredQuizzes}
                   onCreateQuiz={() => setShowQuizForm(true)}
                   onCopyCode={handleCopyCode}
-                  onEditQuiz={(q) => { setEditingQuiz(q); setShowQuizForm(true); }}
+                  onEditQuiz={async (q) => {
+                    setIsLoading(true);
+                    try {
+                      const { data, error } = await supabase
+                        .from('quizzes')
+                        .select('questions')
+                        .eq('id', q.id)
+                        .single();
+
+                      if (error) throw error;
+
+                      setEditingQuiz({ ...q, questions: data.questions });
+                      setShowQuizForm(true);
+                    } catch (err) {
+                      console.error("Error fetching full quiz:", err);
+                      toast({ title: "Error", description: "Failed to load quiz details", variant: "destructive" });
+                    } finally {
+                      setIsLoading(false);
+                    }
+                  }}
                   onDeleteQuiz={handleDeleteQuiz}
                   onTogglePublic={handleTogglePublicQuiz}
                   onToggleLive={handleToggleLiveQuiz}
@@ -558,12 +565,29 @@ const TeacherDashboard: React.FC = () => {
                   lessons={filteredLessons}
                   onCreateLesson={() => setShowScaffoldedLessonBuilder(true)}
                   onCopyCode={handleCopyCode}
-                  onEditLesson={(l) => {
-                    setEditingLesson(l);
-                    if (l.learningType === 'scaffolded' || l.learningType === 'scaffolded-lesson') {
-                      setShowScaffoldedLessonBuilder(true);
-                    } else {
-                      setShowLessonBuilder(true);
+                  onEditLesson={async (l) => {
+                    setIsLoading(true);
+                    try {
+                      const { data, error } = await supabase
+                        .from('lessons')
+                        .select('lesson_structure, content')
+                        .eq('id', l.id)
+                        .single();
+
+                      if (error) throw error;
+
+                      const fullLesson = { ...l, ...data };
+                      setEditingLesson(fullLesson);
+                      if (l.learningType === 'scaffolded' || l.learningType === 'scaffolded-lesson') {
+                        setShowScaffoldedLessonBuilder(true);
+                      } else {
+                        setShowLessonBuilder(true);
+                      }
+                    } catch (err) {
+                      console.error("Error fetching full lesson:", err);
+                      toast({ title: "Error", description: "Failed to load lesson details", variant: "destructive" });
+                    } finally {
+                      setIsLoading(false);
                     }
                   }}
                   onDeleteLesson={handleDeleteLesson}
