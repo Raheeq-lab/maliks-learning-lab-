@@ -437,6 +437,38 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
     reader.readAsDataURL(file);
   };
 
+  const handleLevelImageUpload = (phase: keyof LessonStructure, contentId: string, levelIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Image size should be less than 5MB", variant: "destructive" });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64 = event.target?.result as string;
+      const content = lessonStructure[phase].content.find(c => c.id === contentId);
+      if (content && content.scaffoldedLevels) {
+        const newLvls = [...content.scaffoldedLevels];
+        newLvls[levelIndex] = { ...newLvls[levelIndex], imageUrl: base64 };
+        handleContentChange(phase, contentId, "scaffoldedLevels", newLvls);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeLevelImage = (phase: keyof LessonStructure, contentId: string, levelIndex: number) => {
+    const content = lessonStructure[phase].content.find(c => c.id === contentId);
+    if (content && content.scaffoldedLevels) {
+      const newLvls = [...content.scaffoldedLevels];
+      newLvls[levelIndex] = { ...newLvls[levelIndex], imageUrl: undefined };
+      handleContentChange(phase, contentId, "scaffoldedLevels", newLvls);
+    }
+  };
+
+
   const handleVideoUpload = (phase: keyof LessonStructure, contentId: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -1165,7 +1197,48 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                 <div key={lvl.level} className="p-3 border rounded-lg bg-bg-secondary/50 space-y-2">
                   <div className="flex items-center justify-between">
                     <Label className="text-[10px] font-bold uppercase text-math-purple">Level {lvl.level}</Label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        ref={(el) => (imageInputRefs.current[`${content.id}-lvl-${lvl.level}`] = el)}
+                        onChange={(e) => handleLevelImageUpload(phase, content.id, i, e)}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => imageInputRefs.current[`${content.id}-lvl-${lvl.level}`]?.click()}
+                        className="h-7 text-[10px] flex items-center gap-1 border border-dashed border-border hover:bg-bg-secondary"
+                      >
+                        <Upload size={12} />
+                        {lvl.imageUrl ? "Change Photo" : "Add Photo"}
+                      </Button>
+                      {lvl.imageUrl && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeLevelImage(phase, content.id, i)}
+                          className="h-7 text-[10px] text-error-coral hover:text-error-coral-dark"
+                        >
+                          <X size={12} />
+                        </Button>
+                      )}
+                    </div>
                   </div>
+
+                  {lvl.imageUrl && (
+                    <div className="relative group w-full max-h-32 mb-2 rounded-lg overflow-hidden border border-border">
+                      <img
+                        src={lvl.imageUrl}
+                        alt={`Level ${lvl.level} visual`}
+                        className="w-full h-auto object-contain max-h-32"
+                      />
+                    </div>
+                  )}
+
                   <Textarea
                     value={lvl.question}
                     onChange={(e) => {

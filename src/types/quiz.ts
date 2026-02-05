@@ -180,7 +180,7 @@ export interface LessonPhaseContent {
   flashcards?: { front: string; back: string }[];
   steps?: string[];
   categorizationGroups?: { title: string; items: string[] }[];
-  scaffoldedLevels?: { level: number; question: string; hint?: string; solution: string }[];
+  scaffoldedLevels?: { level: number; question: string; hint?: string; solution: string; imageUrl?: string }[];
   // Universal Engage Specifics
   universalEngage?: {
     pollQuestion?: string;
