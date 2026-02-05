@@ -132,7 +132,8 @@ async function _internalGeminiCall(prompt: string): Promise<any> {
 
             const isV1 = version === 'v1';
             const generationConfig: any = {
-                temperature: 0.7
+                temperature: 0.7,
+                maxOutputTokens: 8192
             };
 
             if (!isV1) {
@@ -162,7 +163,22 @@ async function _internalGeminiCall(prompt: string): Promise<any> {
             }
 
             const textContent = candidate.content.parts[0].text;
-            const cleanedJson = textContent.replace(/```json\n?|\n?```/g, "").trim();
+
+            // 1. Try extracting from markdown code block first
+            const markdownMatch = textContent.match(/```json\n([\s\S]*?)\n```/) || textContent.match(/```\n([\s\S]*?)\n```/);
+            let cleanedJson = markdownMatch ? markdownMatch[1] : textContent;
+
+            // 2. If no markdown, try pure cleanup of possible wrapping Text
+            if (!markdownMatch) {
+                cleanedJson = textContent.replace(/```json\n?|\n?```/g, "").trim();
+            }
+
+            // 3. Last resort: Find first '{' and last '}'
+            const firstBrace = cleanedJson.indexOf('{');
+            const lastBrace = cleanedJson.lastIndexOf('}');
+            if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+                cleanedJson = cleanedJson.substring(firstBrace, lastBrace + 1);
+            }
 
             try {
                 return JSON.parse(cleanedJson);
