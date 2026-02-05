@@ -105,6 +105,50 @@ export interface LessonPlan {
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
+// Helper to repair truncated JSON
+function repairJson(jsonStr: string): any {
+    try {
+        return JSON.parse(jsonStr);
+    } catch (e) {
+        // Simple repair: Close open braces/brackets
+        let repaired = jsonStr.trim();
+        const quoteCount = (repaired.match(/"/g) || []).length;
+        if (quoteCount % 2 !== 0) {
+            repaired += '"';
+        }
+
+        const stack: string[] = [];
+        let inString = false;
+        let escape = false;
+
+        for (let i = 0; i < repaired.length; i++) {
+            const char = repaired[i];
+            if (escape) { escape = false; continue; }
+            if (char === '\\') { escape = true; continue; }
+            if (char === '"') { inString = !inString; continue; }
+            if (inString) continue;
+
+            if (char === '{') stack.push('}');
+            if (char === '[') stack.push(']');
+            if (char === '}' || char === ']') {
+                if (stack.length > 0) stack.pop();
+            }
+        }
+
+        // Append missing closures in reverse order
+        while (stack.length > 0) {
+            repaired += stack.pop();
+        }
+
+        try {
+            console.warn("[JSON Repair] Attempting to repair truncated JSON...");
+            return JSON.parse(repaired);
+        } catch (e2) {
+            throw new Error("Failed to parse Gemini response even after repair.");
+        }
+    }
+}
+
 // Updated configurations for Preview Access Keys
 const MODELS = [
     { model: "gemini-2.5-flash", version: "v1beta" },
@@ -178,15 +222,21 @@ async function _internalGeminiCall(prompt: string): Promise<any> {
             const lastBrace = cleanedJson.lastIndexOf('}');
             if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
                 cleanedJson = cleanedJson.substring(firstBrace, lastBrace + 1);
+            } else if (firstBrace !== -1) {
+                // If start exists but no clear end, it might be truncated. Take all.
+                cleanedJson = cleanedJson.substring(firstBrace);
             }
 
             try {
                 return JSON.parse(cleanedJson);
             } catch (e) {
-                // If it's v1beta and we asked for JSON, it should be JSON. 
-                // But sometimes models fail.
-                console.warn("[Gemini Fallback] Parsing failed, returning raw text if possible or throwing");
-                throw new Error("Failed to parse Gemini response as JSON");
+                console.warn("[Gemini Fallback] Strict parse failed. Attempting to repair truncated JSON...");
+                try {
+                    return repairJson(cleanedJson);
+                } catch (repairError) {
+                    console.warn("[Gemini Fallback] Repair failed.", repairError);
+                    throw new Error("Failed to parse Gemini response as JSON");
+                }
             }
 
         } catch (error: any) {
@@ -201,6 +251,9 @@ async function _internalGeminiCall(prompt: string): Promise<any> {
 /**
  * Main entry point for AI calls - Routes through DualAIService (Cloudflare -> Gemini)
  */
+/**
+ * Main entry point for AI calls - Routes through DualAIService (Cloudflare -> Gemini)
+ */
 async function callGeminiAPI(prompt: string): Promise<any> {
     try {
         const result = await dualAIService.generateContent(
@@ -211,27 +264,33 @@ async function callGeminiAPI(prompt: string): Promise<any> {
         // Ensure we always return an object if the result is a string (Cloudflare might return string)
         if (typeof result === 'string') {
             try {
-                // Try aggressive regex extraction if strict parse failed
+                // 1. Try regex extraction
                 const jsonMatch = result.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
                 if (jsonMatch) {
                     return JSON.parse(jsonMatch[0]);
                 }
-                // If strictly not JSON, maybe the prompt didn't ask for it? 
-                // But this function implies JSON return mostly.
-                // We'll return it as is if it's not parseable, but warn.
-                const parsed = JSON.parse(result);
-                return parsed;
+
+                // 2. Try JSON Repair (Self-Healing)
+                // This will attempt to fix the string if it's truncated
+                return repairJson(result);
+
             } catch (e) {
-                console.warn("[DualAI] Failed to parse JSON from AI response:", e);
-                console.warn("Raw response:", result);
-                throw new Error("AI response was not valid JSON.");
+                console.warn("[callGeminiAPI] Cloudflare response invalid/truncated JSON. Manually forcing fallback to Gemini.");
+                // MANUAL FALLBACK: Cloudflare gave garbage/truncated text. Force Gemini.
+                return await _internalGeminiCall(prompt);
             }
         }
 
         return result;
     } catch (error) {
         console.error("Dual AI Service failed completely:", error);
-        throw error;
+        // Last ditch fallback if dualAIService completely threw up
+        try {
+            console.warn("Attempting final emergency fallback to Gemini...");
+            return await _internalGeminiCall(prompt);
+        } catch (finalError) {
+            throw error;
+        }
     }
 }
 
