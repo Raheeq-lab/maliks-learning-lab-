@@ -8,7 +8,7 @@ import {
     Play, Pause, SkipForward, ArrowLeft, RotateCcw, Clock,
     BookOpen, PenTool, FileText, Brain, Check, Lock, Globe, File, Layout,
     Sparkles, Zap, AlertCircle, BrainCircuit, Download,
-    Plus, Star, Image as ImageIcon, MoreHorizontal, CheckSquare, Loader2
+    Plus, Star, Image as ImageIcon, MoreHorizontal, CheckSquare, Loader2, Eye
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/lib/supabase';
