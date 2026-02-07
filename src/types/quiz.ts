@@ -202,6 +202,7 @@ export interface LessonPhaseContent {
       url: string;
       name: string;
     };
+    flashcards?: Flashcard[];
   };
 }
 

@@ -4,8 +4,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Check, ChevronRight, BookOpen, Upload, Image as ImageIcon, FileText, Info } from "lucide-react";
+import { Check, ChevronRight, BookOpen, Upload, Image as ImageIcon, FileText, Info, Layers, Plus, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Flashcard } from '@/types/quiz';
 
 interface InstructionalContent {
     title?: string;
@@ -20,15 +21,23 @@ interface InstructionalContent {
         url: string;
         name: string;
     };
+    flashcards?: Flashcard[];
 }
 
 interface InstructionalActivityProps {
     data: InstructionalContent;
     onUploadCustom?: (file: File) => void;
     topic: string;
+    onAddFlashcards?: () => void;
+    onGenerateFlashcards?: () => void;
 }
-
-export const InstructionalActivity: React.FC<InstructionalActivityProps> = ({ data, onUploadCustom, topic }) => {
+export const InstructionalActivity: React.FC<InstructionalActivityProps> = ({
+    data,
+    onUploadCustom,
+    topic,
+    onAddFlashcards,
+    onGenerateFlashcards
+}) => {
     const [activeStep, setActiveStep] = useState(0);
     const [uploadMode, setUploadMode] = useState(false);
 
@@ -191,6 +200,75 @@ export const InstructionalActivity: React.FC<InstructionalActivityProps> = ({ da
                     )}
                 </div>
             )}
+
+            {/* Flashcards Section */}
+            {(data.flashcards && data.flashcards.length > 0) || onAddFlashcards ? (
+                <Card className="border-math-purple/20 shadow-md dark:bg-slate-900/50 dark:border-purple-900/30">
+                    <CardHeader className="bg-math-purple/5 border-b border-math-purple/10 pb-4 dark:bg-purple-900/10 dark:border-purple-900/20 flex flex-row items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <Badge variant="secondary" className="bg-white text-math-purple hover:bg-white dark:bg-purple-900 dark:text-purple-200 dark:hover:bg-purple-900">
+                                <Layers size={14} className="mr-1" /> Flashcards
+                            </Badge>
+                            <CardTitle className="text-xl text-slate-800 dark:text-slate-100">Key Concepts</CardTitle>
+                        </div>
+                        {onAddFlashcards && (data.flashcards?.length || 0) === 0 && (
+                            <div className="flex gap-2">
+                                <Button size="sm" variant="outline" onClick={onAddFlashcards}>Create Manually</Button>
+                                <Button size="sm" variant="secondary" className="bg-white text-math-purple border border-math-purple/20 hover:bg-math-purple/5" onClick={onGenerateFlashcards}>
+                                    <Sparkles size={14} className="mr-1" /> Generate with AI
+                                </Button>
+                            </div>
+                        )}
+                        {onAddFlashcards && (data.flashcards?.length || 0) > 0 && (
+                            <div className="flex gap-2">
+                                <Button size="sm" variant="outline" onClick={onAddFlashcards}>Edit Cards</Button>
+                            </div>
+                        )}
+                    </CardHeader>
+                    <CardContent className="p-6">
+                        {data.flashcards && data.flashcards.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {data.flashcards.map((card, i) => (
+                                    <div
+                                        key={card.id || i}
+                                        className="h-48 cursor-pointer perspective-1000 group relative"
+                                        onClick={(e) => {
+                                            const target = e.currentTarget.firstElementChild as HTMLElement;
+                                            target.classList.toggle('rotate-y-180');
+                                        }}
+                                    >
+                                        <div className="relative w-full h-full transition-all duration-500 preserve-3d">
+                                            {/* Front */}
+                                            <div className="absolute inset-0 backface-hidden bg-white dark:bg-slate-800 border-2 border-math-purple/20 rounded-2xl flex items-center justify-center p-6 shadow-sm group-hover:shadow-md transition-shadow">
+                                                <p className="text-lg font-bold text-math-purple text-center">{card.front}</p>
+                                                <Badge className="absolute bottom-4 right-4 bg-math-purple/10 text-math-purple border-none text-[10px]">Click to flip</Badge>
+                                            </div>
+                                            {/* Back */}
+                                            <div className="absolute inset-0 backface-hidden rotate-y-180 bg-math-purple text-white rounded-2xl flex items-center justify-center p-6 shadow-xl">
+                                                <p className="text-base font-medium text-center leading-relaxed">{card.back}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-border rounded-xl bg-bg-secondary/30 text-center">
+                                <Layers className="w-12 h-12 text-math-purple/30 mb-4" />
+                                <h4 className="font-bold text-lg text-text-primary">No Flashcards Yet</h4>
+                                <p className="text-text-secondary mb-4">Add flashcards to help students master key concepts.</p>
+                                <div className="flex gap-3">
+                                    <Button onClick={onAddFlashcards} variant="outline">
+                                        <Plus size={16} className="mr-2" /> Create Manually
+                                    </Button>
+                                    <Button onClick={onGenerateFlashcards} className="bg-math-purple hover:bg-math-purple/90 text-white">
+                                        <Sparkles size={16} className="mr-2" /> Generate with AI
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            ) : null}
         </div>
     );
 };
