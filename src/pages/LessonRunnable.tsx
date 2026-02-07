@@ -260,39 +260,32 @@ const LessonRunnable: React.FC = () => {
 
     const handleToggleLiveQuiz = async (quizId: string, enable: boolean) => {
         try {
+            const newStatus = enable ? 'waiting' : 'idle';
+
+            // 1. Database update
+            const { error } = await supabase
+                .from('quizzes')
+                .update({
+                    is_live_session: enable,
+                    live_status: newStatus
+                })
+                .eq('id', quizId);
+
+            if (error) throw error;
+
+            // 2. Synchronize local state
+            setLessonQuizzes(prev => prev.map(q =>
+                q.id === quizId ? { ...q, is_live_session: enable, live_status: newStatus } : q
+            ));
+
             if (enable) {
-                // Start live session
-                const { data, error } = await supabase
-                    .from('quizzes')
-                    .update({ is_live_session: true, live_status: 'active' })
-                    .eq('id', quizId)
-                    .select()
-                    .single();
-
-                if (error) throw error;
-
-                setLiveQuizSession({
-                    id: data.id,
-                    accessCode: data.access_code
-                });
-
                 toast({
-                    title: "Quiz Live!",
-                    description: `Students can join with code: ${data.access_code}`,
+                    title: "Live Mode Enabled",
+                    description: `Students can now join the session.`,
                 });
             } else {
-                // End live session
-                const { error } = await supabase
-                    .from('quizzes')
-                    .update({ is_live_session: false, live_status: 'completed' })
-                    .eq('id', quizId);
-
-                if (error) throw error;
-
-                setLiveQuizSession(null);
-
                 toast({
-                    title: "Session Ended",
+                    title: "Live Mode Disabled",
                     description: "Live quiz session has been closed.",
                 });
             }
@@ -301,6 +294,38 @@ const LessonRunnable: React.FC = () => {
             toast({
                 title: "Action Failed",
                 description: "Could not update quiz session.",
+                variant: "destructive"
+            });
+        }
+    };
+
+    const handleStartLiveQuiz = async (quizId: string) => {
+        try {
+            // 1. Update status to active
+            const { error } = await supabase
+                .from('quizzes')
+                .update({ live_status: 'active' })
+                .eq('id', quizId);
+
+            if (error) throw error;
+
+            // 2. Update local state
+            setLessonQuizzes(prev => prev.map(q =>
+                q.id === quizId ? { ...q, live_status: 'active' } : q
+            ));
+
+            toast({
+                title: "Quiz Started!",
+                description: "Redirecting to live race view...",
+            });
+
+            // 3. Navigate to quiz
+            navigate(`/quiz/${quizId}`);
+        } catch (error) {
+            console.error("Failed to start live quiz:", error);
+            toast({
+                title: "Error",
+                description: "Failed to start the live session.",
                 variant: "destructive"
             });
         }
@@ -1480,10 +1505,7 @@ const LessonRunnable: React.FC = () => {
                                                                             });
                                                                     }}
                                                                     onToggleLive={() => handleToggleLiveQuiz(quiz.id, !quiz.is_live_session)}
-                                                                    onStartQuiz={() => {
-                                                                        // Navigate to quiz or start session
-                                                                        navigate(`/quiz/${quiz.id}`);
-                                                                    }}
+                                                                    onStartQuiz={() => handleStartLiveQuiz(quiz.id)}
                                                                     isLiveSession={quiz.is_live_session}
                                                                     liveStatus={quiz.live_status}
                                                                     subject={quiz.subject}

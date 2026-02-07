@@ -190,13 +190,13 @@ const AccessCodeCard: React.FC<AccessCodeCardProps> = ({
           </div>
         )}
 
-        {isLiveSession && liveStatus === 'waiting' && onStartQuiz && (
+        {isLiveSession && onStartQuiz && (
           <Button
-            className="w-full mt-1 bg-focus-blue hover:bg-focus-blue-dark text-white font-bold h-10 gap-2 shadow-md animate-bounce-subtle"
+            className={`w-full mt-1 ${liveStatus === 'active' ? 'bg-success-green hover:bg-success-green/90' : 'bg-focus-blue hover:bg-focus-blue-dark'} text-white font-bold h-10 gap-2 shadow-md animate-bounce-subtle`}
             onClick={onStartQuiz}
           >
-            <Zap size={16} fill="currentColor" />
-            START LIVE QUIZ
+            {liveStatus === 'active' ? <Globe size={16} /> : <Zap size={16} fill="currentColor" />}
+            {liveStatus === 'active' ? 'VIEW LIVE PROGRESS' : 'START LIVE QUIZ'}
           </Button>
         )}
       </CardFooter>
