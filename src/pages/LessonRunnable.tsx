@@ -17,7 +17,7 @@ import { QuizQuestion as GeminiQuizQuestion } from "@/utils/geminiAI";
 import { CarouselActivity } from "@/components/teacher/CarouselActivity";
 import { Lesson, LessonStructure, Flashcard, FlashcardSet } from '@/types/quiz';
 import FlashcardModal from '@/components/teacher/FlashcardModal';
-import { generateFlashcards } from '@/utils/geminiAI';
+import { generateFlashcards, generateQuizQuestions } from '@/utils/geminiAI';
 import { generateContent, AIConfig } from "@/services/aiService";
 import { CollaborativeMap } from '@/components/teacher/CollaborativeMap';
 import { PresentationActivity } from '@/components/teacher/PresentationActivity';
@@ -320,29 +320,23 @@ const LessonRunnable: React.FC = () => {
         }
 
         setIsGeneratingQuiz(true);
-        const config: AIConfig = { provider: 'gemini', apiKey };
-        const prompt = `Create a 5-question multiple choice quiz about "${lesson.topic || lesson.title}" for Grade ${lesson.gradeLevel}. 
-        Return ONLY a JSON object with a "questions" array. 
-        Each question must have: "text", "options" (array of 4 strings), and "correctOptionIndex" (0-3).
-        
-        CRITICAL: Ensure the JSON is strictly valid. No trailing commas. No text outside the JSON object.
-        Format: { "questions": [{ "text": "...", "options": ["...", "...", "...", "..."], "correctOptionIndex": 0 }] }`;
+        setIsGeneratingQuiz(true);
 
         try {
-            // Using 'quiz' type enables official JSON mode in aiService
-            const response = await generateContent(config, prompt, 'quiz');
-            if (response.error) throw new Error(response.error);
+            const quizQuestions = await generateQuizQuestions(
+                lesson.subject,
+                lesson.gradeLevel.toString(),
+                lesson.topic || lesson.title,
+                5
+            );
 
-            const data = JSON.parse(response.content);
-            if (!data.questions || !Array.isArray(data.questions)) {
-                throw new Error("Invalid format from AI");
-            }
-
-            const questions = data.questions.map((q: any) => ({
+            const questions = quizQuestions.map((q: GeminiQuizQuestion) => ({
                 id: `q-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-                text: q.text || q.question || "Untitled Question",
-                options: q.options || ["", "", "", ""],
-                correctOptionIndex: typeof q.correctOptionIndex === 'number' ? q.correctOptionIndex : parseInt(q.correctOptionIndex) || 0
+                text: q.question,
+                options: q.options,
+                correctOptionIndex: q.options.findIndex(o => o === q.correctAnswer || o.includes(q.correctAnswer)) > -1
+                    ? q.options.findIndex(o => o === q.correctAnswer || o.includes(q.correctAnswer))
+                    : 0
             }));
 
             // Generate unique access code
