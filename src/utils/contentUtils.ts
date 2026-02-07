@@ -1,9 +1,34 @@
 /**
  * Utility to strip redundant labels from lesson content strings.
  * Removes prefixes like "Scaffolded Question 1:", "Worked Example:", "Instructional Breakdown:", etc.
+ * Also handles JSON-encoded strings that might be returned by AI sometimes.
  */
 export const stripLabels = (text: string | any): any => {
     if (typeof text !== 'string') return text;
+
+    let cleaned = text.trim();
+
+    // Handle JSON-encoded strings (e.g., {"question": "...", "hint": "..."})
+    if (cleaned.startsWith('{') && cleaned.endsWith('}')) {
+        try {
+            const parsed = JSON.parse(cleaned);
+            // Priority list of keys to extract for display
+            const priorityKeys = ['question', 'prompt', 'text', 'label', 'content', 'term', 'definition', 'answer', 'explanation'];
+            for (const key of priorityKeys) {
+                if (parsed[key]) {
+                    cleaned = String(parsed[key]);
+                    break;
+                }
+            }
+            // If no priority key matches but there's at least one value
+            if (cleaned.startsWith('{')) {
+                const values = Object.values(parsed);
+                if (values.length > 0) cleaned = String(values[0]);
+            }
+        } catch (e) {
+            // Not actually JSON or failed to parse, continue with normal cleaning
+        }
+    }
 
     // List of patterns to strip (case-insensitive)
     const patterns = [
@@ -21,7 +46,7 @@ export const stripLabels = (text: string | any): any => {
         /^-\s*/      // Strips leading "- "
     ];
 
-    let cleaned = text.trim();
+    cleaned = cleaned.trim();
     let changed = true;
 
     // Keep stripping until no more matches (handles multiple prefixes)

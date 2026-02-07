@@ -1359,12 +1359,12 @@ const LessonRunnable: React.FC = () => {
                                                             </div>
                                                         )}
 
-                                                        <h5 className="text-2xl font-bold text-text-primary leading-tight">{levelData.question}</h5>
+                                                        <h5 className="text-2xl font-bold text-text-primary leading-tight">{stripLabels(levelData.question)}</h5>
 
                                                         {levelFeedback[currentLevel]?.showHint && levelData.hint && (
                                                             <div className="p-4 bg-warning-amber-light/20 border border-warning-amber/30 rounded-xl flex items-start gap-3 animate-in slide-in-from-top-2">
                                                                 <Zap size={20} className="text-warning-amber mt-1" />
-                                                                <p className="text-text-primary italic"><span className="font-bold">Hint:</span> {levelData.hint}</p>
+                                                                <p className="text-text-primary italic"><span className="font-bold">Hint:</span> {stripLabels(levelData.hint)}</p>
                                                             </div>
                                                         )}
 
@@ -1449,7 +1449,7 @@ const LessonRunnable: React.FC = () => {
                                                             {stripLabels(item.prompt)}
                                                         </h5>
                                                         <textarea
-                                                            placeholder={item.response}
+                                                            placeholder={stripLabels(item.response)}
                                                             className="w-full h-24 p-4 rounded-lg bg-bg-secondary/50 border border-border focus:border-math-purple focus:ring-1 focus:ring-math-purple/20 transition-all outline-none text-text-primary resize-none"
                                                         />
                                                     </div>
