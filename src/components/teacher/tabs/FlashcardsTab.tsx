@@ -81,10 +81,19 @@ const FlashcardsTab: React.FC<FlashcardsTabProps> = ({
 
     const getSubjectColor = () => {
         switch (subject) {
-            case "math": return "border-l-purple-500 hover:shadow-purple-100";
-            case "english": return "border-l-green-500 hover:shadow-green-100";
-            case "ict": return "border-l-orange-500 hover:shadow-orange-100";
+            case "math": return "border-l-purple-500 hover:shadow-purple-100 dark:hover:shadow-purple-900/20";
+            case "english": return "border-l-green-500 hover:shadow-green-100 dark:hover:shadow-green-900/20";
+            case "ict": return "border-l-orange-500 hover:shadow-orange-100 dark:hover:shadow-orange-900/20";
             default: return "border-l-purple-500";
+        }
+    };
+
+    const getSubjectGradient = () => {
+        switch (subject) {
+            case "math": return "from-purple-600 to-indigo-600";
+            case "english": return "from-green-600 to-emerald-600";
+            case "ict": return "from-orange-500 to-red-600";
+            default: return "from-purple-600 to-indigo-600";
         }
     };
 
@@ -176,7 +185,7 @@ const FlashcardsTab: React.FC<FlashcardsTabProps> = ({
                             </CardContent>
                             <CardFooter className="pt-0 flex flex-col gap-2">
                                 <Button
-                                    className={`w-full font-bold shadow-md hover:scale-[1.02] transition-all bg-gradient-to-r ${getSubjectColor().replace('border-l-', 'from-').replace('500', '500').replace('hover:', '').replace(/dark:[\w-]+/g, '')} to-gray-600 bg-opacity-90 text-white`}
+                                    className={`w-full font-bold shadow-md hover:scale-[1.02] transition-all bg-gradient-to-r ${getSubjectGradient()} text-white border-0`}
                                     onClick={() => handleOpenSet(set)}
                                 >
                                     <Play size={16} className="mr-2 fill-current" /> Open Flashcards
@@ -186,7 +195,7 @@ const FlashcardsTab: React.FC<FlashcardsTabProps> = ({
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className={`flex-1 h-9 text-xs border-dashed border-border transition-all ${copiedId === set.id ? 'text-green-600 bg-green-50 border-green-200' : 'text-text-tertiary hover:bg-bg-secondary'}`}
+                                        className={`flex-1 h-9 text-xs border-dashed border-border transition-all dark:bg-bg-elevated dark:hover:bg-bg-elevated/80 ${copiedId === set.id ? 'text-green-600 bg-green-50 border-green-200 dark:text-green-400 dark:border-green-800 dark:bg-green-900/20' : 'text-text-tertiary hover:bg-bg-secondary dark:text-text-secondary'}`}
                                         onClick={() => handleCopy(set.accessCode, set.id)}
                                     >
                                         {copiedId === set.id ? (
@@ -198,7 +207,7 @@ const FlashcardsTab: React.FC<FlashcardsTabProps> = ({
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="flex-1 h-9 text-xs border-border text-text-secondary hover:bg-bg-secondary hover:text-text-primary"
+                                        className="flex-1 h-9 text-xs border-border text-text-secondary hover:bg-bg-secondary hover:text-text-primary dark:bg-bg-elevated dark:hover:bg-bg-elevated/80 dark:border-border dark:text-text-secondary"
                                         onClick={() => onEditSet(set)}
                                     >
                                         <Edit size={14} className="mr-1.5" /> Edit
