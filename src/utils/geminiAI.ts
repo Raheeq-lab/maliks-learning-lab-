@@ -129,12 +129,13 @@ function repairJson(jsonStr: string): any {
         }
 
         if (start !== -1 && end !== -1 && end > start) {
-            const extracted = jsonStr.substring(start, end + 1);
+            let extracted = jsonStr.substring(start, end + 1);
             try {
                 return JSON.parse(extracted);
             } catch (innerE) {
-                // If direct extraction fails, try one more cleanup (remove newlines in strings, etc if needed in future)
-                console.warn("[JSON Repair] Extraction failed, attempting simple brace matching repair...");
+                // Remove trailing commas (common Llama-3 error)
+                extracted = extracted.replace(/,\s*([}\]])/g, '$1');
+                try { return JSON.parse(extracted); } catch (e2) { }
             }
         }
 
@@ -309,10 +310,15 @@ async function callGeminiAPI(prompt: string, systemPrompt?: string): Promise<any
                 // Try regex extraction for array or object
                 const jsonMatch = result.match(/\[[\s\S]*\]|\{[\s\S]*\}/);
                 if (jsonMatch) {
-                    return JSON.parse(jsonMatch[0]);
+                    try {
+                        return JSON.parse(jsonMatch[0]);
+                    } catch (parseErr) {
+                        // If parse failed, try repair on the matched JSON part (e.g. trailing commas)
+                        return repairJson(jsonMatch[0]);
+                    }
                 }
 
-                // If it's just raw text that looks like a list, try a simple repair
+                // If no match or still string, try full repair
                 return repairJson(result);
             } catch (e) {
                 console.warn("[callGeminiAPI] JSON extraction failed.");
