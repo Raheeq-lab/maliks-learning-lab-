@@ -24,6 +24,7 @@ import { PresentationActivity } from '@/components/teacher/PresentationActivity'
 import ThemeToggle from '@/components/ThemeToggle';
 import { InstructionalActivity } from '@/components/teacher/InstructionalActivity';
 import { useAuth } from '@/context/AuthContext';
+import AccessCodeCard from '@/components/AccessCodeCard';
 
 
 const PHASES = ['engage', 'model', 'guidedPractice', 'independentPractice', 'reflect'] as const;
@@ -74,6 +75,7 @@ const LessonRunnable: React.FC = () => {
     const [liveQuizSession, setLiveQuizSession] = useState<{ id: string, accessCode: string } | null>(null);
     const [isLaunchingQuiz, setIsLaunchingQuiz] = useState(false);
     const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false);
+    const [lessonQuizzes, setLessonQuizzes] = useState<any[]>([]); // Store quizzes linked to this lesson
 
     const carouselStationsFromContent = React.useMemo(() => {
         if (!lesson?.lessonStructure) return [];
@@ -343,17 +345,41 @@ const LessonRunnable: React.FC = () => {
                 correctOptionIndex: typeof q.correctOptionIndex === 'number' ? q.correctOptionIndex : parseInt(q.correctOptionIndex) || 0
             }));
 
-            // Prepare the updated lesson structure
+            // Generate unique access code
+            const accessCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+            // Create quiz in database (not in lesson structure)
+            const { data: quizData, error: quizError } = await supabase
+                .from('quizzes')
+                .insert([{
+                    title: `${lesson.title} - Try It Yourself Quiz`,
+                    description: `Practice quiz for ${lesson.title}`,
+                    grade_level: lesson.gradeLevel,
+                    subject: lesson.subject,
+                    time_limit: 600,
+                    access_code: accessCode,
+                    created_by: lesson.createdBy,
+                    questions: questions,
+                    is_public: true,
+                    is_live_session: false,
+                    lesson_id: lesson.id // Link to lesson
+                }])
+                .select()
+                .single();
+
+            if (quizError) throw quizError;
+
+            // Add quiz reference to lesson structure
             const currentPhaseKey = PHASES[currentPhaseIndex];
             const updatedStructure = { ...lesson.lessonStructure };
             const currentPhaseData = updatedStructure[currentPhaseKey] || { content: [] };
             const phaseContent = [...(currentPhaseData.content || [])];
 
-            // Add the quiz content block
             phaseContent.push({
                 id: `quiz-${Date.now()}`,
                 type: 'quiz',
                 content: 'Interactive Quiz',
+                quizId: quizData.id,
                 quizQuestions: questions
             });
 
@@ -362,7 +388,7 @@ const LessonRunnable: React.FC = () => {
                 content: phaseContent
             };
 
-            // Update Supabase
+            // Update lesson structure
             const { error } = await supabase
                 .from('lessons')
                 .update({ lesson_structure: updatedStructure })
@@ -375,9 +401,12 @@ const LessonRunnable: React.FC = () => {
                 lessonStructure: updatedStructure
             });
 
+            // Add to lesson quizzes list
+            setLessonQuizzes(prev => [...prev, quizData]);
+
             toast({
-                title: "Quiz Added!",
-                description: "A 5-question quiz has been added to this phase.",
+                title: "Quiz Created!",
+                description: `Access Code: ${accessCode}`,
             });
 
         } catch (error: any) {
@@ -390,6 +419,66 @@ const LessonRunnable: React.FC = () => {
         } finally {
             setIsGeneratingQuiz(false);
         }
+    };
+
+    const handleEditQuiz = async (quizId: string) => {
+        // Navigate to quiz edit page or open modal
+        navigate(`/teacher-dashboard?tab=quizzes&edit=${quizId}`);
+    };
+
+    const handleDeleteQuiz = async (quizId: string) => {
+        try {
+            // Delete from database
+            const { error } = await supabase
+                .from('quizzes')
+                .delete()
+                .eq('id', quizId);
+
+            if (error) throw error;
+
+            // Remove from lesson structure
+            const currentPhaseKey = PHASES[currentPhaseIndex];
+            const updatedStructure = { ...lesson!.lessonStructure };
+            const currentPhaseData = updatedStructure[currentPhaseKey] || { content: [] };
+            const phaseContent = (currentPhaseData.content || []).filter(c => c.quizId !== quizId);
+
+            updatedStructure[currentPhaseKey] = {
+                ...currentPhaseData,
+                content: phaseContent
+            };
+
+            // Update lesson
+            await supabase
+                .from('lessons')
+                .update({ lesson_structure: updatedStructure })
+                .eq('id', id);
+
+            setLesson({
+                ...lesson!,
+                lessonStructure: updatedStructure
+            });
+
+            toast({
+                title: "Quiz Deleted",
+                description: "Quiz has been removed from this lesson.",
+            });
+
+        } catch (error) {
+            console.error("Failed to delete quiz:", error);
+            toast({
+                title: "Delete Failed",
+                description: "Could not delete quiz.",
+                variant: "destructive"
+            });
+        }
+    };
+
+    const handleCopyQuizCode = (quizTitle: string, accessCode: string) => {
+        navigator.clipboard.writeText(accessCode);
+        toast({
+            title: "Code Copied!",
+            description: `Access code for "${quizTitle}" copied to clipboard.`,
+        });
     };
 
     // When phase changes, set the new time
@@ -432,6 +521,17 @@ const LessonRunnable: React.FC = () => {
             };
 
             setLesson(mappedLesson);
+
+            // Fetch quizzes linked to this lesson
+            const { data: quizzesData, error: quizzesError } = await supabase
+                .from('quizzes')
+                .select('*')
+                .eq('lesson_id', id);
+
+            if (!quizzesError && quizzesData) {
+                setLessonQuizzes(quizzesData);
+            }
+
         } catch (error: any) {
             console.error('Error loading lesson:', error);
             toast({ title: "Error", description: "Failed to load lesson", variant: "destructive" });
@@ -1344,77 +1444,53 @@ const LessonRunnable: React.FC = () => {
                                                     )}
 
                                                     {/* QUIZ CONTENT */}
-                                                    {content.type === "quiz" && (
-                                                        <div className="space-y-8">
-                                                            {liveQuizSession ? (
-                                                                <div className="bg-bg-card rounded-3xl border-4 border-math-purple p-10 flex flex-col items-center justify-center text-center shadow-2xl animate-in zoom-in duration-500">
-                                                                    <div className="w-20 h-20 bg-math-purple/10 rounded-full flex items-center justify-center mb-6">
-                                                                        <Sparkles className="text-math-purple w-12 h-12 animate-pulse" />
-                                                                    </div>
-                                                                    <h3 className="text-3xl font-black text-text-primary mb-2">Live Quiz Active!</h3>
-                                                                    <p className="text-text-secondary text-lg mb-8">Tell your students to join at <span className="font-bold text-math-purple">Raheeq's Learning Lab</span></p>
+                                                    {content.type === "quiz" && content.quizId && (() => {
+                                                        const quiz = lessonQuizzes.find(q => q.id === content.quizId);
+                                                        if (!quiz) return null;
 
-                                                                    <div className="bg-bg-secondary p-8 rounded-2xl border-2 border-dashed border-math-purple/30 mb-8 w-full max-w-md">
-                                                                        <p className="text-sm font-bold text-text-tertiary uppercase tracking-widest mb-4">Access Code</p>
-                                                                        <div className="text-6xl md:text-8xl font-black text-math-purple tracking-tighter">
-                                                                            {liveQuizSession.accessCode}
-                                                                        </div>
-                                                                    </div>
-
-                                                                    <div className="flex gap-4">
-                                                                        <Button
-                                                                            className="bg-math-purple hover:bg-math-purple/90 text-white px-8 h-12 rounded-xl font-bold"
-                                                                            onClick={() => navigate(`/performance?quizId=${content.quizId}&live=true`)}
-                                                                        >
-                                                                            View Live Results
-                                                                        </Button>
-                                                                        <Button
-                                                                            variant="outline"
-                                                                            className="border-error-coral text-error-coral hover:bg-error-coral/10 px-8 h-12 rounded-xl font-bold"
-                                                                            onClick={() => handleToggleLiveQuiz(content.quizId!, false)}
-                                                                        >
-                                                                            End Session
-                                                                        </Button>
-                                                                    </div>
+                                                        return (
+                                                            <div className="space-y-6">
+                                                                <div className="bg-math-purple/5 p-4 rounded-xl border border-math-purple/20">
+                                                                    <h3 className="text-lg font-bold text-text-primary mb-2">Try It Yourself Quiz</h3>
+                                                                    <p className="text-text-secondary text-sm">Test your understanding with this interactive quiz</p>
                                                                 </div>
-                                                            ) : (
-                                                                <div className="bg-bg-secondary/50 rounded-3xl p-10 border-2 border-math-purple/20 flex flex-col items-center justify-center text-center space-y-6">
-                                                                    <div className="w-16 h-16 bg-math-purple/10 rounded-2xl flex items-center justify-center">
-                                                                        <Trophy className="text-math-purple w-8 h-8" />
-                                                                    </div>
-                                                                    <div>
-                                                                        <h3 className="text-2xl font-bold text-text-primary">Interactive Practice Quiz</h3>
-                                                                        <p className="text-text-secondary mt-1">Challenge your students with a live competition</p>
-                                                                    </div>
 
-                                                                    <div className="grid grid-cols-2 gap-4 w-full max-w-md">
-                                                                        <div className="bg-white p-4 rounded-xl border border-border flex flex-col items-center">
-                                                                            <span className="text-2xl font-black text-math-purple">{content.quizQuestions?.length || 0}</span>
-                                                                            <span className="text-xs font-bold text-text-tertiary uppercase">Questions</span>
-                                                                        </div>
-                                                                        <div className="bg-white p-4 rounded-xl border border-border flex flex-col items-center">
-                                                                            <span className="text-2xl font-black text-focus-blue">Live</span>
-                                                                            <span className="text-xs font-bold text-text-tertiary uppercase">Session Mode</span>
-                                                                        </div>
-                                                                    </div>
+                                                                <AccessCodeCard
+                                                                    title={quiz.title}
+                                                                    accessCode={quiz.access_code}
+                                                                    isPublic={quiz.is_public}
+                                                                    onCopy={() => handleCopyQuizCode(quiz.title, quiz.access_code)}
+                                                                    onEdit={() => handleEditQuiz(quiz.id)}
+                                                                    onDelete={() => handleDeleteQuiz(quiz.id)}
+                                                                    onTogglePublic={() => {
+                                                                        // Toggle public status
+                                                                        supabase
+                                                                            .from('quizzes')
+                                                                            .update({ is_public: !quiz.is_public })
+                                                                            .eq('id', quiz.id)
+                                                                            .then(() => {
+                                                                                setLessonQuizzes(prev =>
+                                                                                    prev.map(q => q.id === quiz.id ? { ...q, is_public: !q.is_public } : q)
+                                                                                );
+                                                                                toast({
+                                                                                    title: quiz.is_public ? "Quiz Made Private" : "Quiz Made Public",
+                                                                                    description: quiz.is_public ? "Only you can see this quiz" : "Students can access this quiz"
+                                                                                });
+                                                                            });
+                                                                    }}
+                                                                    onToggleLive={() => handleToggleLiveQuiz(quiz.id, !quiz.is_live_session)}
+                                                                    onStartQuiz={() => {
+                                                                        // Navigate to quiz or start session
+                                                                        navigate(`/quiz/${quiz.id}`);
+                                                                    }}
+                                                                    isLiveSession={quiz.is_live_session}
+                                                                    liveStatus={quiz.live_status}
+                                                                    subject={quiz.subject}
+                                                                />
+                                                            </div>
+                                                        );
+                                                    })()}
 
-                                                                    {(user?.id === lesson?.createdBy) ? (
-                                                                        <Button
-                                                                            size="lg"
-                                                                            className="bg-math-purple hover:bg-math-purple/90 text-white px-10 h-14 rounded-2xl font-bold shadow-lg shadow-purple-900/20 transform hover:scale-105 transition-all text-lg"
-                                                                            onClick={() => handleToggleLiveQuiz(content.quizId!, true)}
-                                                                        >
-                                                                            Launch Live Quiz
-                                                                        </Button>
-                                                                    ) : (
-                                                                        <div className="p-4 bg-math-purple/5 border border-math-purple/20 rounded-xl">
-                                                                            <p className="text-math-purple font-bold italic">Waiting for teacher to start the session...</p>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    )}
 
                                                     {/* UNIVERSAL ENGAGE OVERHAUL */}
                                                     {content.type === "universal-engage" && content.universalEngage && (
@@ -1977,9 +2053,9 @@ const LessonRunnable: React.FC = () => {
                                             );
                                         })}
 
-                                        {/* Add Quiz Button if missing (Only for Teachers/Owners in Guided Practice Phase) */}
+                                        {/* Add Quiz Button if missing (Only for Teachers/Owners in Independent Practice Phase) */}
                                         {(user?.id === lesson?.createdBy) &&
-                                            PHASES[currentPhaseIndex] === 'guidedPractice' &&
+                                            PHASES[currentPhaseIndex] === 'independentPractice' &&
                                             !currentPhaseData?.content?.some(c => c.type === 'quiz') && (
                                                 <div className="pt-8">
                                                     <Button
