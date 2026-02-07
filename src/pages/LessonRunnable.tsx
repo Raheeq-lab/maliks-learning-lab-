@@ -22,6 +22,7 @@ import { CollaborativeMap } from '@/components/teacher/CollaborativeMap';
 import { PresentationActivity } from '@/components/teacher/PresentationActivity';
 import ThemeToggle from '@/components/ThemeToggle';
 import { InstructionalActivity } from '@/components/teacher/InstructionalActivity';
+import { useAuth } from '@/context/AuthContext';
 
 
 const PHASES = ['engage', 'model', 'guidedPractice', 'independentPractice', 'reflect'] as const;
@@ -30,6 +31,7 @@ const LessonRunnable: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { toast } = useToast();
+    const { user } = useAuth();
 
     const [lesson, setLesson] = useState<Lesson | null>(null);
     const [loading, setLoading] = useState(true);
@@ -70,6 +72,7 @@ const LessonRunnable: React.FC = () => {
     // Live Quiz Session State
     const [liveQuizSession, setLiveQuizSession] = useState<{ id: string, accessCode: string } | null>(null);
     const [isLaunchingQuiz, setIsLaunchingQuiz] = useState(false);
+    const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false);
 
     const carouselStationsFromContent = React.useMemo(() => {
         if (!lesson?.lessonStructure) return [];
@@ -249,6 +252,90 @@ const LessonRunnable: React.FC = () => {
             });
         } finally {
             setIsLaunchingQuiz(false);
+        }
+    };
+
+    const handleCreateQuizInline = async () => {
+        if (!lesson || isGeneratingQuiz) return;
+
+        const apiKey = localStorage.getItem('aiApiKey') || import.meta.env.VITE_GEMINI_API_KEY;
+        if (!apiKey) {
+            toast({
+                title: "API Key Required",
+                description: "Configure in Settings first.",
+                variant: "destructive"
+            });
+            return;
+        }
+
+        setIsGeneratingQuiz(true);
+        const config: AIConfig = { provider: 'gemini', apiKey };
+        const prompt = `Create a 5-question multiple choice quiz about "${lesson.topic || lesson.title}" for Grade ${lesson.gradeLevel}. 
+        Return ONLY a JSON object with a "questions" array. 
+        Each question must have: "text", "options" (array of 4 strings), and "correctOptionIndex" (0-3).
+        Format: { "questions": [{ "text": "...", "options": ["...", "...", "...", "..."], "correctOptionIndex": 0 }] }`;
+
+        try {
+            const response = await generateContent(config, prompt, 'text');
+            if (response.error) throw new Error(response.error);
+
+            let jsonStr = response.content.replace(/```json/g, '').replace(/```/g, '').trim();
+            const data = JSON.parse(jsonStr);
+            if (!data.questions || !Array.isArray(data.questions)) {
+                throw new Error("Invalid format from AI");
+            }
+
+            const questions = data.questions.map((q: any) => ({
+                ...q,
+                id: `q-${Date.now()}-${Math.random().toString(36).substring(7)}`
+            }));
+
+            // Prepare the updated lesson structure
+            const currentPhaseKey = PHASES[currentPhaseIndex];
+            const updatedStructure = { ...lesson.lessonStructure };
+            const currentPhaseData = updatedStructure[currentPhaseKey] || { content: [] };
+            const phaseContent = [...(currentPhaseData.content || [])];
+
+            // Add the quiz content block
+            phaseContent.push({
+                id: `quiz-${Date.now()}`,
+                type: 'quiz',
+                content: 'Interactive Quiz',
+                quizQuestions: questions
+            });
+
+            updatedStructure[currentPhaseKey] = {
+                ...currentPhaseData,
+                content: phaseContent
+            };
+
+            // Update Supabase
+            const { error } = await supabase
+                .from('lessons')
+                .update({ lesson_structure: updatedStructure })
+                .eq('id', id);
+
+            if (error) throw error;
+
+            setLesson({
+                ...lesson,
+                lessonStructure: updatedStructure
+            });
+
+            toast({
+                title: "Quiz Added!",
+                description: "A 5-question quiz has been added to this phase.",
+            });
+
+        } catch (error: any) {
+            console.error("Failed to create quiz inline:", error);
+            toast({
+                title: "Generation Failed",
+                description: "Could not add a quiz right now: " + error.message,
+                variant: "destructive"
+            });
+        } finally {
+            setIsGeneratingQuiz(false);
         }
     };
 
@@ -1071,6 +1158,24 @@ const LessonRunnable: React.FC = () => {
                                                 <h5 className="text-2xl font-bold text-text-primary">Mastery Achieved!</h5>
                                                 <p className="text-text-secondary">You've completed all levels of this challenge.</p>
                                                 <Button variant="ghost" className="text-math-purple font-bold" onClick={() => { setCurrentLevel(1); setLevelFeedback({}); }}>Reset Practice</Button>
+                                            </div>
+                                        )}
+
+                                        {/* Add Quiz Button if missing (Only for Teachers/Owners) */}
+                                        {(user?.id === lesson?.createdBy) && !currentPhaseData?.content?.some(c => c.type === 'quiz') && (
+                                            <div className="pt-8 mt-8 border-t border-math-purple/10">
+                                                <Button
+                                                    onClick={handleCreateQuizInline}
+                                                    disabled={isGeneratingQuiz}
+                                                    className="w-full h-16 bg-white border-2 border-dashed border-math-purple/30 text-math-purple hover:bg-math-purple/5 font-bold rounded-2xl flex items-center justify-center gap-3 transition-all group"
+                                                >
+                                                    {isGeneratingQuiz ? (
+                                                        <Loader2 className="animate-spin" />
+                                                    ) : (
+                                                        <Plus size={24} className="group-hover:scale-110 transition-transform" />
+                                                    )}
+                                                    <span>{isGeneratingQuiz ? "Generating Quiz Questions..." : "Add Interactive Quiz to this Phase"}</span>
+                                                </Button>
                                             </div>
                                         )}
                                     </div>
@@ -1978,6 +2083,24 @@ const LessonRunnable: React.FC = () => {
                                             </div>
                                         );
                                     })}
+
+                                    {/* Add Quiz Button if missing (Only for Teachers/Owners) */}
+                                    {(user?.id === lesson?.createdBy) && !currentPhaseData?.content?.some(c => c.type === 'quiz') && (
+                                        <div className="pt-8">
+                                            <Button
+                                                onClick={handleCreateQuizInline}
+                                                disabled={isGeneratingQuiz}
+                                                className="w-full h-16 bg-white border-2 border-dashed border-math-purple/30 text-math-purple hover:bg-math-purple/5 font-bold rounded-2xl flex items-center justify-center gap-3 transition-all group"
+                                            >
+                                                {isGeneratingQuiz ? (
+                                                    <Loader2 className="animate-spin" />
+                                                ) : (
+                                                    <Plus size={24} className="group-hover:scale-110 transition-transform" />
+                                                )}
+                                                <span>{isGeneratingQuiz ? "Generating Quiz Questions..." : "Add Interactive Quiz to this Phase"}</span>
+                                            </Button>
+                                        </div>
+                                    )}
                                 </div>
 
                             ) : (
