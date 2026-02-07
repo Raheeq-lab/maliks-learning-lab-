@@ -22,7 +22,6 @@ interface FlashcardsTabProps {
     flashcardSets: FlashcardSet[];
     onCreateSet: (set: FlashcardSet) => void;
     onUpdateSet: (set: FlashcardSet) => void;
-    onGenerateSet: () => void;
     onCopyCode: (code: string) => void;
     onDeleteSet: (id: string) => void;
     onTogglePublic: (id: string, isPublic: boolean) => void;
@@ -34,7 +33,6 @@ const FlashcardsTab: React.FC<FlashcardsTabProps> = ({
     flashcardSets,
     onCreateSet,
     onUpdateSet,
-    onGenerateSet,
     onCopyCode,
     onDeleteSet,
     onTogglePublic,
@@ -140,24 +138,12 @@ const FlashcardsTab: React.FC<FlashcardsTabProps> = ({
                 </div>
                 <div className="flex gap-3 w-full md:w-auto">
                     {/* Manual Create Button */}
-                    <div className="flex gap-3 w-full md:w-auto">
-                        <Button
-                            onClick={handleOpenCreateModal}
-                            className="flex-1 md:flex-none bg-bg-card hover:bg-math-purple/10 text-text-primary border border-border/50 font-bold shadow-sm px-5 py-6 rounded-xl transition-all hover:scale-105 flex items-center gap-2"
-                        >
-                            <Plus size={20} className="text-math-purple" /> Manual Create
-                        </Button>
-                        <Button
-                            onClick={onGenerateSet}
-                            className="flex-1 md:flex-none bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold shadow-lg shadow-orange-500/20 px-6 py-6 rounded-xl transition-all hover:scale-105 flex items-center gap-2"
-                        >
-                            <Sparkles size={20} /> AI Generator
-                        </Button>
-                    </div>
-
-                    {/* AI Generator Button - Optional/Or logic */}
-                    {/* We can decide if we want this button here or just let them go to the Generate tab manually. 
-                        Given user request for manual, let's keep manual prominent. */}
+                    <Button
+                        onClick={handleOpenCreateModal}
+                        className="flex-1 md:flex-none bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold shadow-lg shadow-orange-500/20 px-6 py-6 rounded-xl transition-all hover:scale-105 flex items-center gap-2"
+                    >
+                        <Plus size={20} /> Create New Set
+                    </Button>
                 </div>
             </div>
 
