@@ -966,208 +966,971 @@ const LessonRunnable: React.FC = () => {
                         </div>
 
                         <CardContent className="p-0">
-                            {/* SPECIAL ACTIVITY TYPE PRIORITY */}
-                            {(PHASES[currentPhaseIndex] === 'guidedPractice' && carouselStationsFromContent.length > 0) || currentPhaseData?.activityType === "carousel" ? (
-                                <CarouselActivity
-                                    stations={carouselStationsFromContent.length > 0 ? carouselStationsFromContent : (currentPhaseData?.content?.find((c) => c.type === 'carousel')?.carouselStations || [])}
-                                    topic={lesson?.topic || lesson?.title || "Lesson Topic"}
-                                />
-                            ) : (PHASES[currentPhaseIndex] === 'independentPractice' && scaffoldedLevelsFromContent.length > 0) || currentPhaseData?.activityType === "scaffolded" ? (
-                                <div className="space-y-6 p-8">
-                                    <div className="flex justify-between items-center bg-bg-secondary/30 p-4 rounded-xl border border-border">
-                                        <h4 className="font-bold text-xl text-text-primary">Practice Levels</h4>
-                                        <div className="flex gap-2">
-                                            {[1, 2, 3].map(level => (
-                                                <div
-                                                    key={level}
-                                                    className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm border-2 ${currentLevel === level ? 'bg-math-purple border-math-purple text-white shadow-md' : levelFeedback[level]?.isCorrect ? 'bg-success-green/20 border-success-green text-success-green' : 'bg-white border-gray-200 text-gray-400'}`}
-                                                >
-                                                    {level}
+                            <div className="space-y-10">
+                                {/* 1. Carousel Activity */}
+                                {((PHASES[currentPhaseIndex] === 'guidedPractice' && carouselStationsFromContent.length > 0) || currentPhaseData?.activityType === "carousel") && (
+                                    <CarouselActivity
+                                        stations={carouselStationsFromContent.length > 0 ? carouselStationsFromContent : (currentPhaseData?.content?.find((c) => c.type === 'carousel')?.carouselStations || [])}
+                                        topic={lesson?.topic || lesson?.title || "Lesson Topic"}
+                                    />
+                                )}
+
+                                {/* 2. Scaffolded Levels */}
+                                {((PHASES[currentPhaseIndex] === 'independentPractice' && scaffoldedLevelsFromContent.length > 0) || currentPhaseData?.activityType === "scaffolded") && (
+                                    <div className="space-y-6 p-8">
+                                        <div className="flex justify-between items-center bg-bg-secondary/30 p-4 rounded-xl border border-border">
+                                            <h4 className="font-bold text-xl text-text-primary">Practice Levels</h4>
+                                            <div className="flex gap-2">
+                                                {[1, 2, 3].map(level => (
+                                                    <div
+                                                        key={level}
+                                                        className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm border-2 ${currentLevel === level ? 'bg-math-purple border-math-purple text-white shadow-md' : levelFeedback[level]?.isCorrect ? 'bg-success-green/20 border-success-green text-success-green' : 'bg-white border-gray-200 text-gray-400'}`}
+                                                    >
+                                                        {level}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="min-h-[250px] p-8 bg-bg-card rounded-2xl border-2 border-math-purple/10 shadow-sm animate-in fade-in slide-in-from-right-4 duration-500">
+                                            {scaffoldedLevelsFromContent.length > 0 ? (
+                                                scaffoldedLevelsFromContent.filter(l => l.level === currentLevel).map((levelData, i) => (
+                                                    <div key={i} className="space-y-6">
+                                                        <Badge className="bg-math-purple/10 text-math-purple border-none font-bold">Level {currentLevel}: {currentLevel === 1 ? 'Foundation' : currentLevel === 2 ? 'Standard' : 'Challenge'}</Badge>
+                                                        {levelData.imageUrl ? (
+                                                            <div className="relative group rounded-xl overflow-hidden border border-gray-100 bg-bg-secondary/50 p-2">
+                                                                <img
+                                                                    src={levelData.imageUrl}
+                                                                    alt={`Level ${levelData.level} visual`}
+                                                                    className="max-h-[300px] w-auto mx-auto object-contain rounded-lg"
+                                                                />
+                                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                                    <Button
+                                                                        variant="secondary"
+                                                                        size="sm"
+                                                                        className="bg-white/90 text-math-purple hover:bg-white font-bold"
+                                                                        onClick={() => {
+                                                                            setTargetLevelForUpload(currentLevel);
+                                                                            setTimeout(() => scaffoldedImageInputRef.current?.click(), 100);
+                                                                        }}
+                                                                    >
+                                                                        <ImageIcon size={16} className="mr-2" />
+                                                                        Change Photo
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="border-2 border-dashed border-border rounded-xl p-8 flex flex-col items-center justify-center text-center space-y-3 hover:bg-bg-secondary/50 transition-all">
+                                                                <div className="bg-bg-secondary p-3 rounded-full text-text-tertiary">
+                                                                    <ImageIcon size={32} />
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-sm font-medium text-text-secondary">No visual prompt for Level {currentLevel}</p>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        className="mt-2 text-math-purple hover:bg-math-purple/10 font-bold"
+                                                                        onClick={() => {
+                                                                            setTargetLevelForUpload(currentLevel);
+                                                                            setTimeout(() => scaffoldedImageInputRef.current?.click(), 100);
+                                                                        }}
+                                                                    >
+                                                                        <Plus size={16} className="mr-1" />
+                                                                        Add Photo
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        <h5 className="text-2xl font-bold text-text-primary leading-tight">{levelData.question}</h5>
+
+                                                        {levelFeedback[currentLevel]?.showHint && levelData.hint && (
+                                                            <div className="p-4 bg-warning-amber-light/20 border border-warning-amber/30 rounded-xl flex items-start gap-3 animate-in slide-in-from-top-2">
+                                                                <Zap size={20} className="text-warning-amber mt-1" />
+                                                                <p className="text-text-primary italic"><span className="font-bold">Hint:</span> {levelData.hint}</p>
+                                                            </div>
+                                                        )}
+
+                                                        <div className="flex gap-4 pt-4">
+                                                            <Button
+                                                                className="h-12 flex-1 bg-math-purple hover:bg-math-purple/90 shadow-md transform active:scale-95 transition-all text-white"
+                                                                onClick={() => {
+                                                                    setLevelFeedback(prev => ({ ...prev, [currentLevel]: { ...prev[currentLevel], isCorrect: true, showHint: false } }));
+                                                                    toast({ title: "Correct!", description: `Great work on Level ${currentLevel}!` });
+                                                                    if (currentLevel < 3) setTimeout(() => setCurrentLevel(prev => prev + 1), 1500);
+                                                                }}
+                                                            >
+                                                                Verify Solution
+                                                            </Button>
+                                                            {levelData.hint && !levelFeedback[currentLevel]?.showHint && (
+                                                                <Button
+                                                                    variant="outline"
+                                                                    className="h-12 px-6 border-warning-amber text-warning-amber hover:bg-warning-amber-light/10"
+                                                                    onClick={() => setLevelFeedback(prev => ({ ...prev, [currentLevel]: { ...prev[currentLevel], showHint: true } }))}
+                                                                >
+                                                                    Need a Hint?
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                currentPhaseData?.content?.filter(c => c.type === 'scaffolded').flatMap(c => c.scaffoldedLevels || []).filter(l => l.level === currentLevel).map((levelData, i) => (
+                                                    <div key={i} className="space-y-6">
+                                                        <Badge className="bg-math-purple/10 text-math-purple border-none font-bold">Level {currentLevel}: {currentLevel === 1 ? 'Foundation' : currentLevel === 2 ? 'Standard' : 'Challenge'}</Badge>
+                                                        {levelData.imageUrl ? (
+                                                            <div className="relative group rounded-xl overflow-hidden border border-gray-100 bg-bg-secondary/50 p-2">
+                                                                <img
+                                                                    src={levelData.imageUrl}
+                                                                    alt={`Level ${levelData.level} visual`}
+                                                                    className="max-h-[300px] w-auto mx-auto object-contain rounded-lg"
+                                                                />
+                                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                                    <Button
+                                                                        variant="secondary"
+                                                                        size="sm"
+                                                                        className="bg-white/90 text-math-purple hover:bg-white font-bold"
+                                                                        onClick={() => {
+                                                                            setTargetLevelForUpload(currentLevel);
+                                                                            setTimeout(() => scaffoldedImageInputRef.current?.click(), 100);
+                                                                        }}
+                                                                    >
+                                                                        <ImageIcon size={16} className="mr-2" />
+                                                                        Change Photo
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="border-2 border-dashed border-border rounded-xl p-8 flex flex-col items-center justify-center text-center space-y-3 hover:bg-bg-secondary/50 transition-all">
+                                                                <div className="bg-bg-secondary p-3 rounded-full text-text-tertiary">
+                                                                    <ImageIcon size={32} />
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-sm font-medium text-text-secondary">No visual prompt for Level {currentLevel}</p>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        className="mt-2 text-math-purple hover:bg-math-purple/10 font-bold"
+                                                                        onClick={() => {
+                                                                            setTargetLevelForUpload(currentLevel);
+                                                                            setTimeout(() => scaffoldedImageInputRef.current?.click(), 100);
+                                                                        }}
+                                                                    >
+                                                                        <Plus size={16} className="mr-1" />
+                                                                        Add Photo
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        <h5 className="text-2xl font-bold text-text-primary leading-tight">{levelData.question}</h5>
+
+                                                        {levelFeedback[currentLevel]?.showHint && levelData.hint && (
+                                                            <div className="p-4 bg-warning-amber-light/20 border border-warning-amber/30 rounded-xl flex items-start gap-3 animate-in slide-in-from-top-2">
+                                                                <Zap size={20} className="text-warning-amber mt-1" />
+                                                                <p className="text-text-primary italic"><span className="font-bold">Hint:</span> {levelData.hint}</p>
+                                                            </div>
+                                                        )}
+
+                                                        <div className="flex gap-4 pt-4">
+                                                            <Button
+                                                                className="h-12 flex-1 bg-math-purple hover:bg-math-purple/90 shadow-md transform active:scale-95 transition-all text-white"
+                                                                onClick={() => {
+                                                                    setLevelFeedback(prev => ({ ...prev, [currentLevel]: { ...prev[currentLevel], isCorrect: true, showHint: false } }));
+                                                                    toast({ title: "Correct!", description: `Great work on Level ${currentLevel}!` });
+                                                                    if (currentLevel < 3) setTimeout(() => setCurrentLevel(prev => prev + 1), 1500);
+                                                                }}
+                                                            >
+                                                                Verify Solution
+                                                            </Button>
+                                                            {levelData.hint && !levelFeedback[currentLevel]?.showHint && (
+                                                                <Button
+                                                                    variant="outline"
+                                                                    className="h-12 px-6 border-warning-amber text-warning-amber hover:bg-warning-amber-light/10"
+                                                                    onClick={() => setLevelFeedback(prev => ({ ...prev, [currentLevel]: { ...prev[currentLevel], showHint: true } }))}
+                                                                >
+                                                                    Need a Hint?
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                            {levelFeedback[3]?.isCorrect && (
+                                                <div className="h-full flex flex-col items-center justify-center text-center space-y-4 py-8 animate-in zoom-in-95">
+                                                    <div className="bg-success-green/10 p-6 rounded-full text-success-green">
+                                                        <Star size={64} fill="currentColor" />
+                                                    </div>
+                                                    <h5 className="text-2xl font-bold text-text-primary">Mastery Achieved!</h5>
+                                                    <p className="text-text-secondary">You've completed all levels of this challenge.</p>
+                                                    <Button variant="ghost" className="text-math-purple font-bold" onClick={() => { setCurrentLevel(1); setLevelFeedback({}); }}>Reset Practice</Button>
                                                 </div>
-                                            ))}
+                                            )}
                                         </div>
                                     </div>
+                                )}
 
-                                    <div className="min-h-[250px] p-8 bg-bg-card rounded-2xl border-2 border-math-purple/10 shadow-sm animate-in fade-in slide-in-from-right-4 duration-500">
-                                        {scaffoldedLevelsFromContent.length > 0 ? (
-                                            scaffoldedLevelsFromContent.filter(l => l.level === currentLevel).map((levelData, i) => (
-                                                <div key={i} className="space-y-6">
-                                                    <Badge className="bg-math-purple/10 text-math-purple border-none font-bold">Level {currentLevel}: {currentLevel === 1 ? 'Foundation' : currentLevel === 2 ? 'Standard' : 'Challenge'}</Badge>
-                                                    {/* Image block moved to top */}
-
-                                                    {levelData.imageUrl ? (
-                                                        <div className="relative group rounded-xl overflow-hidden border border-gray-100 bg-bg-secondary/50 p-2">
-                                                            <img
-                                                                src={levelData.imageUrl}
-                                                                alt={`Level ${levelData.level} visual`}
-                                                                className="max-h-[300px] w-auto mx-auto object-contain rounded-lg"
-                                                            />
-                                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                                <Button
-                                                                    variant="secondary"
-                                                                    size="sm"
-                                                                    className="bg-white/90 text-math-purple hover:bg-white font-bold"
-                                                                    onClick={() => {
-                                                                        setTargetLevelForUpload(currentLevel);
-                                                                        setTimeout(() => scaffoldedImageInputRef.current?.click(), 100);
-                                                                    }}
-                                                                >
-                                                                    <ImageIcon size={16} className="mr-2" />
-                                                                    Change Photo
-                                                                </Button>
-                                                            </div>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="border-2 border-dashed border-border rounded-xl p-8 flex flex-col items-center justify-center text-center space-y-3 hover:bg-bg-secondary/50 transition-all">
-                                                            <div className="bg-bg-secondary p-3 rounded-full text-text-tertiary">
-                                                                <ImageIcon size={32} />
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-sm font-medium text-text-secondary">No visual prompt for Level {currentLevel}</p>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className="mt-2 text-math-purple hover:bg-math-purple/10 font-bold"
-                                                                    onClick={() => {
-                                                                        setTargetLevelForUpload(currentLevel);
-                                                                        setTimeout(() => scaffoldedImageInputRef.current?.click(), 100);
-                                                                    }}
-                                                                >
-                                                                    <Plus size={16} className="mr-1" />
-                                                                    Add Photo
-                                                                </Button>
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    <h5 className="text-2xl font-bold text-text-primary leading-tight">{levelData.question}</h5>
-
-                                                    {levelFeedback[currentLevel]?.showHint && levelData.hint && (
-                                                        <div className="p-4 bg-warning-amber-light/20 border border-warning-amber/30 rounded-xl flex items-start gap-3 animate-in slide-in-from-top-2">
-                                                            <Zap size={20} className="text-warning-amber mt-1" />
-                                                            <p className="text-text-primary italic"><span className="font-bold">Hint:</span> {levelData.hint}</p>
-                                                        </div>
-                                                    )}
-
-                                                    <div className="flex gap-4 pt-4">
-                                                        <Button
-                                                            className="h-12 flex-1 bg-math-purple hover:bg-math-purple/90 shadow-md transform active:scale-95 transition-all text-white"
-                                                            onClick={() => {
-                                                                setLevelFeedback(prev => ({ ...prev, [currentLevel]: { ...prev[currentLevel], isCorrect: true, showHint: false } }));
-                                                                toast({ title: "Correct!", description: `Great work on Level ${currentLevel}!` });
-                                                                if (currentLevel < 3) setTimeout(() => setCurrentLevel(prev => prev + 1), 1500);
-                                                            }}
-                                                        >
-                                                            Verify Solution
-                                                        </Button>
-                                                        {levelData.hint && !levelFeedback[currentLevel]?.showHint && (
-                                                            <Button
-                                                                variant="outline"
-                                                                className="h-12 px-6 border-warning-amber text-warning-amber hover:bg-warning-amber-light/10"
-                                                                onClick={() => setLevelFeedback(prev => ({ ...prev, [currentLevel]: { ...prev[currentLevel], showHint: true } }))}
-                                                            >
-                                                                Need a Hint?
-                                                            </Button>
-                                                        )}
-                                                    </div>
+                                {/* 3. Collaborative Map */}
+                                {currentPhaseData?.activityType === "collaborative-map" && (
+                                    <div className="animate-in fade-in duration-700">
+                                        <div className="bg-bg-secondary p-4 rounded-xl mb-4 border border-border">
+                                            <div className="flex items-start gap-3">
+                                                <div className="bg-focus-blue/10 p-2 rounded-lg text-focus-blue">
+                                                    <BrainCircuit size={24} />
                                                 </div>
-                                            ))
-                                        ) : (
-                                            currentPhaseData?.content?.filter(c => c.type === 'scaffolded').flatMap(c => c.scaffoldedLevels || []).filter(l => l.level === currentLevel).map((levelData, i) => (
-                                                <div key={i} className="space-y-6">
-                                                    <Badge className="bg-math-purple/10 text-math-purple border-none font-bold">Level {currentLevel}: {currentLevel === 1 ? 'Foundation' : currentLevel === 2 ? 'Standard' : 'Challenge'}</Badge>
-                                                    {levelData.imageUrl ? (
-                                                        <div className="relative group rounded-xl overflow-hidden border border-gray-100 bg-bg-secondary/50 p-2">
-                                                            <img
-                                                                src={levelData.imageUrl}
-                                                                alt={`Level ${levelData.level} visual`}
-                                                                className="max-h-[300px] w-auto mx-auto object-contain rounded-lg"
-                                                            />
-                                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                                <Button
-                                                                    variant="secondary"
-                                                                    size="sm"
-                                                                    className="bg-white/90 text-math-purple hover:bg-white font-bold"
-                                                                    onClick={() => {
-                                                                        setTargetLevelForUpload(currentLevel);
-                                                                        setTimeout(() => scaffoldedImageInputRef.current?.click(), 100);
-                                                                    }}
-                                                                >
-                                                                    <ImageIcon size={16} className="mr-2" />
-                                                                    Change Photo
-                                                                </Button>
-                                                            </div>
-                                                        </div>
-                                                    ) : (
-                                                        <div className="border-2 border-dashed border-border rounded-xl p-8 flex flex-col items-center justify-center text-center space-y-3 hover:bg-bg-secondary/50 transition-all">
-                                                            <div className="bg-bg-secondary p-3 rounded-full text-text-tertiary">
-                                                                <ImageIcon size={32} />
-                                                            </div>
-                                                            <div>
-                                                                <p className="text-sm font-medium text-text-secondary">No visual prompt for Level {currentLevel}</p>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className="mt-2 text-math-purple hover:bg-math-purple/10 font-bold"
-                                                                    onClick={() => {
-                                                                        setTargetLevelForUpload(currentLevel);
-                                                                        setTimeout(() => scaffoldedImageInputRef.current?.click(), 100);
-                                                                    }}
-                                                                >
-                                                                    <Plus size={16} className="mr-1" />
-                                                                    Add Photo
-                                                                </Button>
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    <h5 className="text-2xl font-bold text-text-primary leading-tight">{levelData.question}</h5>
-
-                                                    {levelFeedback[currentLevel]?.showHint && levelData.hint && (
-                                                        <div className="p-4 bg-warning-amber-light/20 border border-warning-amber/30 rounded-xl flex items-start gap-3 animate-in slide-in-from-top-2">
-                                                            <Zap size={20} className="text-warning-amber mt-1" />
-                                                            <p className="text-text-primary italic"><span className="font-bold">Hint:</span> {levelData.hint}</p>
-                                                        </div>
-                                                    )}
-
-                                                    <div className="flex gap-4 pt-4">
-                                                        <Button
-                                                            className="h-12 flex-1 bg-math-purple hover:bg-math-purple/90 shadow-md transform active:scale-95 transition-all text-white"
-                                                            onClick={() => {
-                                                                setLevelFeedback(prev => ({ ...prev, [currentLevel]: { ...prev[currentLevel], isCorrect: true, showHint: false } }));
-                                                                toast({ title: "Correct!", description: `Great work on Level ${currentLevel}!` });
-                                                                if (currentLevel < 3) setTimeout(() => setCurrentLevel(prev => prev + 1), 1500);
-                                                            }}
-                                                        >
-                                                            Verify Solution
-                                                        </Button>
-                                                        {levelData.hint && !levelFeedback[currentLevel]?.showHint && (
-                                                            <Button
-                                                                variant="outline"
-                                                                className="h-12 px-6 border-warning-amber text-warning-amber hover:bg-warning-amber-light/10"
-                                                                onClick={() => setLevelFeedback(prev => ({ ...prev, [currentLevel]: { ...prev[currentLevel], showHint: true } }))}
-                                                            >
-                                                                Need a Hint?
-                                                            </Button>
-                                                        )}
-                                                    </div>
+                                                <div>
+                                                    <h3 className="font-bold text-lg text-text-primary">Collaborative Concept Mapping</h3>
+                                                    <p className="text-text-secondary text-sm">
+                                                        "Let's build a map of what we know about <strong>{lesson?.topic || lesson?.title}</strong>.
+                                                        We'll start with key ideas, then draw connections, add examples, and finally note our questions."
+                                                    </p>
                                                 </div>
-                                            ))
-                                        )}
-                                        {levelFeedback[3]?.isCorrect && (
-                                            <div className="h-full flex flex-col items-center justify-center text-center space-y-4 py-8 animate-in zoom-in-95">
-                                                <div className="bg-success-green/10 p-6 rounded-full text-success-green">
-                                                    <Star size={64} fill="currentColor" />
-                                                </div>
-                                                <h5 className="text-2xl font-bold text-text-primary">Mastery Achieved!</h5>
-                                                <p className="text-text-secondary">You've completed all levels of this challenge.</p>
-                                                <Button variant="ghost" className="text-math-purple font-bold" onClick={() => { setCurrentLevel(1); setLevelFeedback({}); }}>Reset Practice</Button>
                                             </div>
-                                        )}
+                                        </div>
+                                        <CollaborativeMap topic={lesson?.topic || lesson?.title || "Lesson Topic"} />
+                                    </div>
+                                )}
+
+                                {/* 4. Reflection Prompts */}
+                                {(PHASES[currentPhaseIndex] === 'reflect' && reflectionPromptsFromContent.length > 0) && (
+                                    <div className="space-y-8 p-8">
+                                        <div className="bg-math-purple/5 p-6 rounded-2xl border border-math-purple/20">
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <div className="bg-math-purple p-2.5 rounded-xl text-white shadow-lg shadow-purple-900/10">
+                                                    <Brain size={24} />
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-bold text-xl text-text-primary">Final Reflection</h3>
+                                                    <p className="text-text-secondary text-sm">Consolidate your learning before the lesson ends</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-6 mt-8">
+                                                {reflectionPromptsFromContent.map((item, i) => (
+                                                    <div key={i} className="space-y-3 p-6 bg-bg-card rounded-xl border border-border shadow-sm group hover:border-math-purple/30 transition-all">
+                                                        <h5 className="font-bold text-lg text-text-primary">
+                                                            <span className="text-math-purple mr-2">{i + 1}.</span>
+                                                            {item.prompt}
+                                                        </h5>
+                                                        <textarea
+                                                            placeholder={item.response}
+                                                            className="w-full h-24 p-4 rounded-lg bg-bg-secondary/50 border border-border focus:border-math-purple focus:ring-1 focus:ring-math-purple/20 transition-all outline-none text-text-primary resize-none"
+                                                        />
+                                                    </div>
+                                                ))}
+
+                                                <Button
+                                                    className="w-full h-12 bg-math-purple hover:bg-math-purple/90 text-white font-bold rounded-xl shadow-lg shadow-purple-900/10"
+                                                    onClick={() => toast({ title: "Reflection Saved", description: "Your thoughts have been recorded!" })}
+                                                >
+                                                    Submit Reflection
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* 5. Generic Content Loop */}
+                                {currentPhaseData?.content && currentPhaseData.content.length > 0 && (
+                                    <div className="space-y-8">
+                                        {currentPhaseData.content.map((content, idx) => {
+                                            // Skip JSON blocks that have been consolidated into special activities
+                                            const isJsonActivity = content.content?.trim().startsWith('{') &&
+                                                (content.content.includes('"station"') ||
+                                                    content.content.includes('"level"') ||
+                                                    content.content.includes('"prompt"'));
+
+                                            if (isJsonActivity) return null;
+                                            if (content.type === 'scaffolded' && scaffoldedLevelsFromContent.length > 0) return null;
+                                            if (content.type === 'carousel' && carouselStationsFromContent.length > 0) return null;
+
+                                            return (
+                                                <div
+                                                    key={idx}
+                                                    className={`
+                                                    relative bg-bg-card p-8 rounded-2xl shadow-sm border border-border transition-all hover:shadow-md
+                                                    border-l-[6px] ${phaseColors.border}
+                                                `}
+                                                >
+
+                                                    {/* TEXT CONTENT */}
+                                                    {content.type === "text" && (
+                                                        <div className="prose prose-lg max-w-none text-text-primary leading-relaxed">
+                                                            {content.content}
+                                                        </div>
+                                                    )}
+
+                                                    {/* IMAGE CONTENT */}
+                                                    {content.type === "image" && content.imageUrl && (
+                                                        <div className="space-y-4">
+                                                            <div className="rounded-xl overflow-hidden border border-gray-100 bg-bg-secondary/50 p-2">
+                                                                <img
+                                                                    src={content.imageUrl}
+                                                                    alt={content.content || "Lesson image"}
+                                                                    className="max-h-[500px] w-auto mx-auto object-contain rounded-lg"
+                                                                />
+                                                            </div>
+                                                            {content.content && (
+                                                                <p className="text-center text-text-secondary italic text-lg bg-bg-secondary/30 py-2 rounded-lg">
+                                                                    {content.content}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    )}
+
+                                                    {/* VIDEO CONTENT */}
+                                                    {content.type === "video" && (
+                                                        <div className="space-y-4">
+                                                            <div className="relative group cursor-pointer overflow-hidden rounded-xl bg-gray-900 aspect-video flex items-center justify-center">
+                                                                <div className="absolute inset-0 opacity-60 bg-[url('https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1000&auto=format&fit=crop')] bg-cover bg-center"></div>
+                                                                <div className="relative z-10 bg-white/10 backdrop-blur-sm p-4 rounded-full border border-white/20 group-hover:scale-110 transition-transform duration-300">
+                                                                    <Play size={40} className="text-white fill-white ml-2" />
+                                                                </div>
+                                                                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+                                                                    <p className="text-white font-bold truncate">{content.fileName || "Video Resource"}</p>
+                                                                </div>
+                                                            </div>
+                                                            {content.content && <p className="text-text-primary text-lg">{content.content}</p>}
+                                                        </div>
+                                                    )}
+
+                                                    {/* QUIZ CONTENT */}
+                                                    {content.type === "quiz" && (
+                                                        <div className="space-y-8">
+                                                            {liveQuizSession ? (
+                                                                <div className="bg-bg-card rounded-3xl border-4 border-math-purple p-10 flex flex-col items-center justify-center text-center shadow-2xl animate-in zoom-in duration-500">
+                                                                    <div className="w-20 h-20 bg-math-purple/10 rounded-full flex items-center justify-center mb-6">
+                                                                        <Sparkles className="text-math-purple w-12 h-12 animate-pulse" />
+                                                                    </div>
+                                                                    <h3 className="text-3xl font-black text-text-primary mb-2">Live Quiz Active!</h3>
+                                                                    <p className="text-text-secondary text-lg mb-8">Tell your students to join at <span className="font-bold text-math-purple">Raheeq's Learning Lab</span></p>
+
+                                                                    <div className="bg-bg-secondary p-8 rounded-2xl border-2 border-dashed border-math-purple/30 mb-8 w-full max-w-md">
+                                                                        <p className="text-sm font-bold text-text-tertiary uppercase tracking-widest mb-4">Access Code</p>
+                                                                        <div className="text-6xl md:text-8xl font-black text-math-purple tracking-tighter">
+                                                                            {liveQuizSession.accessCode}
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div className="flex gap-4">
+                                                                        <Button
+                                                                            className="bg-math-purple hover:bg-math-purple/90 text-white px-8 h-12 rounded-xl font-bold"
+                                                                            onClick={() => navigate(`/performance?quizId=${content.quizId}&live=true`)}
+                                                                        >
+                                                                            View Live Results
+                                                                        </Button>
+                                                                        <Button
+                                                                            variant="outline"
+                                                                            className="border-error-coral text-error-coral hover:bg-error-coral/10 px-8 h-12 rounded-xl font-bold"
+                                                                            onClick={() => handleToggleLiveQuiz(content.quizId!, false)}
+                                                                        >
+                                                                            End Session
+                                                                        </Button>
+                                                                    </div>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="bg-bg-secondary/50 rounded-3xl p-10 border-2 border-math-purple/20 flex flex-col items-center justify-center text-center space-y-6">
+                                                                    <div className="w-16 h-16 bg-math-purple/10 rounded-2xl flex items-center justify-center">
+                                                                        <Trophy className="text-math-purple w-8 h-8" />
+                                                                    </div>
+                                                                    <div>
+                                                                        <h3 className="text-2xl font-bold text-text-primary">Interactive Practice Quiz</h3>
+                                                                        <p className="text-text-secondary mt-1">Challenge your students with a live competition</p>
+                                                                    </div>
+
+                                                                    <div className="grid grid-cols-2 gap-4 w-full max-w-md">
+                                                                        <div className="bg-white p-4 rounded-xl border border-border flex flex-col items-center">
+                                                                            <span className="text-2xl font-black text-math-purple">{content.quizQuestions?.length || 0}</span>
+                                                                            <span className="text-xs font-bold text-text-tertiary uppercase">Questions</span>
+                                                                        </div>
+                                                                        <div className="bg-white p-4 rounded-xl border border-border flex flex-col items-center">
+                                                                            <span className="text-2xl font-black text-focus-blue">Live</span>
+                                                                            <span className="text-xs font-bold text-text-tertiary uppercase">Session Mode</span>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {(user?.id === lesson?.createdBy) ? (
+                                                                        <Button
+                                                                            size="lg"
+                                                                            className="bg-math-purple hover:bg-math-purple/90 text-white px-10 h-14 rounded-2xl font-bold shadow-lg shadow-purple-900/20 transform hover:scale-105 transition-all text-lg"
+                                                                            onClick={() => handleToggleLiveQuiz(content.quizId!, true)}
+                                                                        >
+                                                                            Launch Live Quiz
+                                                                        </Button>
+                                                                    ) : (
+                                                                        <div className="p-4 bg-math-purple/5 border border-math-purple/20 rounded-xl">
+                                                                            <p className="text-math-purple font-bold italic">Waiting for teacher to start the session...</p>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+
+                                                    {/* UNIVERSAL ENGAGE OVERHAUL */}
+                                                    {content.type === "universal-engage" && content.universalEngage && (
+                                                        <div className="animate-in fade-in slide-in-from-bottom-6 duration-1000">
+                                                            <div className="mb-10 text-center">
+                                                                <div className="inline-flex items-center gap-2 px-6 py-2 bg-[#FF6B35]/10 dark:bg-orange-500/10 rounded-full border border-[#FF6B35]/20 dark:border-orange-500/20 mb-4">
+                                                                    <div className="w-2.5 h-2.5 bg-[#FF6B35] dark:bg-orange-500 rounded-full animate-pulse" />
+                                                                    <span className="text-sm font-black text-[#FF6B35] dark:text-orange-500 uppercase tracking-widest">Active Lesson Hook</span>
+                                                                </div>
+                                                                <h2 className="text-4xl md:text-5xl font-black text-text-primary tracking-tight leading-tight">
+                                                                    Ready to <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B35] to-[#FF4500]">Ignite Your Curiosity?</span>
+                                                                </h2>
+                                                            </div>
+
+                                                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                                                                <div className="lg:col-span-12 flex flex-col gap-8">
+                                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                                                        <div className="bg-bg-card p-6 rounded-2xl border-2 border-[#FF6B35]/20 dark:border-orange-500/20 shadow-xl overflow-hidden relative group">
+                                                                            <div className="absolute top-0 right-0 p-3 transform rotate-12 opacity-10 group-hover:rotate-0 transition-transform">
+                                                                                <Eye size={80} className="text-[#FF6B35]" />
+                                                                            </div>
+                                                                            <h3 className="text-xl font-black text-[#FF6B35] dark:text-orange-500 mb-4 uppercase tracking-tighter flex items-center gap-2">
+                                                                                <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#FF6B35] text-white text-sm">1</span>
+                                                                                Visual Hook
+                                                                            </h3>
+                                                                            {content.universalEngage.imageUrl ? (
+                                                                                <div className="space-y-4">
+                                                                                    <div className="relative group rounded-xl overflow-hidden border border-gray-100 bg-bg-secondary/50 p-2">
+                                                                                        <img
+                                                                                            src={content.universalEngage.imageUrl}
+                                                                                            alt="Visual Lesson Hook"
+                                                                                            className="max-h-[300px] w-auto mx-auto object-contain rounded-lg shadow-inner"
+                                                                                        />
+                                                                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                                                            <Button
+                                                                                                variant="secondary"
+                                                                                                size="sm"
+                                                                                                className="bg-white/90 text-[#FF6B35] hover:bg-white font-bold"
+                                                                                                onClick={() => {
+                                                                                                    setTimeout(() => engageImageInputRef.current?.click(), 100);
+                                                                                                }}
+                                                                                            >
+                                                                                                <ImageIcon size={16} className="mr-2" />
+                                                                                                Change Photo
+                                                                                            </Button>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            ) : (
+                                                                                <div className="h-[250px] border-4 border-dashed border-[#FF6B35]/10 dark:border-orange-500/10 rounded-2xl flex flex-col items-center justify-center text-center p-6 bg-bg-secondary/30 group-hover:border-[#FF6B35]/30 transition-all">
+                                                                                    <div className="w-16 h-16 bg-[#FF6B35]/5 dark:bg-orange-500/5 rounded-full flex items-center justify-center mb-4 text-[#FF6B35]/40 leading-none">
+                                                                                        <ImageIcon size={40} />
+                                                                                    </div>
+                                                                                    <p className="text-[#FF6B35]/60 font-bold italic mb-4">"A picture is worth a thousand questions!"</p>
+                                                                                    <div className="flex gap-2">
+                                                                                        <Button
+                                                                                            variant="outline"
+                                                                                            size="sm"
+                                                                                            className="border-[#FF6B35] text-[#FF6B35] hover:bg-[#FF6B35]/10 font-bold"
+                                                                                            onClick={() => engageImageInputRef.current?.click()}
+                                                                                        >
+                                                                                            <Plus size={16} className="mr-1" />
+                                                                                            Select Photo
+                                                                                        </Button>
+                                                                                        <Button
+                                                                                            size="sm"
+                                                                                            className="bg-[#FF6B35] hover:bg-orange-600 text-white font-bold"
+                                                                                            onClick={() => handleForgeVisuals(currentPhaseKey)}
+                                                                                        >
+                                                                                            <Sparkles size={16} className="mr-1" />
+                                                                                            AI Forge
+                                                                                        </Button>
+                                                                                    </div>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+
+                                                                        <div className="bg-bg-card p-6 rounded-2xl border-2 border-math-purple/20 shadow-xl overflow-hidden relative group">
+                                                                            <div className="absolute top-0 right-0 p-3 transform -rotate-12 opacity-10 group-hover:rotate-0 transition-transform">
+                                                                                <Lightbulb size={80} className="text-math-purple" />
+                                                                            </div>
+                                                                            <h3 className="text-xl font-black text-math-purple mb-4 uppercase tracking-tighter flex items-center gap-2">
+                                                                                <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-math-purple text-white text-sm">2</span>
+                                                                                The Big Question
+                                                                            </h3>
+                                                                            <div className="bg-math-purple/5 p-6 rounded-xl border border-math-purple/10 flex flex-col items-center justify-center text-center min-h-[200px]">
+                                                                                <h4 className="text-2xl font-black text-text-primary leading-tight italic">
+                                                                                    "{content.universalEngage.hookQuestion}"
+                                                                                </h4>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                                                        <div className="bg-[#FF6B35]/5 dark:bg-orange-500/5 p-8 rounded-3xl border border-dashed border-[#FF6B35]/30 dark:border-orange-500/30">
+                                                                            <h3 className="text-xl font-black text-[#FF6B35] dark:text-orange-500 mb-6 uppercase tracking-tighter flex items-center gap-3">
+                                                                                <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-[#FF6B35] text-white text-sm">3</span>
+                                                                                Step 1: Notice & Wonder
+                                                                            </h3>
+                                                                            <div className="space-y-4">
+                                                                                <div>
+                                                                                    <label className="font-bold text-text-primary block mb-2">What do you notice? (Facts/Observations)</label>
+                                                                                    <textarea
+                                                                                        value={universalEngageResponses.notice}
+                                                                                        onChange={(e) => setUniversalEngageResponses(prev => ({ ...prev, notice: e.target.value }))}
+                                                                                        className="w-full p-4 rounded-xl border border-border focus:border-[#FF6B35] focus:dark:border-orange-500 outline-none shadow-sm bg-bg-secondary text-text-primary h-24 resize-none"
+                                                                                        placeholder="I see... / I notice that..."
+                                                                                    />
+                                                                                </div>
+                                                                                <div>
+                                                                                    <label className="font-bold text-text-primary block mb-2">What do you wonder? (Curiosity/Questions)</label>
+                                                                                    <textarea
+                                                                                        value={universalEngageResponses.wonder}
+                                                                                        onChange={(e) => setUniversalEngageResponses(prev => ({ ...prev, wonder: e.target.value }))}
+                                                                                        className="w-full p-4 rounded-xl border border-border focus:border-[#FF6B35] focus:dark:border-orange-500 outline-none shadow-sm bg-bg-secondary text-text-primary h-24 resize-none"
+                                                                                        placeholder="I wonder why... / How does..."
+                                                                                    />
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div className="bg-focus-blue/5 p-8 rounded-3xl border border-dashed border-focus-blue/30">
+                                                                            <h3 className="text-xl font-black text-focus-blue mb-6 uppercase tracking-tighter flex items-center gap-3">
+                                                                                <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-focus-blue text-white text-sm">4</span>
+                                                                                Step 2: Predictions
+                                                                            </h3>
+                                                                            <div className="space-y-6">
+                                                                                <div className="bg-bg-card p-6 rounded-2xl border border-focus-blue/20 shadow-sm relative overflow-hidden">
+                                                                                    <div className="absolute top-0 right-0 p-2 opacity-10">
+                                                                                        <Globe size={40} className="text-focus-blue" />
+                                                                                    </div>
+                                                                                    <p className="font-bold text-text-secondary leading-relaxed mb-4">
+                                                                                        "{content.universalEngage.predictionPrompt}"
+                                                                                    </p>
+                                                                                    <input
+                                                                                        value={universalEngageResponses.prediction}
+                                                                                        onChange={(e) => setUniversalEngageResponses(prev => ({ ...prev, prediction: e.target.value }))}
+                                                                                        className="w-full p-4 rounded-lg border border-border focus:border-focus-blue outline-none shadow-sm bg-bg-secondary text-text-primary"
+                                                                                        placeholder="Your prediction..."
+                                                                                    />
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+
+                                                                    <div className="bg-bg-card p-8 rounded-3xl border-2 border-border shadow-2xl relative overflow-hidden">
+                                                                        <div className="absolute top-0 right-0 p-10 transform -rotate-45 opacity-5 pointer-events-none">
+                                                                            <Star size={200} fill="currentColor" className="text-[#FF6B35]" />
+                                                                        </div>
+                                                                        <h3 className="text-2xl font-black text-text-primary mb-6 uppercase tracking-tight flex items-center gap-3">
+                                                                            <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-text-primary text-white text-lg">5</span>
+                                                                            The Burning Question
+                                                                        </h3>
+                                                                        <div className="bg-[#FF6B35]/5 dark:bg-orange-500/10 p-6 rounded-xl border border-[#FF6B35]/20 dark:border-orange-500/20">
+                                                                            <label className="font-bold text-lg text-text-primary block mb-3">What's the one question you most want answered today?</label>
+                                                                            <div className="flex gap-2">
+                                                                                <input
+                                                                                    value={universalEngageResponses.question}
+                                                                                    onChange={(e) => setUniversalEngageResponses(prev => ({ ...prev, question: e.target.value }))}
+                                                                                    className="flex-1 p-4 rounded-lg border border-border focus:border-[#FF6B35] focus:dark:border-orange-500 outline-none shadow-sm bg-bg-secondary text-text-primary placeholder:text-text-tertiary"
+                                                                                    placeholder="My burning question..."
+                                                                                />
+                                                                                <Button className="bg-[#FF6B35] hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-700 text-white h-auto px-6 font-bold shadow-md">Ask!</Button>
+                                                                            </div>
+                                                                            <p className="text-sm text-[#FF6B35] dark:text-orange-400 mt-3 font-medium italic">"These questions will guide our lesson!"</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* INSTRUCTIONAL ACTIVITY (LEARN PHASE OVERHAUL) */}
+                                                    {content.type === "instructional" && content.instructional && (
+                                                        <InstructionalActivity
+                                                            data={content.instructional}
+                                                            topic={lesson?.topic || "Lesson"}
+                                                            onUploadCustom={updateInstructionalContent}
+                                                            onAddFlashcards={handleManualFlashcards}
+                                                            onGenerateFlashcards={handleAIFlashcards}
+                                                        />
+                                                    )}
+
+                                                    {/* NEW INTERACTIVE TYPES */}
+
+                                                    {/* ACTIVITY CONTENT */}
+                                                    {content.type === "activity" && (
+                                                        <div className="space-y-4">
+                                                            <div className="flex items-center gap-3 mb-2">
+                                                                <div className="bg-ict-orange/10 p-2 rounded-lg">
+                                                                    <Layout className="text-ict-orange" size={24} />
+                                                                </div>
+                                                                <h4 className="font-bold text-xl text-text-primary">Classroom Activity</h4>
+                                                            </div>
+                                                            <div className="bg-orange-50/50 p-6 rounded-xl border border-orange-100 text-text-primary text-lg leading-relaxed">
+                                                                {content.content}
+                                                            </div>
+                                                            {content.aiToolUsed && (
+                                                                <div className="flex items-center gap-2 text-sm text-focus-blue-dark bg-focus-blue-light/50 px-4 py-2 rounded-full w-fit">
+                                                                    <Globe size={16} />
+                                                                    <span className="font-medium">Supported by {content.aiToolUsed}</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+
+                                                    {/* FILE/RESOURCE CONTENT */}
+                                                    {(content.type === "file" || content.type === "resource") && (
+                                                        <div className="flex items-start gap-5 p-6 bg-bg-secondary/50 border border-border rounded-xl hover:bg-bg-secondary transition-colors">
+                                                            <div className="bg-bg-card p-3 rounded-xl shadow-sm border border-border">
+                                                                <File className="text-focus-blue" size={28} />
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <h4 className="font-bold text-lg text-text-primary">{content.fileName || "Attached Resource"}</h4>
+                                                                <p className="text-text-secondary mt-1">{content.content || "Downloadable content for this lesson."}</p>
+                                                                <div className="mt-4 flex gap-3">
+                                                                    {content.fileUrl && (
+                                                                        <a href={content.fileUrl} download className="inline-flex items-center px-4 py-2 bg-focus-blue hover:bg-focus-blue-dark text-white rounded-lg text-sm font-semibold transition-colors shadow-sm">
+                                                                            Download File
+                                                                        </a>
+                                                                    )}
+                                                                    {(!content.fileUrl && content.resourceUrl) && (
+                                                                        <a href={content.resourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-text-primary rounded-lg text-sm font-semibold transition-colors">
+                                                                            Open Resource
+                                                                        </a>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* PRESENTATION */}
+                                                    {content.type === "presentation" && (
+                                                        <PresentationActivity slides={content.slides} topic={lesson?.topic || "Lesson Topic"} />
+                                                    )}
+
+                                                    {/* CAROUSEL */}
+                                                    {content.type === "carousel" && (
+                                                        <CarouselActivity
+                                                            stations={content.carouselStations || []}
+                                                            topic={lesson?.topic || "Lesson Topic"}
+                                                        />
+                                                    )}
+
+                                                    {/* POLL */}
+                                                    {content.type === "poll" && (
+                                                        <div className="space-y-4">
+                                                            <h4 className="font-bold text-xl text-text-primary">{content.content}</h4>
+                                                            <div className="grid grid-cols-1 gap-3">
+                                                                {(content.pollOptions || []).map((option, i) => {
+                                                                    const votes = pollVotes[option] || 0;
+                                                                    const totalVotes = Object.values(pollVotes).reduce((a, b) => a + b, 0) || 1;
+                                                                    const percentage = Math.round((votes / totalVotes) * 100);
+                                                                    return (
+                                                                        <div
+                                                                            key={i}
+                                                                            onClick={() => {
+                                                                                if (!userVoted) {
+                                                                                    setPollVotes(prev => ({ ...prev, [option]: (prev[option] || 0) + 1 }));
+                                                                                    setUserVoted(true);
+                                                                                    toast({ title: "Vote Cast!", description: "Your prediction has been recorded." });
+                                                                                }
+                                                                            }}
+                                                                            className={`relative p-4 rounded-xl border-2 transition-all cursor-pointer group ${userVoted ? 'border-border' : 'border-gray-200 hover:border-focus-blue hover:bg-focus-blue/5'}`}
+                                                                        >
+                                                                            {userVoted && (
+                                                                                <div
+                                                                                    className="absolute inset-0 bg-focus-blue/10 transition-all duration-1000"
+                                                                                    style={{ width: `${percentage}%` }}
+                                                                                ></div>
+                                                                            )}
+                                                                            <div className="relative flex justify-between items-center">
+                                                                                <span className="font-medium text-text-primary">{option}</span>
+                                                                                {userVoted && <span className="font-bold text-focus-blue">{percentage}%</span>}
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                            {!userVoted && <p className="text-xs text-text-tertiary text-center italic">Select an option to see class results</p>}
+                                                        </div>
+                                                    )}
+
+                                                    {/* BRAINSTORM */}
+                                                    {content.type === "brainstorm" && (
+                                                        <div className="space-y-4">
+                                                            <div className="flex justify-between items-center">
+                                                                <h4 className="font-bold text-xl text-text-primary">{content.content}</h4>
+                                                                <Button
+                                                                    size="sm"
+                                                                    className="bg-math-purple hover:bg-math-purple/90"
+                                                                    onClick={() => {
+                                                                        const text = prompt("Enter your idea:");
+                                                                        if (text) {
+                                                                            setBrainstormNotes(prev => [...prev, {
+                                                                                id: Math.random().toString(),
+                                                                                text,
+                                                                                color: ['bg-yellow-100', 'bg-blue-100', 'bg-green-100', 'bg-pink-100'][Math.floor(Math.random() * 4)]
+                                                                            }]);
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    <Plus className="mr-2 h-4 w-4" /> Add Note
+                                                                </Button>
+                                                            </div>
+                                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 min-h-[200px] p-4 bg-bg-secondary/20 rounded-xl border-2 border-dashed border-border">
+                                                                {brainstormNotes.map(note => (
+                                                                    <div key={note.id} className={`${note.color} p-4 rounded-lg shadow-sm transform rotate-${Math.random() > 0.5 ? '1' : '-1'} hover:rotate-0 transition-transform cursor-pointer border border-black/5`}>
+                                                                        <p className="text-sm font-medium text-gray-800 leading-tight">{note.text}</p>
+                                                                    </div>
+                                                                ))}
+                                                                {brainstormNotes.length === 0 && (
+                                                                    <div className="col-span-full flex items-center justify-center text-text-tertiary italic">
+                                                                        No ideas shared yet. Be the first!
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* STEPS */}
+                                                    {content.type === "steps" && (
+                                                        <div className="space-y-6">
+                                                            <h4 className="font-bold text-xl text-text-primary text-center mb-8">{content.content}</h4>
+                                                            <div className="relative">
+                                                                <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-100 -translate-y-1/2 z-0"></div>
+                                                                <div
+                                                                    className="absolute top-1/2 left-0 h-1 bg-focus-blue -translate-y-1/2 z-0 transition-all duration-500"
+                                                                    style={{ width: `${(currentStep / ((content.steps?.length || 1) - 1)) * 100}%` }}
+                                                                ></div>
+
+                                                                <div className="relative z-10 flex justify-between">
+                                                                    {(content.steps || []).map((step, i) => (
+                                                                        <div
+                                                                            key={i}
+                                                                            onClick={() => setCurrentStep(i)}
+                                                                            className={`
+                                                                                w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 border-4
+                                                                                ${i <= currentStep ? 'bg-focus-blue border-focus-blue text-white shadow-lg shadow-blue-200' : 'bg-white border-gray-100 text-text-tertiary'}
+                                                                            `}
+                                                                        >
+                                                                            {i + 1}
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                            <div className="mt-8 bg-bg-secondary/30 p-8 rounded-2xl border border-border animate-in fade-in zoom-in-95 duration-500">
+                                                                <Badge className="mb-4 bg-focus-blue">Step {currentStep + 1}</Badge>
+                                                                <p className="text-xl font-medium text-text-primary leading-relaxed">
+                                                                    {content.steps?.[currentStep]}
+                                                                </p>
+                                                            </div>
+                                                            <div className="flex justify-between">
+                                                                <Button
+                                                                    variant="outline"
+                                                                    disabled={currentStep === 0}
+                                                                    onClick={() => setCurrentStep(prev => prev - 1)}
+                                                                >
+                                                                    Previous
+                                                                </Button>
+                                                                <Button
+                                                                    className="bg-focus-blue text-white"
+                                                                    disabled={currentStep === (content.steps?.length || 1) - 1}
+                                                                    onClick={() => setCurrentStep(prev => prev + 1)}
+                                                                >
+                                                                    Next Step
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* FLASHCARDS */}
+                                                    {content.type === "flashcards" && (
+                                                        <div className="space-y-6">
+                                                            <h4 className="font-bold text-xl text-text-primary text-center">{content.content}</h4>
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                                {(content.flashcards || []).map((card, i) => (
+                                                                    <div
+                                                                        key={i}
+                                                                        onClick={() => setFlippedCards(prev => prev.includes(i) ? prev.filter(id => id !== i) : [...prev, i])}
+                                                                        className="h-48 cursor-pointer perspective-1000 group"
+                                                                    >
+                                                                        <div className={`relative w-full h-full transition-all duration-500 preserve-3d ${flippedCards.includes(i) ? 'rotate-y-180' : ''}`}>
+                                                                            <div className="absolute inset-0 backface-hidden bg-bg-card border-2 border-focus-blue/20 rounded-2xl flex items-center justify-center p-6 shadow-sm group-hover:shadow-md transition-shadow">
+                                                                                <p className="text-xl font-bold text-focus-blue text-center">{card.front}</p>
+                                                                                <Badge className="absolute bottom-4 right-4 bg-focus-blue/10 text-focus-blue border-none">Click to flip</Badge>
+                                                                            </div>
+                                                                            <div className="absolute inset-0 backface-hidden rotate-y-180 bg-focus-blue text-white rounded-2xl flex items-center justify-center p-6 shadow-xl text-center">
+                                                                                <p className="text-lg font-medium leading-relaxed">{card.back}</p>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* CATEGORIZATION */}
+                                                    {content.type === "categorization" && (
+                                                        <div className="space-y-6">
+                                                            <h4 className="font-bold text-xl text-text-primary">{content.content}</h4>
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                                                {(content.categorizationGroups || []).map((group, i) => (
+                                                                    <div key={i} className="space-y-4">
+                                                                        <div className={`p-4 rounded-xl border-2 flex items-center gap-3 ${i === 0 ? 'bg-math-purple/5 border-math-purple/20' : 'bg-ict-orange/5 border-ict-orange/20'}`}>
+                                                                            <div className={`w-3 h-3 rounded-full ${i === 0 ? 'bg-math-purple' : 'bg-ict-orange'}`}></div>
+                                                                            <h5 className="font-bold text-lg text-text-primary">{group.title}</h5>
+                                                                        </div>
+                                                                        <div className="min-h-[150px] p-4 bg-bg-secondary/20 rounded-xl border-2 border-dashed border-border flex flex-wrap gap-2">
+                                                                            {categorizedItems[group.title]?.map((item, idx) => (
+                                                                                <Badge key={idx} className={`${i === 0 ? 'bg-math-purple' : 'bg-ict-orange'} px-4 py-2 text-sm shadow-sm animate-in zoom-in-90 text-white`}>{item}</Badge>
+                                                                            ))}
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                            <div className="mt-8 p-6 bg-bg-card border border-border rounded-2xl shadow-inner text-center">
+                                                                <h6 className="text-sm font-bold text-text-tertiary uppercase tracking-widest mb-4">Items to Categorize</h6>
+                                                                <div className="flex flex-wrap justify-center gap-3">
+                                                                    {(content.categorizationGroups || []).flatMap(g => g.items).filter(item => !Object.values(categorizedItems).flat().includes(item)).map((item, idx) => (
+                                                                        <div key={idx} className="flex gap-1">
+                                                                            <Button
+                                                                                variant="outline"
+                                                                                className="rounded-full hover:bg-math-purple hover:text-white hover:border-math-purple transition-all"
+                                                                                onClick={() => {
+                                                                                    const groupTitle = content.categorizationGroups?.[0].title || '';
+                                                                                    setCategorizedItems(prev => ({ ...prev, [groupTitle]: [...(prev[groupTitle] || []), item] }));
+                                                                                }}
+                                                                            >
+                                                                                {item}
+                                                                                <div className="w-2 h-2 rounded-full bg-math-purple ml-2"></div>
+                                                                            </Button>
+                                                                            <Button
+                                                                                variant="outline"
+                                                                                className="rounded-full hover:bg-ict-orange hover:text-white hover:border-ict-orange transition-all"
+                                                                                onClick={() => {
+                                                                                    const groupTitle = content.categorizationGroups?.[1].title || '';
+                                                                                    setCategorizedItems(prev => ({ ...prev, [groupTitle]: [...(prev[groupTitle] || []), item] }));
+                                                                                }}
+                                                                            >
+                                                                                <div className="w-2 h-2 rounded-full bg-ict-orange mr-2"></div>
+                                                                            </Button>
+                                                                        </div>
+                                                                    ))}
+                                                                    {(content.categorizationGroups || []).flatMap(g => g.items).filter(item => !Object.values(categorizedItems).flat().includes(item)).length === 0 && (
+                                                                        <div className="flex items-center gap-2 text-success-green font-bold">
+                                                                            <Check size={20} /> All items categorized correctly!
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* EXIT TICKET */}
+                                                    {content.type === "exit-ticket" && (
+                                                        <div className="space-y-8 p-4">
+                                                            <div className="text-center space-y-2">
+                                                                <h4 className="font-bold text-3xl text-text-primary">3-2-1 Exit Ticket</h4>
+                                                                <p className="text-text-secondary">Reflect on your learning journey today</p>
+                                                            </div>
+
+                                                            <div className="space-y-8 max-w-2xl mx-auto">
+                                                                <div className="space-y-4">
+                                                                    <div className="flex items-center gap-3">
+                                                                        <div className="w-8 h-8 rounded-full bg-success-green text-white flex items-center justify-center font-bold">3</div>
+                                                                        <h5 className="font-bold text-lg text-text-primary">Things I learned today</h5>
+                                                                    </div>
+                                                                    <div className="grid grid-cols-1 gap-2 pl-11">
+                                                                        {[0, 1, 2].map(i => (
+                                                                            <input
+                                                                                key={i}
+                                                                                value={exitTicketData.learnings[i] || ""}
+                                                                                onChange={(e) => {
+                                                                                    const newLearnings = [...exitTicketData.learnings];
+                                                                                    newLearnings[i] = e.target.value;
+                                                                                    setExitTicketData(prev => ({ ...prev, learnings: newLearnings }));
+                                                                                }}
+                                                                                placeholder={`Learning ${i + 1}...`}
+                                                                                className="bg-bg-secondary/50 border-b-2 border-border focus:border-success-green outline-none p-2 text-text-primary transition-all rounded-t-lg hover:bg-bg-secondary"
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="space-y-4">
+                                                                    <div className="flex items-center gap-3">
+                                                                        <div className="w-8 h-8 rounded-full bg-focus-blue text-white flex items-center justify-center font-bold">2</div>
+                                                                        <h5 className="font-bold text-lg text-text-primary">Questions I still have</h5>
+                                                                    </div>
+                                                                    <div className="grid grid-cols-1 gap-2 pl-11">
+                                                                        {[0, 1].map(i => (
+                                                                            <input
+                                                                                key={i}
+                                                                                value={exitTicketData.questions[i] || ""}
+                                                                                onChange={(e) => {
+                                                                                    const newQs = [...exitTicketData.questions];
+                                                                                    newQs[i] = e.target.value;
+                                                                                    setExitTicketData(prev => ({ ...prev, questions: newQs }));
+                                                                                }}
+                                                                                placeholder={`Question ${i + 1}...`}
+                                                                                className="bg-bg-secondary/50 border-b-2 border-border focus:border-focus-blue outline-none p-2 text-text-primary transition-all rounded-t-lg hover:bg-bg-secondary"
+                                                                            />
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="space-y-4">
+                                                                    <div className="flex items-center gap-3">
+                                                                        <div className="w-8 h-8 rounded-full bg-math-purple text-white flex items-center justify-center font-bold">1</div>
+                                                                        <h5 className="font-bold text-lg text-text-primary">Central discovery or insight</h5>
+                                                                    </div>
+                                                                    <div className="pl-11">
+                                                                        <textarea
+                                                                            value={exitTicketData.insight}
+                                                                            onChange={(e) => setExitTicketData(prev => ({ ...prev, insight: e.target.value }))}
+                                                                            placeholder="My single most important takeaway..."
+                                                                            className="w-full bg-bg-secondary/50 border-2 border-border focus:border-math-purple outline-none p-4 rounded-xl text-text-primary h-32 transition-all hover:bg-bg-secondary"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="space-y-4 pt-4 border-t border-border">
+                                                                    <div className="flex justify-between items-center text-sm font-bold text-text-secondary uppercase tracking-widest">
+                                                                        <span>Not Confident</span>
+                                                                        <span className="text-math-purple bg-math-purple/10 px-3 py-1 rounded-full">Level: {confidence}%</span>
+                                                                        <span>Total Mastery</span>
+                                                                    </div>
+                                                                    <input
+                                                                        type="range"
+                                                                        min="0"
+                                                                        max="100"
+                                                                        value={confidence}
+                                                                        onChange={(e) => setConfidence(parseInt(e.target.value))}
+                                                                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-math-purple"
+                                                                    />
+                                                                    <p className="text-center text-lg font-bold text-text-primary">
+                                                                        {confidence < 30 ? "😰 I need more help!" : confidence < 70 ? "💪 I'm getting there!" : "🚀 I've got this!"}
+                                                                    </p>
+                                                                </div>
+
+                                                                <Button
+                                                                    className="w-full h-14 text-lg font-bold bg-success-green hover:bg-success-green/90 text-white shadow-lg shadow-green-900/10 rounded-2xl"
+                                                                    onClick={() => toast({ title: "Reflection Shared!", description: "Your exit ticket has been sent to the teacher." })}
+                                                                >
+                                                                    Finalize Lesson & Submit
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* FALLBACK FOR UNKNOWN TYPES */}
+                                                    {!['text', 'image', 'video', 'quiz', 'activity', 'file', 'resource', 'presentation', 'carousel', 'poll', 'brainstorm', 'steps', 'flashcards', 'categorization', 'scaffolded', 'exit-ticket', 'universal-engage', 'instructional'].includes(content.type) && (
+                                                        <div className="p-6 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-800">
+                                                            <h4 className="font-bold">Unknown Content Type: {content.type}</h4>
+                                                            <pre className="mt-2 p-2 bg-white rounded text-xs overflow-auto">{JSON.stringify(content, null, 2)}</pre>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
 
                                         {/* Add Quiz Button if missing (Only for Teachers/Owners) */}
                                         {(user?.id === lesson?.createdBy) && !currentPhaseData?.content?.some(c => c.type === 'quiz') && (
-                                            <div className="pt-8 mt-8 border-t border-math-purple/10">
+                                            <div className="pt-8">
                                                 <Button
                                                     onClick={handleCreateQuizInline}
                                                     disabled={isGeneratingQuiz}
@@ -1183,953 +1946,37 @@ const LessonRunnable: React.FC = () => {
                                             </div>
                                         )}
                                     </div>
-                                </div>
-                            ) : currentPhaseData?.activityType === "collaborative-map" ? (
-                                <div className="animate-in fade-in duration-700">
-                                    <div className="bg-bg-secondary p-4 rounded-xl mb-4 border border-border">
-                                        <div className="flex items-start gap-3">
-                                            <div className="bg-focus-blue/10 p-2 rounded-lg text-focus-blue">
-                                                <BrainCircuit size={24} />
+                                )}
+
+                                {(!currentPhaseData?.content?.length &&
+                                    !carouselStationsFromContent.length &&
+                                    !scaffoldedLevelsFromContent.length &&
+                                    !reflectionPromptsFromContent.length &&
+                                    currentPhaseData?.activityType !== "collaborative-map") && (
+                                        <div className="text-center py-24 bg-bg-card rounded-2xl border border-dashed border-border">
+                                            <div className="bg-bg-secondary w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 text-text-tertiary">
+                                                <Layout size={40} />
                                             </div>
-                                            <div>
-                                                <h3 className="font-bold text-lg text-text-primary">Collaborative Concept Mapping</h3>
-                                                <p className="text-text-secondary text-sm">
-                                                    "Let's build a map of what we know about <strong>{lesson?.topic || lesson?.title}</strong>.
-                                                    We'll start with key ideas, then draw connections, add examples, and finally note our questions."
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <CollaborativeMap topic={lesson?.topic || lesson?.title || "Lesson Topic"} />
-                                </div>
-                            ) : (PHASES[currentPhaseIndex] === 'reflect' && reflectionPromptsFromContent.length > 0) ? (
-                                <div className="space-y-8 p-8">
-                                    <div className="bg-math-purple/5 p-6 rounded-2xl border border-math-purple/20">
-                                        <div className="flex items-center gap-3 mb-4">
-                                            <div className="bg-math-purple p-2.5 rounded-xl text-white shadow-lg shadow-purple-900/10">
-                                                <Brain size={24} />
-                                            </div>
-                                            <div>
-                                                <h3 className="font-bold text-xl text-text-primary">Final Reflection</h3>
-                                                <p className="text-text-secondary text-sm">Consolidate your learning before the lesson ends</p>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-6 mt-8">
-                                            {reflectionPromptsFromContent.map((item, i) => (
-                                                <div key={i} className="space-y-3 p-6 bg-bg-card rounded-xl border border-border shadow-sm group hover:border-math-purple/30 transition-all">
-                                                    <h5 className="font-bold text-lg text-text-primary">
-                                                        <span className="text-math-purple mr-2">{i + 1}.</span>
-                                                        {item.prompt}
-                                                    </h5>
-                                                    <textarea
-                                                        placeholder={item.response}
-                                                        className="w-full h-24 p-4 rounded-lg bg-bg-secondary/50 border border-border focus:border-math-purple focus:ring-1 focus:ring-math-purple/20 transition-all outline-none text-text-primary resize-none"
-                                                    />
-                                                </div>
-                                            ))}
-
-                                            <Button
-                                                className="w-full h-12 bg-math-purple hover:bg-math-purple/90 text-white font-bold rounded-xl shadow-lg shadow-purple-900/10"
-                                                onClick={() => toast({ title: "Reflection Saved", description: "Your thoughts have been recorded!" })}
-                                            >
-                                                Submit Reflection
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : currentPhaseData?.content && currentPhaseData.content.length > 0 ? (
-                                <div className="space-y-8">
-                                    {currentPhaseData.content.map((content, idx) => {
-                                        // Skip JSON blocks that have been consolidated into special activities
-                                        const isJsonActivity = content.content?.trim().startsWith('{') &&
-                                            (content.content.includes('"station"') ||
-                                                content.content.includes('"level"') ||
-                                                content.content.includes('"prompt"'));
-
-                                        if (isJsonActivity) return null;
-
-                                        return (
-                                            <div
-                                                key={idx}
-                                                className={`
-                                                    relative bg-bg-card p-8 rounded-2xl shadow-sm border border-border transition-all hover:shadow-md
-                                                    border-l-[6px] ${phaseColors.border}
-                                                `}
-                                            >
-
-
-                                                {/* TEXT CONTENT */}
-                                                {content.type === "text" && (
-                                                    <div className="prose prose-lg max-w-none text-text-primary leading-relaxed">
-                                                        {content.content}
-                                                    </div>
-                                                )}
-
-                                                {/* IMAGE CONTENT */}
-                                                {content.type === "image" && content.imageUrl && (
-                                                    <div className="space-y-4">
-                                                        <div className="rounded-xl overflow-hidden border border-gray-100 bg-bg-secondary/50 p-2">
-                                                            <img
-                                                                src={content.imageUrl}
-                                                                alt={content.content || "Lesson image"}
-                                                                className="max-h-[500px] w-auto mx-auto object-contain rounded-lg"
-                                                            />
-                                                        </div>
-                                                        {content.content && (
-                                                            <p className="text-center text-text-secondary italic text-lg bg-bg-secondary/30 py-2 rounded-lg">
-                                                                {content.content}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                )}
-
-                                                {/* VIDEO CONTENT */}
-                                                {content.type === "video" && (
-                                                    <div className="space-y-4">
-                                                        <div className="relative group cursor-pointer overflow-hidden rounded-xl bg-gray-900 aspect-video flex items-center justify-center">
-                                                            <div className="absolute inset-0 opacity-60 bg-[url('https://images.unsplash.com/photo-1611162617474-5b21e879e113?q=80&w=1000&auto=format&fit=crop')] bg-cover bg-center"></div>
-                                                            <div className="relative z-10 bg-white/10 backdrop-blur-sm p-4 rounded-full border border-white/20 group-hover:scale-110 transition-transform duration-300">
-                                                                <Play size={40} className="text-white fill-white ml-2" />
-                                                            </div>
-                                                            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-                                                                <p className="text-white font-bold truncate">{content.fileName || "Video Resource"}</p>
-                                                            </div>
-                                                        </div>
-                                                        {content.content && <p className="text-text-primary text-lg">{content.content}</p>}
-                                                    </div>
-                                                )}
-
-                                                {/* QUIZ CONTENT */}
-                                                {content.type === "quiz" && (
-                                                    <div className="space-y-8">
-                                                        {liveQuizSession ? (
-                                                            <div className="bg-bg-card rounded-3xl border-4 border-math-purple p-10 flex flex-col items-center justify-center text-center shadow-2xl animate-in zoom-in duration-500">
-                                                                <div className="w-20 h-20 bg-math-purple/10 rounded-full flex items-center justify-center mb-6">
-                                                                    <Sparkles className="text-math-purple w-12 h-12 animate-pulse" />
-                                                                </div>
-                                                                <h3 className="text-3xl font-black text-text-primary mb-2">Live Quiz Active!</h3>
-                                                                <p className="text-text-secondary text-lg mb-8">Tell your students to join at <span className="font-bold text-math-purple">Raheeq's Learning Lab</span></p>
-
-                                                                <div className="bg-bg-secondary p-8 rounded-2xl border-2 border-dashed border-math-purple/30 mb-8 w-full max-w-md">
-                                                                    <p className="text-sm font-bold text-text-tertiary uppercase tracking-widest mb-4">Access Code</p>
-                                                                    <div className="text-6xl md:text-8xl font-black text-math-purple tracking-tighter">
-                                                                        {liveQuizSession.accessCode}
-                                                                    </div>
-                                                                </div>
-
-                                                                <div className="flex gap-4">
-                                                                    <Button
-                                                                        variant="outline"
-                                                                        onClick={() => setLiveQuizSession(null)}
-                                                                        className="rounded-full px-8 h-12"
-                                                                    >
-                                                                        End Session
-                                                                    </Button>
-                                                                    <Button
-                                                                        className="bg-math-purple hover:bg-math-purple/90 text-white rounded-full px-8 h-12 shadow-lg"
-                                                                        onClick={() => window.open(`/teacher-dashboard`, '_blank')}
-                                                                    >
-                                                                        Monitor Results
-                                                                    </Button>
-                                                                </div>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="space-y-6">
-                                                                <div className="flex justify-between items-center">
-                                                                    <div className="flex items-center gap-3">
-                                                                        <div className="bg-math-purple/10 p-2 rounded-lg">
-                                                                            <CheckSquare className="text-math-purple" size={24} />
-                                                                        </div>
-                                                                        <h4 className="font-bold text-2xl text-text-primary">Interactive Quiz</h4>
-                                                                    </div>
-                                                                    <Button
-                                                                        onClick={() => handleLaunchLiveQuiz(content.quizQuestions || [])}
-                                                                        disabled={isLaunchingQuiz || !content.quizQuestions?.length}
-                                                                        className="bg-math-purple hover:bg-math-purple/90 text-white font-bold h-12 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all"
-                                                                    >
-                                                                        {isLaunchingQuiz ? <Loader2 className="animate-spin mr-2" /> : <Play className="mr-2" />}
-                                                                        Launch Live Quiz
-                                                                    </Button>
-                                                                </div>
-
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                                                    {(content.quizQuestions || []).map((q, qIndex) => (
-                                                                        <Card key={q.id || qIndex} className="bg-bg-secondary/30 border-none shadow-sm h-full flex flex-col overflow-hidden group hover:shadow-md transition-shadow">
-                                                                            {q.imageUrl && (
-                                                                                <div className="h-40 overflow-hidden bg-white/50">
-                                                                                    <img src={q.imageUrl} alt="Question" className="w-full h-full object-contain" />
-                                                                                </div>
-                                                                            )}
-                                                                            <CardContent className="p-5 flex-1 flex flex-col">
-                                                                                <div className="flex items-start gap-3 mb-4">
-                                                                                    <span className="bg-math-purple/10 text-math-purple text-[10px] font-black uppercase px-2 py-0.5 rounded shrink-0 mt-0.5">Q{qIndex + 1}</span>
-                                                                                    <p className="font-bold text-text-primary leading-snug line-clamp-3">{q.text}</p>
-                                                                                </div>
-                                                                                <div className="space-y-2 mt-auto">
-                                                                                    {q.options.map((opt, optIndex) => (
-                                                                                        <div key={optIndex} className={`text-xs p-2 rounded border ${q.correctOptionIndex === optIndex ? 'bg-success-green/10 border-success-green/20 text-success-green font-bold' : 'bg-white/50 border-border text-text-secondary'}`}>
-                                                                                            {opt}
-                                                                                        </div>
-                                                                                    ))}
-                                                                                </div>
-                                                                            </CardContent>
-                                                                        </Card>
-                                                                    ))}
-
-                                                                    {(!content.quizQuestions || content.quizQuestions.length === 0) && (
-                                                                        <div className="col-span-full border-2 border-dashed border-border rounded-2xl p-12 text-center text-text-tertiary">
-                                                                            <CheckSquare size={48} className="mx-auto mb-4 opacity-20" />
-                                                                            <p className="text-lg">No questions in this quiz block.</p>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                )}
-
-                                                {/* ACTIVITY CONTENT */}
-                                                {content.type === "activity" && (
-                                                    <div className="space-y-4">
-                                                        <div className="flex items-center gap-3 mb-2">
-                                                            <div className="bg-ict-orange/10 p-2 rounded-lg">
-                                                                <Layout className="text-ict-orange" size={24} />
-                                                            </div>
-                                                            <h4 className="font-bold text-xl text-text-primary">Classroom Activity</h4>
-                                                        </div>
-                                                        <div className="bg-orange-50/50 p-6 rounded-xl border border-orange-100 text-text-primary text-lg leading-relaxed">
-                                                            {content.content}
-                                                        </div>
-                                                        {content.aiToolUsed && (
-                                                            <div className="flex items-center gap-2 text-sm text-focus-blue-dark bg-focus-blue-light/50 px-4 py-2 rounded-full w-fit">
-                                                                <Globe size={16} />
-                                                                <span className="font-medium">Supported by {content.aiToolUsed}</span>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                )}
-
-                                                {/* FILE/RESOURCE CONTENT */}
-                                                {(content.type === "file" || content.type === "resource") && (
-                                                    <div className="flex items-start gap-5 p-6 bg-bg-secondary/50 border border-border rounded-xl hover:bg-bg-secondary transition-colors">
-                                                        <div className="bg-bg-card p-3 rounded-xl shadow-sm border border-border">
-                                                            <File className="text-focus-blue" size={28} />
-                                                        </div>
-                                                        <div className="flex-1">
-                                                            <h4 className="font-bold text-lg text-text-primary">{content.fileName || "Attached Resource"}</h4>
-                                                            <p className="text-text-secondary mt-1">{content.content || "Downloadable content for this lesson."}</p>
-                                                            <div className="mt-4 flex gap-3">
-                                                                {content.fileUrl && (
-                                                                    <a href={content.fileUrl} download className="inline-flex items-center px-4 py-2 bg-focus-blue hover:bg-focus-blue-dark text-white rounded-lg text-sm font-semibold transition-colors shadow-sm">
-                                                                        Download File
-                                                                    </a>
-                                                                )}
-                                                                {(!content.fileUrl && content.resourceUrl) && (
-                                                                    <a href={content.resourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-text-primary rounded-lg text-sm font-semibold transition-colors">
-                                                                        Open Resource
-                                                                    </a>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                {/* NEW INTERACTIVE TYPES */}
-
-                                                {/* PRESENTATION */}
-                                                {content.type === "presentation" && (
-                                                    <PresentationActivity slides={content.slides} topic={lesson?.topic || "Lesson Topic"} />
-                                                )}
-
-                                                {/* CAROUSEL */}
-                                                {content.type === "carousel" && (
-                                                    <CarouselActivity
-                                                        stations={content.carouselStations || []}
-                                                        topic={lesson?.topic || "Lesson Topic"}
-                                                    />
-                                                )}
-
-                                                {/* POLL */}
-                                                {content.type === "poll" && (
-                                                    <div className="space-y-4">
-                                                        <h4 className="font-bold text-xl text-text-primary">{content.content}</h4>
-                                                        <div className="grid grid-cols-1 gap-3">
-                                                            {(content.pollOptions || []).map((option, i) => {
-                                                                const votes = pollVotes[option] || 0;
-                                                                const totalVotes = Object.values(pollVotes).reduce((a, b) => a + b, 0) || 1;
-                                                                const percentage = Math.round((votes / totalVotes) * 100);
-                                                                return (
-                                                                    <div
-                                                                        key={i}
-                                                                        onClick={() => {
-                                                                            if (!userVoted) {
-                                                                                setPollVotes(prev => ({ ...prev, [option]: (prev[option] || 0) + 1 }));
-                                                                                setUserVoted(true);
-                                                                                toast({ title: "Vote Cast!", description: "Your prediction has been recorded." });
-                                                                            }
-                                                                        }}
-                                                                        className={`relative p-4 rounded-xl border-2 transition-all cursor-pointer group ${userVoted ? 'border-border' : 'border-gray-200 hover:border-focus-blue hover:bg-focus-blue/5'}`}
-                                                                    >
-                                                                        {userVoted && (
-                                                                            <div
-                                                                                className="absolute inset-0 bg-focus-blue/10 transition-all duration-1000"
-                                                                                style={{ width: `${percentage}%` }}
-                                                                            ></div>
-                                                                        )}
-                                                                        <div className="relative flex justify-between items-center">
-                                                                            <span className="font-medium text-text-primary">{option}</span>
-                                                                            {userVoted && <span className="font-bold text-focus-blue">{percentage}%</span>}
-                                                                        </div>
-                                                                    </div>
-                                                                );
-                                                            })}
-                                                        </div>
-                                                        {!userVoted && <p className="text-xs text-text-tertiary text-center italic">Select an option to see class results</p>}
-                                                    </div>
-                                                )}
-
-                                                {/* BRAINSTORM */}
-                                                {content.type === "brainstorm" && (
-                                                    <div className="space-y-4">
-                                                        <div className="flex justify-between items-center">
-                                                            <h4 className="font-bold text-xl text-text-primary">{content.content}</h4>
-                                                            <Button
-                                                                size="sm"
-                                                                className="bg-math-purple hover:bg-math-purple/90"
-                                                                onClick={() => {
-                                                                    const text = prompt("Enter your idea:");
-                                                                    if (text) {
-                                                                        setBrainstormNotes(prev => [...prev, {
-                                                                            id: Math.random().toString(),
-                                                                            text,
-                                                                            color: ['bg-yellow-100', 'bg-blue-100', 'bg-green-100', 'bg-pink-100'][Math.floor(Math.random() * 4)]
-                                                                        }]);
-                                                                    }
-                                                                }}
-                                                            >
-                                                                <Plus className="mr-2 h-4 w-4" /> Add Note
-                                                            </Button>
-                                                        </div>
-                                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 min-h-[200px] p-4 bg-bg-secondary/20 rounded-xl border-2 border-dashed border-border">
-                                                            {brainstormNotes.map(note => (
-                                                                <div key={note.id} className={`${note.color} p-4 rounded-lg shadow-sm transform rotate-${Math.random() > 0.5 ? '1' : '-1'} hover:rotate-0 transition-transform cursor-pointer border border-black/5`}>
-                                                                    <p className="text-sm font-medium text-gray-800 leading-tight">{note.text}</p>
-                                                                </div>
-                                                            ))}
-                                                            {brainstormNotes.length === 0 && (
-                                                                <div className="col-span-full flex items-center justify-center text-text-tertiary italic">
-                                                                    No ideas shared yet. Be the first!
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                {/* STEPS */}
-                                                {content.type === "steps" && (
-                                                    <div className="space-y-6">
-                                                        <h4 className="font-bold text-xl text-text-primary text-center mb-8">{content.content}</h4>
-                                                        <div className="relative">
-                                                            {/* Connection Line */}
-                                                            <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-100 -translate-y-1/2 z-0"></div>
-                                                            <div
-                                                                className="absolute top-1/2 left-0 h-1 bg-focus-blue -translate-y-1/2 z-0 transition-all duration-500"
-                                                                style={{ width: `${(currentStep / ((content.steps?.length || 1) - 1)) * 100}%` }}
-                                                            ></div>
-
-                                                            <div className="relative z-10 flex justify-between">
-                                                                {(content.steps || []).map((step, i) => (
-                                                                    <div
-                                                                        key={i}
-                                                                        onClick={() => setCurrentStep(i)}
-                                                                        className={`
-                                                                        w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 border-4
-                                                                        ${i <= currentStep ? 'bg-focus-blue border-focus-blue text-white shadow-lg shadow-blue-200' : 'bg-white border-gray-100 text-text-tertiary'}
-                                                                    `}
-                                                                    >
-                                                                        {i + 1}
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-                                                        <div className="mt-8 bg-bg-secondary/30 p-8 rounded-2xl border border-border animate-in fade-in zoom-in-95 duration-500">
-                                                            <Badge className="mb-4 bg-focus-blue">Step {currentStep + 1}</Badge>
-                                                            <p className="text-xl font-medium text-text-primary leading-relaxed">
-                                                                {content.steps?.[currentStep]}
-                                                            </p>
-                                                        </div>
-                                                        <div className="flex justify-between">
-                                                            <Button
-                                                                variant="outline"
-                                                                disabled={currentStep === 0}
-                                                                onClick={() => setCurrentStep(prev => prev - 1)}
-                                                            >
-                                                                Previous
-                                                            </Button>
-                                                            <Button
-                                                                className="bg-focus-blue"
-                                                                disabled={currentStep === (content.steps?.length || 1) - 1}
-                                                                onClick={() => setCurrentStep(prev => prev + 1)}
-                                                            >
-                                                                Next Step
-                                                            </Button>
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                {/* FLASHCARDS */}
-                                                {content.type === "flashcards" && (
-                                                    <div className="space-y-6">
-                                                        <h4 className="font-bold text-xl text-text-primary text-center">{content.content}</h4>
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                            {(content.flashcards || []).map((card, i) => (
-                                                                <div
-                                                                    key={i}
-                                                                    onClick={() => setFlippedCards(prev => prev.includes(i) ? prev.filter(id => id !== i) : [...prev, i])}
-                                                                    className="h-48 cursor-pointer perspective-1000 group"
-                                                                >
-                                                                    <div className={`relative w-full h-full transition-all duration-500 preserve-3d ${flippedCards.includes(i) ? 'rotate-y-180' : ''}`}>
-                                                                        {/* Front */}
-                                                                        <div className="absolute inset-0 backface-hidden bg-bg-card border-2 border-focus-blue/20 rounded-2xl flex items-center justify-center p-6 shadow-sm group-hover:shadow-md transition-shadow">
-                                                                            <p className="text-xl font-bold text-focus-blue text-center">{card.front}</p>
-                                                                            <Badge className="absolute bottom-4 right-4 bg-focus-blue/10 text-focus-blue border-none">Click to flip</Badge>
-                                                                        </div>
-                                                                        {/* Back */}
-                                                                        <div className="absolute inset-0 backface-hidden rotate-y-180 bg-focus-blue text-white rounded-2xl flex items-center justify-center p-6 shadow-xl">
-                                                                            <p className="text-lg font-medium text-center leading-relaxed">{card.back}</p>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                {/* CATEGORIZATION */}
-                                                {content.type === "categorization" && (
-                                                    <div className="space-y-6">
-                                                        <h4 className="font-bold text-xl text-text-primary">{content.content}</h4>
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                                            {(content.categorizationGroups || []).map((group, i) => (
-                                                                <div key={i} className="space-y-4">
-                                                                    <div className={`p-4 rounded-xl border-2 flex items-center gap-3 ${i === 0 ? 'bg-math-purple/5 border-math-purple/20' : 'bg-ict-orange/5 border-ict-orange/20'}`}>
-                                                                        <div className={`w-3 h-3 rounded-full ${i === 0 ? 'bg-math-purple' : 'bg-ict-orange'}`}></div>
-                                                                        <h5 className="font-bold text-lg text-text-primary">{group.title}</h5>
-                                                                    </div>
-                                                                    <div className="min-h-[150px] p-4 bg-bg-secondary/20 rounded-xl border-2 border-dashed border-border flex flex-wrap gap-2">
-                                                                        {categorizedItems[group.title]?.map((item, idx) => (
-                                                                            <Badge key={idx} className={`${i === 0 ? 'bg-math-purple' : 'bg-ict-orange'} px-4 py-2 text-sm shadow-sm animate-in zoom-in-90`}>{item}</Badge>
-                                                                        ))}
-                                                                    </div>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                        <div className="mt-8 p-6 bg-bg-card border border-border rounded-2xl shadow-inner text-center">
-                                                            <h6 className="text-sm font-bold text-text-tertiary uppercase tracking-widest mb-4">Items to Categorize</h6>
-                                                            <div className="flex flex-wrap justify-center gap-3">
-                                                                {(content.categorizationGroups || []).flatMap(g => g.items).filter(item => !Object.values(categorizedItems).flat().includes(item)).map((item, idx) => (
-                                                                    <div key={idx} className="flex gap-1">
-                                                                        <Button
-                                                                            variant="outline"
-                                                                            className="rounded-full hover:bg-math-purple hover:text-white hover:border-math-purple transition-all"
-                                                                            onClick={() => {
-                                                                                const groupTitle = content.categorizationGroups?.[0].title || '';
-                                                                                setCategorizedItems(prev => ({ ...prev, [groupTitle]: [...(prev[groupTitle] || []), item] }));
-                                                                            }}
-                                                                        >
-                                                                            {item}
-                                                                            <div className="w-2 h-2 rounded-full bg-math-purple ml-2"></div>
-                                                                        </Button>
-                                                                        <Button
-                                                                            variant="outline"
-                                                                            className="rounded-full hover:bg-ict-orange hover:text-white hover:border-ict-orange transition-all"
-                                                                            onClick={() => {
-                                                                                const groupTitle = content.categorizationGroups?.[1].title || '';
-                                                                                setCategorizedItems(prev => ({ ...prev, [groupTitle]: [...(prev[groupTitle] || []), item] }));
-                                                                            }}
-                                                                        >
-                                                                            <div className="w-2 h-2 rounded-full bg-ict-orange mr-2"></div>
-                                                                        </Button>
-                                                                    </div>
-                                                                ))}
-                                                                {(content.categorizationGroups || []).flatMap(g => g.items).filter(item => !Object.values(categorizedItems).flat().includes(item)).length === 0 && (
-                                                                    <div className="flex items-center gap-2 text-success-green font-bold">
-                                                                        <Check size={20} /> All items categorized correctly!
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                {/* SCAFFOLDED */}
-                                                {content.type === "scaffolded" && (
-                                                    <div className="space-y-6">
-                                                        <div className="flex justify-between items-center bg-bg-secondary/30 p-4 rounded-xl border border-border">
-                                                            <h4 className="font-bold text-xl text-text-primary">Practice Levels</h4>
-                                                            <div className="flex gap-2">
-                                                                {[1, 2, 3].map(level => (
-                                                                    <div
-                                                                        key={level}
-                                                                        className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm border-2 ${currentLevel === level ? 'bg-math-purple border-math-purple text-white shadow-md' : levelFeedback[level]?.isCorrect ? 'bg-success-green/20 border-success-green text-success-green' : 'bg-white border-gray-200 text-gray-400'}`}
-                                                                    >
-                                                                        {level}
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="min-h-[250px] p-8 bg-bg-card rounded-2xl border-2 border-math-purple/10 shadow-sm animate-in fade-in slide-in-from-right-4 duration-500">
-                                                            {content.scaffoldedLevels?.filter(l => l.level === currentLevel).map((levelData, i) => (
-                                                                <div key={i} className="space-y-6">
-                                                                    <Badge className="bg-math-purple/10 text-math-purple border-none font-bold">Level {currentLevel}: {currentLevel === 1 ? 'Foundation' : currentLevel === 2 ? 'Standard' : 'Challenge'}</Badge>
-
-                                                                    {levelData.imageUrl ? (
-                                                                        <div className="relative group rounded-xl overflow-hidden border border-gray-100 bg-bg-secondary/50 p-2">
-                                                                            <img
-                                                                                src={levelData.imageUrl}
-                                                                                alt={`Level ${levelData.level} visual`}
-                                                                                className="max-h-[300px] w-auto mx-auto object-contain rounded-lg"
-                                                                            />
-                                                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                                                <Button
-                                                                                    variant="secondary"
-                                                                                    size="sm"
-                                                                                    className="bg-white/90 text-math-purple hover:bg-white font-bold"
-                                                                                    onClick={() => {
-                                                                                        setTargetLevelForUpload(currentLevel);
-                                                                                        setTimeout(() => scaffoldedImageInputRef.current?.click(), 100);
-                                                                                    }}
-                                                                                >
-                                                                                    <ImageIcon size={16} className="mr-2" />
-                                                                                    Change Photo
-                                                                                </Button>
-                                                                            </div>
-                                                                        </div>
-                                                                    ) : (
-                                                                        <div className="border-2 border-dashed border-border rounded-xl p-8 flex flex-col items-center justify-center text-center space-y-3 hover:bg-bg-secondary/50 transition-all">
-                                                                            <div className="bg-bg-secondary p-3 rounded-full text-text-tertiary">
-                                                                                <ImageIcon size={32} />
-                                                                            </div>
-                                                                            <div>
-                                                                                <p className="text-sm font-medium text-text-secondary">No visual prompt for Level {currentLevel}</p>
-                                                                                <Button
-                                                                                    variant="ghost"
-                                                                                    size="sm"
-                                                                                    className="mt-2 text-math-purple hover:bg-math-purple/10 font-bold"
-                                                                                    onClick={() => {
-                                                                                        setTargetLevelForUpload(currentLevel);
-                                                                                        setTimeout(() => scaffoldedImageInputRef.current?.click(), 100);
-                                                                                    }}
-                                                                                >
-                                                                                    <Plus size={16} className="mr-1" />
-                                                                                    Add Photo
-                                                                                </Button>
-                                                                            </div>
-                                                                        </div>
-                                                                    )}
-
-                                                                    <h5 className="text-2xl font-bold text-text-primary leading-tight">{levelData.question}</h5>
-
-                                                                    {levelFeedback[currentLevel]?.showHint && levelData.hint && (
-                                                                        <div className="p-4 bg-warning-amber-light/20 border border-warning-amber/30 rounded-xl flex items-start gap-3 animate-in slide-in-from-top-2">
-                                                                            <Zap size={20} className="text-warning-amber mt-1" />
-                                                                            <p className="text-text-primary italic"><span className="font-bold">Hint:</span> {levelData.hint}</p>
-                                                                        </div>
-                                                                    )}
-
-                                                                    <div className="flex gap-4 pt-4">
-                                                                        <Button
-                                                                            className="h-12 flex-1 bg-math-purple hover:bg-math-purple/90 shadow-md transform active:scale-95 transition-all"
-                                                                            onClick={() => {
-                                                                                setLevelFeedback(prev => ({ ...prev, [currentLevel]: { ...prev[currentLevel], isCorrect: true, showHint: false } }));
-                                                                                toast({ title: "Correct!", description: `Great work on Level ${currentLevel}!` });
-                                                                                if (currentLevel < 3) setTimeout(() => setCurrentLevel(prev => prev + 1), 1500);
-                                                                            }}
-                                                                        >
-                                                                            Verify Solution
-                                                                        </Button>
-                                                                        {levelData.hint && !levelFeedback[currentLevel]?.showHint && (
-                                                                            <Button
-                                                                                variant="outline"
-                                                                                className="h-12 px-6 border-warning-amber text-warning-amber hover:bg-warning-amber-light/10"
-                                                                                onClick={() => setLevelFeedback(prev => ({ ...prev, [currentLevel]: { ...prev[currentLevel], showHint: true } }))}
-                                                                            >
-                                                                                Need a Hint?
-                                                                            </Button>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                            ))}
-                                                            {levelFeedback[3]?.isCorrect && (
-                                                                <div className="h-full flex flex-col items-center justify-center text-center space-y-4 py-8 animate-in zoom-in-95">
-                                                                    <div className="bg-success-green/10 p-6 rounded-full text-success-green">
-                                                                        <Star size={64} fill="currentColor" />
-                                                                    </div>
-                                                                    <h5 className="text-2xl font-bold text-text-primary">Mastery Achieved!</h5>
-                                                                    <p className="text-text-secondary">You've completed all levels of this challenge.</p>
-                                                                    <Button variant="ghost" className="text-math-purple font-bold" onClick={() => { setCurrentLevel(1); setLevelFeedback({}); }}>Reset Practice</Button>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                {/* EXIT TICKET */}
-                                                {content.type === "exit-ticket" && (
-                                                    <div className="space-y-8 p-4">
-                                                        <div className="text-center space-y-2">
-                                                            <h4 className="font-bold text-3xl text-text-primary">3-2-1 Exit Ticket</h4>
-                                                            <p className="text-text-secondary">Reflect on your learning journey today</p>
-                                                        </div>
-
-                                                        <div className="space-y-8 max-w-2xl mx-auto">
-                                                            {/* 3 Learnings */}
-                                                            <div className="space-y-4">
-                                                                <div className="flex items-center gap-3">
-                                                                    <div className="w-8 h-8 rounded-full bg-success-green text-white flex items-center justify-center font-bold">3</div>
-                                                                    <h5 className="font-bold text-lg text-text-primary">Things I learned today</h5>
-                                                                </div>
-                                                                <div className="grid grid-cols-1 gap-2 pl-11">
-                                                                    {[0, 1, 2].map(i => (
-                                                                        <input
-                                                                            key={i}
-                                                                            value={exitTicketData.learnings[i]}
-                                                                            onChange={(e) => {
-                                                                                const newLearnings = [...exitTicketData.learnings];
-                                                                                newLearnings[i] = e.target.value;
-                                                                                setExitTicketData(prev => ({ ...prev, learnings: newLearnings }));
-                                                                            }}
-                                                                            placeholder={`Learning ${i + 1}...`}
-                                                                            className="bg-bg-secondary/50 border-b-2 border-border focus:border-success-green outline-none p-2 text-text-primary transition-all rounded-t-lg hover:bg-bg-secondary"
-                                                                        />
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-
-                                                            {/* 2 Questions */}
-                                                            <div className="space-y-4">
-                                                                <div className="flex items-center gap-3">
-                                                                    <div className="w-8 h-8 rounded-full bg-focus-blue text-white flex items-center justify-center font-bold">2</div>
-                                                                    <h5 className="font-bold text-lg text-text-primary">Questions I still have</h5>
-                                                                </div>
-                                                                <div className="grid grid-cols-1 gap-2 pl-11">
-                                                                    {[0, 1].map(i => (
-                                                                        <input
-                                                                            key={i}
-                                                                            value={exitTicketData.questions[i]}
-                                                                            onChange={(e) => {
-                                                                                const newQs = [...exitTicketData.questions];
-                                                                                newQs[i] = e.target.value;
-                                                                                setExitTicketData(prev => ({ ...prev, questions: newQs }));
-                                                                            }}
-                                                                            placeholder={`Question ${i + 1}...`}
-                                                                            className="bg-bg-secondary/50 border-b-2 border-border focus:border-focus-blue outline-none p-2 text-text-primary transition-all rounded-t-lg hover:bg-bg-secondary"
-                                                                        />
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-
-                                                            {/* 1 Insight */}
-                                                            <div className="space-y-4">
-                                                                <div className="flex items-center gap-3">
-                                                                    <div className="w-8 h-8 rounded-full bg-math-purple text-white flex items-center justify-center font-bold">1</div>
-                                                                    <h5 className="font-bold text-lg text-text-primary">Central discovery or insight</h5>
-                                                                </div>
-                                                                <div className="pl-11">
-                                                                    <textarea
-                                                                        value={exitTicketData.insight}
-                                                                        onChange={(e) => setExitTicketData(prev => ({ ...prev, insight: e.target.value }))}
-                                                                        placeholder="My single most important takeaway..."
-                                                                        className="w-full bg-bg-secondary/50 border-2 border-border focus:border-math-purple outline-none p-4 rounded-xl text-text-primary h-32 transition-all hover:bg-bg-secondary"
-                                                                    />
-                                                                </div>
-                                                            </div>
-
-                                                            {/* Confidence Slider */}
-                                                            <div className="space-y-4 pt-4 border-t border-border">
-                                                                <div className="flex justify-between items-center text-sm font-bold text-text-secondary uppercase tracking-widest">
-                                                                    <span>Not Confident</span>
-                                                                    <span className="text-math-purple bg-math-purple/10 px-3 py-1 rounded-full">Level: {confidence}%</span>
-                                                                    <span>Total Mastery</span>
-                                                                </div>
-                                                                <input
-                                                                    type="range"
-                                                                    min="0"
-                                                                    max="100"
-                                                                    value={confidence}
-                                                                    onChange={(e) => setConfidence(parseInt(e.target.value))}
-                                                                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-math-purple"
-                                                                />
-                                                                <p className="text-center text-lg font-bold text-text-primary animate-pulse">
-                                                                    {confidence < 30 ? "😰 I need more help!" : confidence < 70 ? "💪 I'm getting there!" : "🚀 I've got this!"}
-                                                                </p>
-                                                            </div>
-
-                                                            <Button
-                                                                className="w-full h-14 text-lg font-bold bg-success-green hover:bg-success-green/90 text-white shadow-lg shadow-green-900/10 rounded-2xl"
-                                                                onClick={() => toast({ title: "Reflection Shared!", description: "Your exit ticket has been sent to the teacher." })}
-                                                            >
-                                                                Finalize Lesson & Submit
-                                                            </Button>
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                {/* UNIVERSAL ENGAGE */}
-                                                {content.type === "universal-engage" && (
-                                                    <div className="space-y-8 rounded-xl overflow-hidden border border-border shadow-lg bg-bg-card text-text-primary transition-colors duration-200">
-                                                        {/* Header */}
-                                                        <div className="bg-[#FF6B35] dark:bg-orange-800 p-6 text-white flex justify-between items-center">
-                                                            <h2 className="text-2xl font-bold tracking-tight">🎯 ENGAGE - First 5 Minutes</h2>
-                                                            <div className="flex items-center gap-2 bg-white/20 px-4 py-2 rounded-lg backdrop-blur-sm shadow-sm">
-                                                                <Clock size={20} className="animate-pulse" />
-                                                                <span className="font-mono text-xl font-bold">{timeLeft > 0 ? formattedTime() : "0:00"}</span>
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="p-8 space-y-12">
-                                                            {/* Section 1: Visual Hook */}
-                                                            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                                                <div className="flex justify-between items-start">
-                                                                    <h3 className="text-xl font-bold text-[#FF6B35] dark:text-orange-400 flex items-center gap-2">
-                                                                        <span className="bg-[#FF6B35] dark:bg-orange-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">1</span>
-                                                                        Step 1: Grab Attention with an Image
-                                                                    </h3>
-
-                                                                    {/* AI Suggestion */}
-                                                                    {lesson?.lessonStructure?.engage?.visualMetadata?.imagePrompt && (
-                                                                        <div className="bg-bg-secondary p-3 rounded-lg border border-border max-w-md text-sm shadow-sm">
-                                                                            <div className="flex items-center gap-2 mb-1 text-[#FF6B35] dark:text-orange-400 font-bold text-xs uppercase tracking-wider">
-                                                                                <Sparkles size={12} />
-                                                                                AI Suggested Photo
-                                                                            </div>
-                                                                            <p className="text-text-secondary italic line-clamp-2 hover:line-clamp-none transition-all">"{lesson.lessonStructure.engage.visualMetadata.imagePrompt}"</p>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                                <p className="text-lg font-medium text-text-primary">"Upload a puzzling picture related to your topic here:"</p>
-
-                                                                <div className="space-y-4">
-                                                                    <div className="relative aspect-video bg-bg-secondary rounded-xl overflow-hidden border-2 border-dashed border-border flex items-center justify-center group shadow-inner">
-                                                                        {content.universalEngage?.visualHookImage ? (
-                                                                            <img
-                                                                                src={content.universalEngage.visualHookImage}
-                                                                                alt="Hook"
-                                                                                className="w-full h-full object-cover"
-                                                                                onError={(e) => {
-                                                                                    const target = e.target as HTMLImageElement;
-                                                                                    if (!target.src.includes('source.unsplash.com')) {
-                                                                                        target.src = `https://source.unsplash.com/featured/1600x900?${lesson?.topic || 'education'}`;
-                                                                                    }
-                                                                                }}
-                                                                            />
-                                                                        ) : (
-                                                                            <div className="text-center p-8 flex flex-col items-center">
-                                                                                <div className="bg-bg-card p-4 rounded-full mb-4 shadow-sm group-hover:scale-110 transition-transform">
-                                                                                    <ImageIcon size={48} className="text-text-tertiary" />
-                                                                                </div>
-                                                                                <h4 className="font-bold text-lg text-text-primary mb-2">No Visual Hook Set</h4>
-                                                                                <p className="text-text-tertiary max-w-sm mb-0">AI suggestion above or use the buttons below to add one.</p>
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-
-                                                                    <div className="flex flex-wrap gap-3 items-center justify-center bg-bg-secondary/50 p-4 rounded-xl border border-border/50">
-                                                                        <input
-                                                                            type="file"
-                                                                            ref={fileInputRef}
-                                                                            className="hidden"
-                                                                            accept="image/*"
-                                                                            onChange={handleFileUpload}
-                                                                        />
-                                                                        <Button
-                                                                            onClick={() => fileInputRef.current?.click()}
-                                                                            className="bg-[#FF6B35] hover:bg-orange-600 text-white dark:bg-orange-600 dark:hover:bg-orange-700 font-bold shadow-lg shadow-orange-900/10 flex-1 sm:flex-none py-6 h-auto"
-                                                                        >
-                                                                            <Download className="mr-2 h-5 w-5" />
-                                                                            Select Photo
-                                                                        </Button>
-                                                                        <div className="h-8 w-px bg-border hidden sm:block mx-1" />
-                                                                        <Button
-                                                                            onClick={handleAIForgeImage}
-                                                                            disabled={generatingImage}
-                                                                            className="bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-lg shadow-purple-900/10 flex-1 sm:flex-none py-6 h-auto"
-                                                                        >
-                                                                            {generatingImage ? <MoreHorizontal className="animate-pulse mr-2 h-5 w-5" /> : <Sparkles className="mr-2 h-5 w-5" />}
-                                                                            AI Forge Image
-                                                                        </Button>
-                                                                        {content.universalEngage?.visualHookImage && (
-                                                                            <Button
-                                                                                variant="ghost"
-                                                                                onClick={() => updateUniversalEngageImage("")}
-                                                                                className="text-text-tertiary hover:text-error-coral hover:bg-error-coral/10 py-6 h-auto px-4"
-                                                                            >
-                                                                                Remove
-                                                                            </Button>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                                <div className="bg-[#FF6B35]/10 dark:bg-orange-900/20 p-4 rounded-lg text-sm text-text-secondary border-l-4 border-[#FF6B35] dark:border-orange-500">
-                                                                    <span className="font-bold text-[#FF6B35] dark:text-orange-400">Teacher Tip:</span> Download an image showing something incomplete, mysterious, or counterintuitive about your topic. Examples: for science - an unexpected experiment result; for math - a visual pattern; for history - an artifact; for language - a word puzzle.
-                                                                </div>
-                                                            </div>
-
-                                                            {/* Section 2: Notice & Wonder */}
-                                                            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
-                                                                <h3 className="text-xl font-bold text-[#FF6B35] dark:text-orange-400 flex items-center gap-2">
-                                                                    <span className="bg-[#FF6B35] dark:bg-orange-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">2</span>
-                                                                    Step 2: What do you Notice? What do you Wonder?
-                                                                </h3>
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                                    <div className="space-y-2">
-                                                                        <label className="font-bold text-text-primary">Students: Type your observations here:</label>
-                                                                        <textarea
-                                                                            value={universalEngageResponses.notice}
-                                                                            onChange={(e) => setUniversalEngageResponses(prev => ({ ...prev, notice: e.target.value }))}
-                                                                            className="w-full p-4 rounded-lg bg-bg-secondary border border-border focus:border-[#FF6B35] focus:dark:border-orange-500 h-32 resize-none transition-all text-text-primary placeholder:text-text-tertiary"
-                                                                            placeholder="I notice..."
-                                                                        />
-                                                                    </div>
-                                                                    <div className="space-y-2">
-                                                                        <label className="font-bold text-text-primary">Students: What questions does this raise?</label>
-                                                                        <textarea
-                                                                            value={universalEngageResponses.wonder}
-                                                                            onChange={(e) => setUniversalEngageResponses(prev => ({ ...prev, wonder: e.target.value }))}
-                                                                            className="w-full p-4 rounded-lg bg-bg-secondary border border-border focus:border-[#FF6B35] focus:dark:border-orange-500 h-32 resize-none transition-all text-text-primary placeholder:text-text-tertiary"
-                                                                            placeholder="I wonder..."
-                                                                        />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-
-                                                            {/* Section 3: Personal Connection */}
-                                                            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
-                                                                <h3 className="text-xl font-bold text-[#FF6B35] dark:text-orange-400 flex items-center gap-2">
-                                                                    <span className="bg-[#FF6B35] dark:bg-orange-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">3</span>
-                                                                    Step 3: Personal Connection Poll
-                                                                </h3>
-                                                                <p className="text-lg font-medium text-text-primary">"{content.universalEngage?.pollQuestion || "How does this relate to your experience?"}"</p>
-                                                                <div className="space-y-3">
-                                                                    {(content.universalEngage?.pollOptions || ["I've seen something like this before", "This reminds me of...", "This is completely new to me"]).map((option, idx) => (
-                                                                        <div key={idx} className="relative p-4 rounded-lg border border-border hover:border-[#FF6B35] dark:hover:border-orange-500 cursor-pointer group bg-bg-secondary hover:bg-[#FF6B35]/5 dark:hover:bg-orange-500/10 transition-all">
-                                                                            <div className="flex justify-between relative z-10">
-                                                                                <span className="font-medium text-text-primary group-hover:text-[#FF6B35] dark:group-hover:text-orange-400 transition-colors">{option}</span>
-                                                                            </div>
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-
-                                                            {/* Section 4: Prediction */}
-                                                            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
-                                                                <h3 className="text-xl font-bold text-[#FF6B35] dark:text-orange-400 flex items-center gap-2">
-                                                                    <span className="bg-[#FF6B35] dark:bg-orange-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">4</span>
-                                                                    Step 4: Make a Prediction
-                                                                </h3>
-                                                                <div className="space-y-2">
-                                                                    <label className="font-bold text-text-primary flex items-center gap-2">
-                                                                        <Sparkles size={16} className="text-[#FF6B35] dark:text-orange-400" />
-                                                                        Based on this image and our discussion, predict what we'll learn today:
-                                                                    </label>
-                                                                    <textarea
-                                                                        value={universalEngageResponses.prediction}
-                                                                        onChange={(e) => setUniversalEngageResponses(prev => ({ ...prev, prediction: e.target.value }))}
-                                                                        className="w-full p-4 rounded-lg bg-bg-secondary border border-border focus:border-[#FF6B35] focus:dark:border-orange-500 h-24 resize-none transition-all text-text-primary placeholder:text-text-tertiary"
-                                                                        placeholder="My prediction is..."
-                                                                    />
-                                                                </div>
-                                                            </div>
-
-                                                            {/* Section 5: Question Harvest */}
-                                                            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-400">
-                                                                <h3 className="text-xl font-bold text-[#FF6B35] dark:text-orange-400 flex items-center gap-2">
-                                                                    <span className="bg-[#FF6B35] dark:bg-orange-500 text-white w-8 h-8 rounded-full flex items-center justify-center text-sm">5</span>
-                                                                    Step 5: Your Burning Question
-                                                                </h3>
-                                                                <div className="bg-[#FF6B35]/5 dark:bg-orange-500/10 p-6 rounded-xl border border-[#FF6B35]/20 dark:border-orange-500/20">
-                                                                    <label className="font-bold text-lg text-text-primary block mb-3">What's the one question you most want answered today?</label>
-                                                                    <div className="flex gap-2">
-                                                                        <input
-                                                                            value={universalEngageResponses.question}
-                                                                            onChange={(e) => setUniversalEngageResponses(prev => ({ ...prev, question: e.target.value }))}
-                                                                            className="flex-1 p-4 rounded-lg border border-border focus:border-[#FF6B35] focus:dark:border-orange-500 outline-none shadow-sm bg-bg-secondary text-text-primary placeholder:text-text-tertiary"
-                                                                            placeholder="My burning question..."
-                                                                        />
-                                                                        <Button className="bg-[#FF6B35] hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-700 text-white h-auto px-6 font-bold shadow-md">Ask!</Button>
-                                                                    </div>
-                                                                    <p className="text-sm text-[#FF6B35] dark:text-orange-400 mt-3 font-medium italic">"These questions will guide our lesson!"</p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                {/* INSTRUCTIONAL ACTIVITY (LEARN PHASE OVERHAUL) */}
-                                                {content.type === "instructional" && content.instructional && (
-                                                    <InstructionalActivity
-                                                        data={content.instructional}
-                                                        topic={lesson?.topic || "Lesson"}
-                                                        onUploadCustom={updateInstructionalContent}
-                                                        onAddFlashcards={handleManualFlashcards}
-                                                        onGenerateFlashcards={handleAIFlashcards}
-                                                    />
-                                                )}
-
-                                                {/* FALLBACK FOR UNKNOWN TYPES */}
-                                                {!['text', 'image', 'video', 'quiz', 'activity', 'file', 'resource', 'presentation', 'carousel', 'poll', 'brainstorm', 'steps', 'flashcards', 'categorization', 'scaffolded', 'exit-ticket', 'universal-engage', 'instructional'].includes(content.type) && (
-                                                    <div className="p-6 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-800">
-                                                        <h4 className="font-bold">Unknown Content Type: {content.type}</h4>
-                                                        <pre className="mt-2 p-2 bg-white rounded text-xs overflow-auto">{JSON.stringify(content, null, 2)}</pre>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
-
-                                    {/* Add Quiz Button if missing (Only for Teachers/Owners) */}
-                                    {(user?.id === lesson?.createdBy) && !currentPhaseData?.content?.some(c => c.type === 'quiz') && (
-                                        <div className="pt-8">
-                                            <Button
-                                                onClick={handleCreateQuizInline}
-                                                disabled={isGeneratingQuiz}
-                                                className="w-full h-16 bg-white border-2 border-dashed border-math-purple/30 text-math-purple hover:bg-math-purple/5 font-bold rounded-2xl flex items-center justify-center gap-3 transition-all group"
-                                            >
-                                                {isGeneratingQuiz ? (
-                                                    <Loader2 className="animate-spin" />
-                                                ) : (
-                                                    <Plus size={24} className="group-hover:scale-110 transition-transform" />
-                                                )}
-                                                <span>{isGeneratingQuiz ? "Generating Quiz Questions..." : "Add Interactive Quiz to this Phase"}</span>
-                                            </Button>
+                                            <h3 className="text-2xl font-bold text-text-secondary">No content added yet</h3>
+                                            <p className="text-text-tertiary mt-2">Check the Lesson Builder to add activities for this phase.</p>
                                         </div>
                                     )}
-                                </div>
+                            </div>
+                        </CardContent >
+                    </div >
 
-                            ) : (
-                                <div className="text-center py-24 bg-bg-card rounded-2xl border border-dashed border-border">
-                                    <div className="bg-bg-secondary w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 text-text-tertiary">
-                                        <Layout size={40} />
-                                    </div>
-                                    <h3 className="text-2xl font-bold text-text-secondary">No content added yet</h3>
-                                    <p className="text-text-tertiary mt-2">Check the Lesson Builder to add activities for this phase.</p>
-                                </div>
-                            )}
+                    {/* Hidden inputs for player-side updates */}
+                    < input
+                        type="file"
+                        ref={scaffoldedImageInputRef}
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleScaffoldedImageUpload}
+                    />
 
-                        </CardContent>
-
-                        {/* Hidden inputs for player-side updates */}
-                        <input
-                            type="file"
-                            ref={scaffoldedImageInputRef}
-                            className="hidden"
-                            accept="image/*"
-                            onChange={handleScaffoldedImageUpload}
-                        />
-
-                        {/* Research Lab - Lesson-Level Guidance (Show mainly in Learn phase to reduce repetition) */}
-                        {lesson?.researchNotes && currentPhaseIndex <= 1 && (
+                    {/* Research Lab - Lesson-Level Guidance (Show mainly in Learn phase to reduce repetition) */}
+                    {
+                        lesson?.researchNotes && currentPhaseIndex <= 1 && (
                             <div className="mx-6 mb-6 p-4 bg-math-purple/5 border border-math-purple/10 rounded-xl animate-in fade-in duration-1000">
                                 <div className="flex items-center gap-2 mb-3">
                                     <BrainCircuit size={18} className="text-math-purple" />
@@ -2181,8 +2028,8 @@ const LessonRunnable: React.FC = () => {
                                     </div>
                                 )}
                             </div>
-                        )}
-                    </div>
+                        )
+                    }
 
                     {/* Footer Navigation */}
                     <CardFooter className="p-6 mt-6 bg-bg-card border-t border-border rounded-b-xl flex justify-between items-center sticky bottom-0 z-10 shadow-[0_-5px_15px_-5px_rgba(0,0,0,0.05)]">
@@ -2213,30 +2060,34 @@ const LessonRunnable: React.FC = () => {
                             {currentPhaseIndex < PHASES.length - 1 && <SkipForward size={18} className="ml-2" />}
                         </Button>
                     </CardFooter>
-                </Card>
+                </Card >
 
                 {/* Flashcard Modal */}
-                {flashcardModalState.isOpen && (
-                    <FlashcardModal
-                        isOpen={flashcardModalState.isOpen}
-                        onClose={() => setFlashcardModalState({ isOpen: false, initialData: null })}
-                        onSave={handleSaveFlashcards}
-                        initialData={flashcardModalState.initialData}
-                        subject={lesson?.subject || "math"}
-                        gradeLevel={lesson?.gradeLevel || 1}
-                    />
-                )}
+                {
+                    flashcardModalState.isOpen && (
+                        <FlashcardModal
+                            isOpen={flashcardModalState.isOpen}
+                            onClose={() => setFlashcardModalState({ isOpen: false, initialData: null })}
+                            onSave={handleSaveFlashcards}
+                            initialData={flashcardModalState.initialData}
+                            subject={lesson?.subject || "math"}
+                            gradeLevel={lesson?.gradeLevel || 1}
+                        />
+                    )
+                }
 
                 {/* AI Loading Overlay */}
-                {isGeneratingFlashcards && (
-                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
-                        <div className="bg-bg-card p-8 rounded-2xl shadow-xl border border-border flex flex-col items-center gap-4">
-                            <Sparkles className="w-12 h-12 text-math-purple animate-pulse" />
-                            <h3 className="text-xl font-bold text-text-primary">Generating Flashcards...</h3>
-                            <p className="text-text-secondary">AI is creating study cards for this lesson.</p>
+                {
+                    isGeneratingFlashcards && (
+                        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+                            <div className="bg-bg-card p-8 rounded-2xl shadow-xl border border-border flex flex-col items-center gap-4">
+                                <Sparkles className="w-12 h-12 text-math-purple animate-pulse" />
+                                <h3 className="text-xl font-bold text-text-primary">Generating Flashcards...</h3>
+                                <p className="text-text-secondary">AI is creating study cards for this lesson.</p>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )
+                }
             </div >
         </div >
     );
