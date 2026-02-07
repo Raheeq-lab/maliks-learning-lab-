@@ -150,12 +150,12 @@ function repairJson(jsonStr: string): any {
 }
 
 // Updated configurations for Preview Access Keys
+// Standard standard configurations for Gemini models
 const MODELS = [
-    { model: "gemini-2.5-flash", version: "v1beta" },
-    { model: "gemini-2.5-flash-lite-preview-09-2025", version: "v1beta" },
-    { model: "gemini-2.0-flash", version: "v1beta" },
-    { model: "gemini-3-flash-preview", version: "v1beta" },
-    { model: "gemini-3-pro-preview", version: "v1beta" }
+    { model: "gemini-2.0-flash-exp", version: "v1beta" },
+    { model: "gemini-1.5-flash", version: "v1beta" },
+    { model: "gemini-1.5-pro", version: "v1beta" },
+    { model: "gemini-2.0-flash", version: "v1beta" }
 ];
 
 import { dualAIService } from "@/services/DualAIService";
@@ -557,3 +557,36 @@ export const generateTextContent = async (prompt: string): Promise<string> => {
 export const isConfigured = (): boolean => {
     return !!GEMINI_API_KEY;
 };
+
+/**
+ * Generate Flashcards
+ */
+export async function generateFlashcards(
+    subject: string,
+    grade: string,
+    topic: string,
+    count: number = 10
+): Promise<{ front: string; back: string }[]> {
+    const prompt = `
+Generate a set of ${count} high-quality educational flashcards for Grade ${grade} ${subject} on the topic: "${topic}".
+Each flashcard must have a "front" (question/term) and a "back" (answer/definition).
+
+Return ONLY a JSON array of objects with "front" and "back" keys.
+Example format:
+[
+  {"front": "What is 2+2?", "back": "4"},
+  {"front": "Definition of photosynthesis", "back": "The process by which plants use sunlight to synthesize food from carbon dioxide and water."}
+]
+`;
+
+    const responseText = await generateTextContent(prompt);
+    try {
+        // Attempt to extract JSON if it's wrapped in markers
+        const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+        const jsonStr = jsonMatch ? jsonMatch[0] : responseText;
+        return JSON.parse(jsonStr);
+    } catch (e) {
+        console.error("Failed to parse flashcards JSON", e, responseText);
+        throw new Error("AI failed to generate flashcards in a valid format. Please try again.");
+    }
+}

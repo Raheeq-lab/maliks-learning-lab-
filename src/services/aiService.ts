@@ -86,15 +86,12 @@ export const generateContent = async (
 };
 
 const callGemini = async (apiKey: string, prompt: string): Promise<GenerationResponse> => {
-    // Configurations to try in order. Prioritize stable 1.5 models.
-    // Updated configurations based on user's available models (Early Access/Preview)
-    // Removed 1.5 models as they are returning 404s for this key.
+    // Configurations to try in order. Prioritize stable 1.5 and 2.0 models.
     const configurations = [
-        { version: 'v1beta', model: 'gemini-2.5-flash' },
-        { version: 'v1beta', model: 'gemini-2.5-flash-lite-preview-09-2025' },
-        { version: 'v1beta', model: 'gemini-2.0-flash' },
-        { version: 'v1beta', model: 'gemini-3-flash-preview' },
-        { version: 'v1beta', model: 'gemini-3-pro-preview' }
+        { version: 'v1beta', model: 'gemini-1.5-flash' },
+        { version: 'v1beta', model: 'gemini-2.0-flash-exp' },
+        { version: 'v1beta', model: 'gemini-1.5-pro' },
+        { version: 'v1beta', model: 'gemini-2.0-flash' }
     ];
 
     let firstError = '';

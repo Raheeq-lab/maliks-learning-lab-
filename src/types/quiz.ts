@@ -248,3 +248,22 @@ export interface GameQuestion {
   answer?: string;
   points: number;
 }
+export interface Flashcard {
+  id: string;
+  front: string;
+  back: string;
+  imageUrl?: string;
+}
+
+export interface FlashcardSet {
+  id: string;
+  title: string;
+  description: string;
+  gradeLevel: number;
+  subject: "math" | "english" | "ict";
+  cards: Flashcard[];
+  accessCode: string;
+  createdBy: string;
+  createdAt: string;
+  isPublic?: boolean;
+}

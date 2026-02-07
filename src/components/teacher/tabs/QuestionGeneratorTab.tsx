@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Quiz, Lesson, LessonStructure } from "@/types/quiz";
-import { generateQuizQuestions, generateLessonPlan, generateWorksheet, generateTextContent, isConfigured, QuizQuestion as GeminiQuizQuestion } from "@/utils/geminiAI";
+import { Quiz, Lesson, LessonStructure, FlashcardSet } from "@/types/quiz";
+import { generateQuizQuestions, generateLessonPlan, generateWorksheet, generateTextContent, generateFlashcards, isConfigured, QuizQuestion as GeminiQuizQuestion } from "@/utils/geminiAI";
 import { getLearningTypes } from "@/utils/lessonUtils";
 import { Download, ImageIcon, FileCheck, Layers } from "lucide-react";
 
@@ -20,13 +20,15 @@ interface QuestionGeneratorTabProps {
   subject?: "math" | "english" | "ict";
   onCreateQuiz: (quiz: Quiz) => Promise<void>;
   onCreateLesson: (lesson: Lesson) => Promise<void>;
+  onCreateFlashcardSet: (flashcardSet: FlashcardSet) => Promise<void>;
 }
 
 const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = React.memo(({
   availableGrades = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
   subject = "math",
   onCreateQuiz,
-  onCreateLesson
+  onCreateLesson,
+  onCreateFlashcardSet
 }) => {
   const { toast } = useToast();
 
@@ -50,7 +52,7 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = React.memo(({
 
   // Let's place the GradeSelector at the top.
 
-  const [activeTab, setActiveTab] = useState<"quiz" | "lesson">("quiz");
+  const [activeTab, setActiveTab] = useState<"quiz" | "lesson" | "flashcards">("quiz");
   const [learningType, setLearningType] = useState<string>("scaffolded-lesson");
 
   // Quiz State
@@ -63,6 +65,7 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = React.memo(({
   const [isForgingAssets, setIsForgingAssets] = useState(false);
   const [generatedWorksheetData, setGeneratedWorksheetData] = useState<{ title: string, content: string } | null>(null);
   const [isGeneratingWorksheet, setIsGeneratingWorksheet] = useState(false);
+  const [generatedFlashcards, setGeneratedFlashcards] = useState<{ front: string; back: string }[]>([]);
 
   const handleGenerate = async () => {
     setError(null);
@@ -88,6 +91,15 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = React.memo(({
         );
         setGeneratedQuestions(questions);
         toast({ title: "Success", description: `Generated ${questions.length} questions!` });
+      } else if (activeTab === 'flashcards') {
+        const flashcards = await generateFlashcards(
+          subject,
+          selectedGrade,
+          customTopic,
+          parseInt(numQuestions)
+        );
+        setGeneratedFlashcards(flashcards);
+        toast({ title: "Success", description: `Generated ${flashcards.length} flashcards!` });
       } else {
         // Lesson Generation
         const lessonPlan = await generateLessonPlan(subject, selectedGrade, customTopic);
@@ -466,6 +478,35 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = React.memo(({
     }
   };
 
+  const handleAddToFlashcards = async () => {
+    if (generatedFlashcards.length === 0) return;
+
+    const newSet: FlashcardSet = {
+      id: crypto.randomUUID(),
+      title: `${customTopic} Flashcards`,
+      description: `Generated ${subject} flashcards for Grade ${selectedGrade}`,
+      gradeLevel: parseInt(selectedGrade) || 0,
+      subject: subject,
+      cards: generatedFlashcards.map(cf => ({
+        id: crypto.randomUUID(),
+        front: cf.front,
+        back: cf.back
+      })),
+      accessCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
+      createdBy: "", // Handled by parent
+      createdAt: new Date().toISOString()
+    };
+
+    try {
+      await onCreateFlashcardSet(newSet);
+      toast({ title: "Flashcards Saved!", description: "Flashcard set added to your library." });
+      setGeneratedFlashcards([]);
+      setCustomTopic("");
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to save flashcards.", variant: "destructive" });
+    }
+  };
+
   const getSubjectIcon = () => {
     switch (subject) {
       case "math": return <BookOpen size={20} className="text-purple-500" />;
@@ -538,11 +579,12 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = React.memo(({
           </p>
 
           <Tabs value={activeTab} onValueChange={(v) => {
-            setActiveTab(v as "quiz" | "lesson");
+            setActiveTab(v as "quiz" | "lesson" | "flashcards");
             setGeneratedQuestions([]);
+            setGeneratedFlashcards([]);
             setError(null);
           }} className="w-full mt-6">
-            <TabsList className="grid w-full grid-cols-2 bg-bg-secondary/50 p-1 border border-border rounded-xl h-auto">
+            <TabsList className="grid w-full grid-cols-3 bg-bg-secondary/50 p-1 border border-border rounded-xl h-auto">
               <TabsTrigger
                 value="quiz"
                 className="flex items-center justify-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-bg-card data-[state=active]:to-bg-secondary data-[state=active]:text-text-primary data-[state=active]:shadow-lg data-[state=active]:border-border/50 text-text-tertiary hover:text-text-primary transition-all rounded-lg py-3 font-medium"
@@ -557,11 +599,57 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = React.memo(({
                 <FileText size={18} className={activeTab === 'lesson' ? 'text-english-green' : ''} />
                 Generate Lesson
               </TabsTrigger>
+              <TabsTrigger
+                value="flashcards"
+                className="flex items-center justify-center gap-2 data-[state=active]:bg-gradient-to-br data-[state=active]:from-bg-card data-[state=active]:to-bg-secondary data-[state=active]:text-text-primary data-[state=active]:shadow-lg data-[state=active]:border-border/50 text-text-tertiary hover:text-text-primary transition-all rounded-lg py-3 font-medium"
+              >
+                <Layers size={18} className={activeTab === 'flashcards' ? 'text-orange-500' : ''} />
+                Generate Flashcards
+              </TabsTrigger>
             </TabsList>
           </Tabs>
         </CardHeader>
 
         <CardContent className="space-y-6 pt-6">
+          {activeTab === 'flashcards' && generatedFlashcards.length > 0 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="flex justify-between items-center pb-2 border-b border-border">
+                <h3 className="font-bold text-xl text-text-primary flex items-center gap-2">
+                  <Layers size={20} className="text-orange-500" />
+                  Generated Flashcards <span className="text-text-tertiary text-sm font-normal ml-2">({generatedFlashcards.length})</span>
+                </h3>
+                <div className="flex gap-3">
+                  <Button variant="outline" onClick={() => setGeneratedFlashcards([])} className="border-border text-text-secondary hover:bg-bg-secondary hover:text-text-primary">
+                    <RefreshCw className="mr-2 h-4 w-4" /> Regenerate
+                  </Button>
+                  <Button onClick={handleAddToFlashcards} className="bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/20 border-none transition-all hover:scale-105">
+                    <Plus className="mr-2 h-4 w-4" /> Add to Library
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                {generatedFlashcards.map((card, idx) => (
+                  <Card key={idx} className="border-l-4 border-l-orange-500 border-y border-r border-border hover:bg-bg-secondary/30 transition-all duration-300">
+                    <CardHeader className="pb-2 pt-4">
+                      <span className="text-[10px] font-bold text-orange-500 uppercase tracking-wider">Card {idx + 1}</span>
+                    </CardHeader>
+                    <CardContent className="space-y-4 pb-4">
+                      <div>
+                        <span className="text-[10px] font-bold text-text-tertiary uppercase block mb-1">Front</span>
+                        <p className="text-sm font-semibold text-text-primary leading-relaxed">{card.front}</p>
+                      </div>
+                      <div className="pt-2 border-t border-border">
+                        <span className="text-[10px] font-bold text-text-tertiary uppercase block mb-1">Back</span>
+                        <p className="text-sm text-text-secondary leading-relaxed">{card.back}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
           {error && (
             <Alert variant="destructive" className="bg-red-900/20 border-red-500/50 text-red-200">
               <AlertCircle className="h-4 w-4" />
@@ -570,7 +658,7 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = React.memo(({
             </Alert>
           )}
 
-          {generatedQuestions.length === 0 && !generatedLesson ? (
+          {generatedQuestions.length === 0 && !generatedLesson && generatedFlashcards.length === 0 ? (
             /* Input Form */
             <div className="space-y-6 animate-in slide-in-from-bottom-2 duration-300">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -587,18 +675,22 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = React.memo(({
                     </SelectContent>
                   </Select>
                 </div>
-                {activeTab === 'quiz' && (
+                {(activeTab === 'quiz' || activeTab === 'flashcards') && (
                   <div className="space-y-2">
-                    <Label className="text-text-secondary font-medium ml-1">Number of Questions</Label>
+                    <Label className="text-text-secondary font-medium ml-1">
+                      {activeTab === 'quiz' ? 'Number of Questions' : 'Number of Cards'}
+                    </Label>
                     <Select value={numQuestions} onValueChange={setNumQuestions}>
                       <SelectTrigger className="bg-bg-input/50 border-border hover:border-border/60 focus:ring-2 focus:ring-math-purple/30 h-12 transition-all rounded-xl text-text-primary">
                         <SelectValue placeholder="5" />
                       </SelectTrigger>
                       <SelectContent className="bg-bg-card border-border text-text-primary">
-                        <SelectItem value="5" className="focus:bg-bg-secondary focus:text-text-primary">5 Questions</SelectItem>
-                        <SelectItem value="10" className="focus:bg-bg-secondary focus:text-text-primary">10 Questions</SelectItem>
-                        <SelectItem value="15" className="focus:bg-bg-secondary focus:text-text-primary">15 Questions</SelectItem>
-                        <SelectItem value="20" className="focus:bg-bg-secondary focus:text-text-primary">20 Questions</SelectItem>
+                        <SelectItem value="5" className="focus:bg-bg-secondary focus:text-text-primary">5 {activeTab === 'quiz' ? 'Questions' : 'Cards'}</SelectItem>
+                        <SelectItem value="10" className="focus:bg-bg-secondary focus:text-text-primary">10 {activeTab === 'quiz' ? 'Questions' : 'Cards'}</SelectItem>
+                        <SelectItem value="15" className="focus:bg-bg-secondary focus:text-text-primary">15 {activeTab === 'quiz' ? 'Questions' : 'Cards'}</SelectItem>
+                        {activeTab === 'quiz' && (
+                          <SelectItem value="20" className="focus:bg-bg-secondary focus:text-text-primary">20 Questions</SelectItem>
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -657,7 +749,7 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = React.memo(({
                 ) : (
                   <>
                     <Wand2 className="mr-2 animate-pulse" size={22} />
-                    Generate {activeTab === 'quiz' ? 'Quiz' : 'Lesson'}
+                    Generate {activeTab === 'quiz' ? 'Quiz' : activeTab === 'lesson' ? 'Lesson' : 'Flashcards'}
                   </>
                 )}
               </Button>

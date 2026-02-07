@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { Book, FileText, Users, BarChart, Laptop, BookText, Globe, Sparkles } from "lucide-react";
-import { Quiz, Lesson, StudentQuizResult, TeacherData } from '@/types/quiz';
+import { Book, FileText, Users, BarChart, Laptop, BookText, Globe, Sparkles, Layers } from "lucide-react";
+import { Quiz, Lesson, StudentQuizResult, TeacherData, FlashcardSet } from '@/types/quiz';
 import QuizForm from '@/components/QuizForm';
 import LessonBuilder from '@/components/teacher/LessonBuilder';
 import ScaffoldedLessonBuilder from '@/components/teacher/ScaffoldedLessonBuilder';
@@ -13,6 +13,7 @@ import QuizzesTab from '@/components/teacher/tabs/QuizzesTab';
 import PerformanceTab from '@/components/teacher/tabs/PerformanceTab';
 import QuestionGeneratorTab from '@/components/teacher/tabs/QuestionGeneratorTab';
 import LessonsTab from '@/components/teacher/tabs/LessonsTab';
+import FlashcardsTab from '@/components/teacher/tabs/FlashcardsTab';
 import PublicLibrary from '@/components/teacher/PublicLibrary';
 import SubjectSelector from '@/components/SubjectSelector';
 import { AIStatusCard } from "@/components/teacher/AIStatusCard";
@@ -33,6 +34,7 @@ const TeacherDashboard: React.FC = () => {
 
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [flashcardSets, setFlashcardSets] = useState<FlashcardSet[]>([]);
   const [results, setResults] = useState<StudentQuizResult[]>([]);
 
   // Persist active tab
@@ -43,6 +45,7 @@ const TeacherDashboard: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isQuizzesLoading, setIsQuizzesLoading] = useState(true);
   const [isLessonsLoading, setIsLessonsLoading] = useState(true);
+  const [isFlashcardsLoading, setIsFlashcardsLoading] = useState(true);
   const [isResultsLoading, setIsResultsLoading] = useState(true);
 
   const [showQuizForm, setShowQuizForm] = useState(false);
@@ -69,6 +72,7 @@ const TeacherDashboard: React.FC = () => {
     // Set all to loading initially
     setIsQuizzesLoading(true);
     setIsLessonsLoading(true);
+    setIsFlashcardsLoading(true);
     setIsResultsLoading(true);
 
     try {
@@ -122,11 +126,37 @@ const TeacherDashboard: React.FC = () => {
         finally { setIsLessonsLoading(false); }
       };
 
+      const fetchFlashcards = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('flashcards')
+            .select('*')
+            .eq('created_by', user.id)
+            .order('created_at', { ascending: false });
+
+          if (error) throw error;
+
+          setFlashcardSets((data || []).map((s: any) => ({
+            ...s,
+            gradeLevel: s.grade_level,
+            accessCode: s.access_code,
+            createdBy: s.created_by,
+            createdAt: s.created_at,
+            isPublic: s.is_public
+          })));
+        } catch (e) {
+          console.error("Flashcards fetch error", e);
+        } finally {
+          setIsFlashcardsLoading(false);
+        }
+      };
+
       // Results fetch removed as a global fetch - PerformanceTab fetches per quiz
       setIsResultsLoading(false);
 
       fetchQuizzes();
       fetchLessons();
+      fetchFlashcards();
 
     } catch (error: any) {
       console.error('Unexpected error:', error);
@@ -248,6 +278,39 @@ const TeacherDashboard: React.FC = () => {
       });
     }
   }, [user, editingLesson, loadData, toast]);
+
+  const handleCreateFlashcardSet = React.useCallback(async (set: FlashcardSet) => {
+    try {
+      if (!user) return;
+
+      const payload = {
+        title: set.title,
+        description: set.description || '',
+        grade_level: Number(set.gradeLevel) || 1,
+        subject: set.subject,
+        cards: set.cards,
+        access_code: set.accessCode ? set.accessCode.toUpperCase() : Math.random().toString(36).substring(2, 8).toUpperCase(),
+        created_by: user.id,
+        is_public: false
+      };
+
+      const { error } = await supabase
+        .from('flashcards')
+        .insert([payload]);
+
+      if (error) throw error;
+      toast({ title: "Flashcards created!", description: "Access code: " + payload.access_code });
+
+      loadData();
+    } catch (error: any) {
+      console.error("Error saving flashcards:", error);
+      toast({
+        title: "Error saving flashcards",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  }, [user, loadData, toast]);
 
 
   const handleEditQuiz = React.useCallback(async (q: Quiz) => {
@@ -552,6 +615,13 @@ const TeacherDashboard: React.FC = () => {
                   <span>Lesson Builder</span>
                 </TabsTrigger>
                 <TabsTrigger
+                  value="flashcards"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm data-[state=active]:bg-bg-card data-[state=active]:text-text-primary data-[state=active]:shadow-sm text-text-secondary hover:text-text-primary transition-all rounded-md"
+                >
+                  <Layers size={14} />
+                  <span>Flashcards</span>
+                </TabsTrigger>
+                <TabsTrigger
                   value="library"
                   className="flex items-center gap-1.5 px-3 py-1.5 text-sm data-[state=active]:bg-bg-card data-[state=active]:text-text-primary data-[state=active]:shadow-sm text-text-secondary hover:text-text-primary transition-all rounded-md"
                 >
@@ -603,6 +673,39 @@ const TeacherDashboard: React.FC = () => {
                 />
               </TabsContent>
 
+              <TabsContent value="flashcards">
+                <FlashcardsTab
+                  flashcardSets={flashcardSets.filter(s => s.subject === selectedSubject)}
+                  onCreateSet={() => setActiveTab("generate")}
+                  onCopyCode={handleCopyCode}
+                  onEditSet={(s) => {
+                    toast({ title: "Edit Flashcards", description: "Edit mode coming soon!" });
+                  }}
+                  onDeleteSet={async (id) => {
+                    try {
+                      const { error } = await supabase.from('flashcards').delete().eq('id', id);
+                      if (error) throw error;
+                      toast({ title: "Flashcard Set Deleted" });
+                      loadData();
+                    } catch (err: any) {
+                      toast({ title: "Error", description: err.message, variant: "destructive" });
+                    }
+                  }}
+                  onTogglePublic={async (id, isPublic) => {
+                    try {
+                      const { error } = await supabase.from('flashcards').update({ is_public: isPublic }).eq('id', id);
+                      if (error) throw error;
+                      toast({ title: isPublic ? "Set is now Public" : "Set is now Private" });
+                      loadData();
+                    } catch (err: any) {
+                      toast({ title: "Error", description: err.message, variant: "destructive" });
+                    }
+                  }}
+                  subject={selectedSubject}
+                  isLoading={isFlashcardsLoading}
+                />
+              </TabsContent>
+
               <TabsContent value="library">
                 <PublicLibrary onCopySuccess={loadData} />
               </TabsContent>
@@ -624,6 +727,7 @@ const TeacherDashboard: React.FC = () => {
                   subject={selectedSubject}
                   onCreateQuiz={handleCreateQuiz}
                   onCreateLesson={handleCreateLesson}
+                  onCreateFlashcardSet={handleCreateFlashcardSet}
                 />
               </TabsContent>
             </Tabs>
