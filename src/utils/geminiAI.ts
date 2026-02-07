@@ -267,7 +267,8 @@ async function callGeminiAPI(prompt: string, systemPrompt?: string): Promise<any
                 return repairJson(result);
             } catch (e) {
                 console.warn("[callGeminiAPI] JSON extraction failed. Forcing Gemini fallback.");
-                return await _internalGeminiCall(prompt);
+                const fallbackPrompt = systemPrompt ? `${systemPrompt}\n\n${prompt}` : prompt;
+                return await _internalGeminiCall(fallbackPrompt);
             }
         }
         return result;
@@ -276,7 +277,8 @@ async function callGeminiAPI(prompt: string, systemPrompt?: string): Promise<any
         // Last ditch fallback if dualAIService completely threw up
         try {
             console.warn("Attempting final emergency fallback to Gemini...");
-            return await _internalGeminiCall(prompt);
+            const fallbackPrompt = systemPrompt ? `${systemPrompt}\n\n${prompt}` : prompt;
+            return await _internalGeminiCall(fallbackPrompt);
         } catch (finalError) {
             throw error;
         }
@@ -556,19 +558,24 @@ export async function generateFlashcards(
     topic: string,
     count: number = 10
 ): Promise<{ front: string; back: string }[]> {
-    const prompt = `Generate exactly ${count} educational flashcards for Grade ${grade} students studying ${subject}. The topic is: "${topic}".
-Output as a raw JSON array. Each object in the array MUST have a "front" key and a "back" key.
+    const prompt = `
+    You are an expert teacher. Generate exactly ${count} educational flashcards for students in Grade ${grade} studying ${subject}.
+    Topic: "${topic}"
 
-Example:
-[
-  {"front": "Question", "back": "Answer"}
-]
+    FORMAT RULES:
+    1. Output a raw JSON array of objects.
+    2. Each object MUST have "front" and "back" keys.
+    3. NO preamble, NO conversational filler, NO markdown formatting.
 
-Constraint: Output ONLY the JSON array. No preamble or conversational filler.`;
+    EXAMPLE:
+    [
+      {"front": "What is the capital of France?", "back": "Paris"},
+      {"front": "Process of plants making food", "back": "Photosynthesis"}
+    ]
+    `;
 
     try {
-        const systemPrompt = "You are an EXPERT TEACHER. Generate an array of flashcards in JSON format. Do not include markdown or conversational text.";
-        const result = await callGeminiAPI(prompt, systemPrompt);
+        const result = await callGeminiAPI(prompt, "You are a helpful assistant that outputs only raw JSON arrays. Do not include markdown code blocks.");
         if (Array.isArray(result)) return result;
         if (result.flashcards && Array.isArray(result.flashcards)) return result.flashcards;
         if (result.cards && Array.isArray(result.cards)) return result.cards;
