@@ -120,4 +120,5 @@ npm run dev
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+Copyright (c) 2026 Malik's Learning Lab. All Rights Reserved.
+This project is proprietary software. Unauthorized copying, modification, distribution, or use of this software is strictly prohibited.
