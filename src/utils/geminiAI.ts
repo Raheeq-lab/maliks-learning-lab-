@@ -153,10 +153,23 @@ function repairJson(jsonStr: string): any {
 // Standard standard configurations for Gemini models
 // Comprehensive configuration for Gemini models
 const MODELS = [
+    // Standard Stable Models (Try v1beta first as it often has better feature parity for some keys)
+    { model: "gemini-1.5-flash", version: "v1beta" },
     { model: "gemini-1.5-flash", version: "v1" },
+
+    // Flash Latest (often aliases to the newest stable)
+    { model: "gemini-1.5-flash-latest", version: "v1beta" },
     { model: "gemini-1.5-flash-latest", version: "v1" },
+
+    // Pro Models
+    { model: "gemini-1.5-pro", version: "v1beta" },
+    { model: "gemini-1.5-pro", version: "v1" },
+
+    // Experimental / Next Gen
     { model: "gemini-2.0-flash", version: "v1beta" },
-    { model: "gemini-1.5-pro", version: "v1" }
+
+    // High Throughput / Lower Intelligence Fallback
+    { model: "gemini-1.5-flash-8b", version: "v1" }
 ];
 
 import { dualAIService } from "@/services/DualAIService";
