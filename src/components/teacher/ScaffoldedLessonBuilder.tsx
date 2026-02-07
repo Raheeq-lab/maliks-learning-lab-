@@ -142,7 +142,18 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
   const [gradeLevel, setGradeLevel] = useState<number>(initialData?.gradeLevel || grades[0] || 1);
   const [topic, setTopic] = useState<string>(initialData?.topic || '');
   const [selectedLearningType, setSelectedLearningType] = useState<string>(initialData?.learningType || 'scaffolded-lesson');
-  const [lessonStructure, setLessonStructure] = useState<LessonStructure>(initialData?.lessonStructure || initialLessonStructure);
+  const [lessonStructure, setLessonStructure] = useState<LessonStructure>(() => {
+    if (!initialData?.lessonStructure) return initialLessonStructure;
+
+    // Deep merge to ensure all phases exist even if missing in DB
+    return {
+      engage: { ...initialLessonStructure.engage, ...initialData.lessonStructure.engage },
+      model: { ...initialLessonStructure.model, ...initialData.lessonStructure.model },
+      guidedPractice: { ...initialLessonStructure.guidedPractice, ...initialData.lessonStructure.guidedPractice },
+      independentPractice: { ...initialLessonStructure.independentPractice, ...initialData.lessonStructure.independentPractice },
+      reflect: { ...initialLessonStructure.reflect, ...initialData.lessonStructure.reflect },
+    };
+  });
   const [activePhase, setActivePhase] = useState<keyof LessonStructure | 'research'>(initialData?.researchNotes ? 'research' : 'engage');
   const [showPreview, setShowPreview] = useState(false);
   const [isPublic, setIsPublic] = useState(initialData?.isPublic ?? true); // Default to public
