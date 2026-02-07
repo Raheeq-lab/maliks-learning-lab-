@@ -62,32 +62,32 @@ Do not include markdown formatting, just raw JSON.`;
 export const generateContent = async (
     config: AIConfig,
     prompt: string,
-    type: 'quiz' | 'lesson' | 'text' | 'phase-visuals' // Added phase-visuals
+    type: 'quiz' | 'lesson' | 'text' | 'phase-visuals'
 ): Promise<GenerationResponse> => {
     try {
         let systemPrompt = '';
+        const isJsonMode = ['quiz', 'lesson', 'phase-visuals'].includes(type);
+
         if (type === 'quiz') systemPrompt = SYSTEM_PROMPT_QUIZ;
         else if (type === 'lesson') systemPrompt = SYSTEM_PROMPT_LESSON;
         else if (type === 'phase-visuals') systemPrompt = SYSTEM_PROMPT_PHASE_VISUALS;
         else systemPrompt = "You are a helpful assistant for teachers. Generate clear, educational content that is pedagogically accurate and age-appropriate for the students' grade level. All suggestions must be strictly related to the requested subject and topic. Do not wrap in JSON. Just provide the text content directly.";
 
         if (config.provider === 'gemini') {
-            // Use DualAIService to attempt Cloudflare first, then fall back to the optimized callGemini
             const result = await dualAIService.generateContent(
                 prompt,
                 async () => {
-                    const resp = await callGemini(config.apiKey, `${systemPrompt}\n\nUser Request: ${prompt}`);
+                    const resp = await callGemini(config.apiKey, `${systemPrompt}\n\nUser Request: ${prompt}`, isJsonMode);
                     return resp.content;
                 },
                 systemPrompt
             );
 
-            // Handle both object and string results from DualAIService
             const content = typeof result === 'string' ? result : JSON.stringify(result);
             return { content };
         } else {
             const fullPrompt = `${systemPrompt}\n\nUser Request: ${prompt}`;
-            return await callOpenAICompatible(config, fullPrompt);
+            return await callOpenAICompatible(config, fullPrompt, isJsonMode);
         }
     } catch (error: any) {
         return {
@@ -97,8 +97,7 @@ export const generateContent = async (
     }
 };
 
-const callGemini = async (apiKey: string, prompt: string): Promise<GenerationResponse> => {
-    // Configurations to try in order. Support v1 and v1beta.
+const callGemini = async (apiKey: string, prompt: string, jsonMode: boolean = false): Promise<GenerationResponse> => {
     const configurations = [
         { version: 'v1', model: 'gemini-1.5-flash' },
         { version: 'v1', model: 'gemini-1.5-flash-latest' },
@@ -110,84 +109,80 @@ const callGemini = async (apiKey: string, prompt: string): Promise<GenerationRes
 
     for (const config of configurations) {
         try {
+            const body: any = {
+                contents: [{ parts: [{ text: prompt }] }],
+                safetySettings: [
+                    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
+                    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
+                    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
+                    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" }
+                ]
+            };
+
+            if (jsonMode) {
+                body.generationConfig = {
+                    response_mime_type: "application/json"
+                };
+            }
+
             const response = await fetch(
                 `https://generativelanguage.googleapis.com/${config.version}/models/${config.model}:generateContent?key=${apiKey}`,
                 {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                        safetySettings: [
-                            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
-                            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
-                            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
-                            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" }
-                        ]
-                    }),
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body),
                 }
             );
 
             if (!response.ok) {
                 const errorData = await response.json();
                 const errorMessage = errorData.error?.message || 'Gemini API request failed';
-
-                // Check for common auth/permission errors indiscriminately
                 const lowerMsg = errorMessage.toLowerCase();
                 if (lowerMsg.includes('api key') || lowerMsg.includes('consumer') || lowerMsg.includes('project') || lowerMsg.includes('permission')) {
-                    return { content: '', error: `Access denied. Please check your API key and enable the API. (${errorMessage})` };
+                    return { content: '', error: `Access denied. Please check your API key. (${errorMessage})` };
                 }
-
                 console.warn(`Config ${config.version}/${config.model} failed: ${errorMessage}`);
-
-                // Capture the first error as it's likely the most relevant (from the preferred model)
-                if (!firstError) {
-                    firstError = errorMessage;
-                }
-
-                if (response.status === 429) {
-                    console.warn(`Rate limit hit for ${config.model}. Waiting 2s before trying next model...`);
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                }
-
-                continue; // Try next config
+                if (!firstError) firstError = errorMessage;
+                if (response.status === 429) await new Promise(resolve => setTimeout(resolve, 2000));
+                continue;
             }
 
             const data = await response.json();
             const content = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-
             return { content: cleanJson(content) };
         } catch (error: any) {
-            console.warn(`Network/Code error with ${config.model}:`, error);
+            console.warn(`Network error with ${config.model}:`, error);
             if (!firstError) firstError = error.message;
         }
     }
 
-    // If we get here, all configs failed
-    // Enhance error message if it was a rate limit
     if (firstError.includes('429') || firstError.includes('quota')) {
-        return {
-            content: '',
-            error: `Rate limit exceeded on all available models. Please wait 30 seconds and try again. (Details: ${firstError})`
-        };
+        return { content: '', error: `Rate limit exceeded. Please wait 30 seconds and try again.` };
     }
-    return {
-        content: '',
-        error: `Unable to connect to Gemini. (Primary Error: ${firstError})`
-    };
+    return { content: '', error: `Unable to connect to Gemini. (Primary Error: ${firstError})` };
 };
 
-
-
-const callOpenAICompatible = async (config: AIConfig, prompt: string): Promise<GenerationResponse> => {
+const callOpenAICompatible = async (config: AIConfig, prompt: string, jsonMode: boolean = false): Promise<GenerationResponse> => {
     try {
         let baseUrl = 'https://api.openai.com/v1';
         let model = config.model || 'gpt-3.5-turbo';
 
         if (config.provider === 'deepseek') {
-            baseUrl = 'https://api.deepseek.com'; // Standard DeepSeek API URL
+            baseUrl = 'https://api.deepseek.com';
             model = 'deepseek-chat';
+        }
+
+        const body: any = {
+            model: model,
+            messages: [
+                { role: 'system', content: jsonMode ? 'You are a helpful assistant that outputs strictly valid JSON.' : 'You are a helpful assistant.' },
+                { role: 'user', content: prompt }
+            ],
+            temperature: 0.7,
+        };
+
+        if (jsonMode) {
+            body.response_format = { type: "json_object" };
         }
 
         const response = await fetch(`${baseUrl}/chat/completions`, {
@@ -196,14 +191,7 @@ const callOpenAICompatible = async (config: AIConfig, prompt: string): Promise<G
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${config.apiKey}`,
             },
-            body: JSON.stringify({
-                model: model,
-                messages: [
-                    { role: 'system', content: 'You are a helpful assistant that outputs JSON.' },
-                    { role: 'user', content: prompt }
-                ],
-                temperature: 0.7,
-            }),
+            body: JSON.stringify(body),
         });
 
         if (!response.ok) {
@@ -213,23 +201,20 @@ const callOpenAICompatible = async (config: AIConfig, prompt: string): Promise<G
 
         const data = await response.json();
         const content = data.choices?.[0]?.message?.content || '';
-
         return { content: cleanJson(content) };
     } catch (error: any) {
         return { content: '', error: error.message };
     }
 };
 
-// Helper to remove markdown code blocks if the AI includes them despite instructions
 const cleanJson = (text: string): string => {
-    text = text.trim();
-    if (text.startsWith('```json')) {
-        text = text.substring(7);
-    } else if (text.startsWith('```')) {
-        text = text.substring(3);
-    }
-    if (text.endsWith('```')) {
-        text = text.substring(0, text.length - 3);
-    }
-    return text.trim();
+    let cleaned = text.trim();
+    // Remove markdown code blocks
+    cleaned = cleaned.replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/\s*```$/i, '');
+
+    // Sometimes AI leaves trailing commas in arrays/objects which native JSON.parse hates
+    // (This is a safety measure even with JSON mode)
+    cleaned = cleaned.replace(/,(\s*[\}\]])/g, '$1');
+
+    return cleaned.trim();
 };

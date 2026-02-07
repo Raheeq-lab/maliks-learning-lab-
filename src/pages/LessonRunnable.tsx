@@ -278,24 +278,11 @@ const LessonRunnable: React.FC = () => {
         Format: { "questions": [{ "text": "...", "options": ["...", "...", "...", "..."], "correctOptionIndex": 0 }] }`;
 
         try {
-            const response = await generateContent(config, prompt, 'text');
+            // Using 'quiz' type enables official JSON mode in aiService
+            const response = await generateContent(config, prompt, 'quiz');
             if (response.error) throw new Error(response.error);
 
-            // Robust JSON extraction
-            let content = response.content;
-            const jsonStartIndex = content.indexOf('{');
-            const jsonEndIndex = content.lastIndexOf('}');
-
-            if (jsonStartIndex === -1 || jsonEndIndex === -1) {
-                throw new Error("AI did not return a valid JSON object");
-            }
-
-            let jsonStr = content.substring(jsonStartIndex, jsonEndIndex + 1);
-
-            // Basic cleaning for common AI mistakes (trailing commas)
-            jsonStr = jsonStr.replace(/,\s*([\}\]])/g, '$1');
-
-            const data = JSON.parse(jsonStr);
+            const data = JSON.parse(response.content);
             if (!data.questions || !Array.isArray(data.questions)) {
                 throw new Error("Invalid format from AI");
             }

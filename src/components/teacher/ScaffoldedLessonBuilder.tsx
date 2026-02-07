@@ -616,22 +616,10 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
     Format: { "questions": [{ "text": "...", "options": ["...", "...", "...", "..."], "correctOptionIndex": 0 }] }`;
 
     try {
-      const response = await generateContent(config, prompt, 'text');
+      const response = await generateContent(config, prompt, 'quiz');
       if (response.error) throw new Error(response.error);
 
-      // Robust JSON extraction
-      let contentResponse = response.content;
-      const jsonStartIndex = contentResponse.indexOf('{');
-      const jsonEndIndex = contentResponse.lastIndexOf('}');
-      if (jsonStartIndex === -1 || jsonEndIndex === -1) {
-        throw new Error("AI did not return a valid JSON object");
-      }
-      let jsonStr = contentResponse.substring(jsonStartIndex, jsonEndIndex + 1);
-
-      // Basic cleaning for common AI mistakes (trailing commas)
-      jsonStr = jsonStr.replace(/,\s*([\}\]])/g, '$1');
-
-      const parsed = JSON.parse(jsonStr);
+      const parsed = JSON.parse(response.content);
 
       if (parsed.questions && Array.isArray(parsed.questions)) {
         const questionsWithIds = parsed.questions.map((q: any) => ({
