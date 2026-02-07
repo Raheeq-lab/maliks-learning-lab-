@@ -256,6 +256,54 @@ const LessonRunnable: React.FC = () => {
         }
     };
 
+    const handleToggleLiveQuiz = async (quizId: string, enable: boolean) => {
+        try {
+            if (enable) {
+                // Start live session
+                const { data, error } = await supabase
+                    .from('quizzes')
+                    .update({ is_live_session: true, live_status: 'active' })
+                    .eq('id', quizId)
+                    .select()
+                    .single();
+
+                if (error) throw error;
+
+                setLiveQuizSession({
+                    id: data.id,
+                    accessCode: data.access_code
+                });
+
+                toast({
+                    title: "Quiz Live!",
+                    description: `Students can join with code: ${data.access_code}`,
+                });
+            } else {
+                // End live session
+                const { error } = await supabase
+                    .from('quizzes')
+                    .update({ is_live_session: false, live_status: 'completed' })
+                    .eq('id', quizId);
+
+                if (error) throw error;
+
+                setLiveQuizSession(null);
+
+                toast({
+                    title: "Session Ended",
+                    description: "Live quiz session has been closed.",
+                });
+            }
+        } catch (error) {
+            console.error("Failed to toggle live quiz:", error);
+            toast({
+                title: "Action Failed",
+                description: "Could not update quiz session.",
+                variant: "destructive"
+            });
+        }
+    };
+
     const handleCreateQuizInline = async () => {
         if (!lesson || isGeneratingQuiz) return;
 
@@ -1929,23 +1977,25 @@ const LessonRunnable: React.FC = () => {
                                             );
                                         })}
 
-                                        {/* Add Quiz Button if missing (Only for Teachers/Owners) */}
-                                        {(user?.id === lesson?.createdBy) && !currentPhaseData?.content?.some(c => c.type === 'quiz') && (
-                                            <div className="pt-8">
-                                                <Button
-                                                    onClick={handleCreateQuizInline}
-                                                    disabled={isGeneratingQuiz}
-                                                    className="w-full h-16 bg-white border-2 border-dashed border-math-purple/30 text-math-purple hover:bg-math-purple/5 font-bold rounded-2xl flex items-center justify-center gap-3 transition-all group"
-                                                >
-                                                    {isGeneratingQuiz ? (
-                                                        <Loader2 className="animate-spin" />
-                                                    ) : (
-                                                        <Plus size={24} className="group-hover:scale-110 transition-transform" />
-                                                    )}
-                                                    <span>{isGeneratingQuiz ? "Generating Quiz Questions..." : "Add Interactive Quiz to this Phase"}</span>
-                                                </Button>
-                                            </div>
-                                        )}
+                                        {/* Add Quiz Button if missing (Only for Teachers/Owners in Guided Practice Phase) */}
+                                        {(user?.id === lesson?.createdBy) &&
+                                            PHASES[currentPhaseIndex] === 'guidedPractice' &&
+                                            !currentPhaseData?.content?.some(c => c.type === 'quiz') && (
+                                                <div className="pt-8">
+                                                    <Button
+                                                        onClick={handleCreateQuizInline}
+                                                        disabled={isGeneratingQuiz}
+                                                        className="w-full h-16 bg-white border-2 border-dashed border-math-purple/30 text-math-purple hover:bg-math-purple/5 font-bold rounded-2xl flex items-center justify-center gap-3 transition-all group"
+                                                    >
+                                                        {isGeneratingQuiz ? (
+                                                            <Loader2 className="animate-spin" />
+                                                        ) : (
+                                                            <Plus size={24} className="group-hover:scale-110 transition-transform" />
+                                                        )}
+                                                        <span>{isGeneratingQuiz ? "Generating Quiz Questions..." : "Add Interactive Quiz to this Phase"}</span>
+                                                    </Button>
+                                                </div>
+                                            )}
                                     </div>
                                 )}
 
