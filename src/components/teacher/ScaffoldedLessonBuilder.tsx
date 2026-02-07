@@ -611,13 +611,26 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
     const prompt = `Create a 5-question multiple choice quiz about "${topic || title}" for Grade ${gradeLevel}. 
     Return ONLY a JSON object with a "questions" array. 
     Each question must have: "text", "options" (array of 4 strings), and "correctOptionIndex" (0-3).
+    
+    CRITICAL: Ensure the JSON is strictly valid. No trailing commas. No text outside the JSON object.
     Format: { "questions": [{ "text": "...", "options": ["...", "...", "...", "..."], "correctOptionIndex": 0 }] }`;
 
     try {
       const response = await generateContent(config, prompt, 'text');
       if (response.error) throw new Error(response.error);
 
-      let jsonStr = response.content.replace(/```json/g, '').replace(/```/g, '').trim();
+      // Robust JSON extraction
+      let contentResponse = response.content;
+      const jsonStartIndex = contentResponse.indexOf('{');
+      const jsonEndIndex = contentResponse.lastIndexOf('}');
+      if (jsonStartIndex === -1 || jsonEndIndex === -1) {
+        throw new Error("AI did not return a valid JSON object");
+      }
+      let jsonStr = contentResponse.substring(jsonStartIndex, jsonEndIndex + 1);
+
+      // Basic cleaning for common AI mistakes (trailing commas)
+      jsonStr = jsonStr.replace(/,\s*([\}\]])/g, '$1');
+
       const parsed = JSON.parse(jsonStr);
 
       if (parsed.questions && Array.isArray(parsed.questions)) {
@@ -633,7 +646,11 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
       }
     } catch (e) {
       console.error("Quiz generation error:", e);
-      toast({ title: "Generation Failed", description: "Could not generate quiz. Check console for details.", variant: "destructive" });
+      toast({
+        title: "Generation Failed",
+        description: "AI returned malformed data. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setGeneratingPhase(null);
     }

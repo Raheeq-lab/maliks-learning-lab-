@@ -273,21 +273,38 @@ const LessonRunnable: React.FC = () => {
         const prompt = `Create a 5-question multiple choice quiz about "${lesson.topic || lesson.title}" for Grade ${lesson.gradeLevel}. 
         Return ONLY a JSON object with a "questions" array. 
         Each question must have: "text", "options" (array of 4 strings), and "correctOptionIndex" (0-3).
+        
+        CRITICAL: Ensure the JSON is strictly valid. No trailing commas. No text outside the JSON object.
         Format: { "questions": [{ "text": "...", "options": ["...", "...", "...", "..."], "correctOptionIndex": 0 }] }`;
 
         try {
             const response = await generateContent(config, prompt, 'text');
             if (response.error) throw new Error(response.error);
 
-            let jsonStr = response.content.replace(/```json/g, '').replace(/```/g, '').trim();
+            // Robust JSON extraction
+            let content = response.content;
+            const jsonStartIndex = content.indexOf('{');
+            const jsonEndIndex = content.lastIndexOf('}');
+
+            if (jsonStartIndex === -1 || jsonEndIndex === -1) {
+                throw new Error("AI did not return a valid JSON object");
+            }
+
+            let jsonStr = content.substring(jsonStartIndex, jsonEndIndex + 1);
+
+            // Basic cleaning for common AI mistakes (trailing commas)
+            jsonStr = jsonStr.replace(/,\s*([\}\]])/g, '$1');
+
             const data = JSON.parse(jsonStr);
             if (!data.questions || !Array.isArray(data.questions)) {
                 throw new Error("Invalid format from AI");
             }
 
             const questions = data.questions.map((q: any) => ({
-                ...q,
-                id: `q-${Date.now()}-${Math.random().toString(36).substring(7)}`
+                id: `q-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+                text: q.text || q.question || "Untitled Question",
+                options: q.options || ["", "", "", ""],
+                correctOptionIndex: typeof q.correctOptionIndex === 'number' ? q.correctOptionIndex : parseInt(q.correctOptionIndex) || 0
             }));
 
             // Prepare the updated lesson structure
@@ -331,7 +348,7 @@ const LessonRunnable: React.FC = () => {
             console.error("Failed to create quiz inline:", error);
             toast({
                 title: "Generation Failed",
-                description: "Could not add a quiz right now: " + error.message,
+                description: "AI returned malformed data. Please try again.",
                 variant: "destructive"
             });
         } finally {
