@@ -15,11 +15,15 @@ import {
     DialogFooter
 } from "@/components/ui/dialog";
 
+import FlashcardModal from '@/components/teacher/FlashcardModal';
+import { Sparkles } from 'lucide-react';
+
 interface FlashcardsTabProps {
     flashcardSets: FlashcardSet[];
-    onCreateSet: () => void;
+    onCreateSet: (set: FlashcardSet) => void;
+    onUpdateSet: (set: FlashcardSet) => void;
+    onGenerateSet: () => void;
     onCopyCode: (code: string) => void;
-    onEditSet: (set: FlashcardSet) => void;
     onDeleteSet: (id: string) => void;
     onTogglePublic: (id: string, isPublic: boolean) => void;
     subject: "math" | "english" | "ict";
@@ -29,8 +33,9 @@ interface FlashcardsTabProps {
 const FlashcardsTab: React.FC<FlashcardsTabProps> = ({
     flashcardSets,
     onCreateSet,
+    onUpdateSet,
+    onGenerateSet,
     onCopyCode,
-    onEditSet,
     onDeleteSet,
     onTogglePublic,
     subject,
@@ -39,6 +44,10 @@ const FlashcardsTab: React.FC<FlashcardsTabProps> = ({
     const [searchQuery, setSearchQuery] = useState("");
     const [copiedId, setCopiedId] = useState<string | null>(null);
     const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+    // Modal State
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingSet, setEditingSet] = useState<FlashcardSet | null>(null);
 
     // Viewer State
     const [viewingSet, setViewingSet] = useState<FlashcardSet | null>(null);
@@ -50,6 +59,26 @@ const FlashcardsTab: React.FC<FlashcardsTabProps> = ({
         setViewingSet(set);
         setCurrentCardIndex(0);
         setIsFlipped(false);
+    };
+
+    const handleOpenCreateModal = () => {
+        setEditingSet(null);
+        setIsEditModalOpen(true);
+    };
+
+    const handleOpenEditModal = (set: FlashcardSet) => {
+        setEditingSet(set);
+        setIsEditModalOpen(true);
+    };
+
+    const handleSaveSet = async (set: FlashcardSet) => {
+        if (editingSet) {
+            await onUpdateSet(set);
+        } else {
+            await onCreateSet(set);
+        }
+        setIsEditModalOpen(false);
+        setEditingSet(null);
     };
 
     const handleNextCard = () => {
@@ -109,13 +138,37 @@ const FlashcardsTab: React.FC<FlashcardsTabProps> = ({
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
-                <Button
-                    onClick={onCreateSet}
-                    className="w-full md:w-auto bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold shadow-lg shadow-orange-500/20 px-6 py-6 rounded-xl transition-all hover:scale-105 flex items-center gap-2"
-                >
-                    <Plus size={20} /> Create New Set
-                </Button>
+                <div className="flex gap-3 w-full md:w-auto">
+                    {/* Manual Create Button */}
+                    <div className="flex gap-3 w-full md:w-auto">
+                        <Button
+                            onClick={handleOpenCreateModal}
+                            className="flex-1 md:flex-none bg-bg-card hover:bg-math-purple/10 text-text-primary border border-border/50 font-bold shadow-sm px-5 py-6 rounded-xl transition-all hover:scale-105 flex items-center gap-2"
+                        >
+                            <Plus size={20} className="text-math-purple" /> Manual Create
+                        </Button>
+                        <Button
+                            onClick={onGenerateSet}
+                            className="flex-1 md:flex-none bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold shadow-lg shadow-orange-500/20 px-6 py-6 rounded-xl transition-all hover:scale-105 flex items-center gap-2"
+                        >
+                            <Sparkles size={20} /> AI Generator
+                        </Button>
+                    </div>
+
+                    {/* AI Generator Button - Optional/Or logic */}
+                    {/* We can decide if we want this button here or just let them go to the Generate tab manually. 
+                        Given user request for manual, let's keep manual prominent. */}
+                </div>
             </div>
+
+            {/* Flashcard Modal */}
+            <FlashcardModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                onSave={handleSaveSet}
+                initialData={editingSet}
+                subject={subject}
+            />
 
             {isLoading ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -208,7 +261,7 @@ const FlashcardsTab: React.FC<FlashcardsTabProps> = ({
                                         variant="outline"
                                         size="sm"
                                         className="flex-1 h-9 text-xs border-border text-text-secondary hover:bg-bg-secondary hover:text-text-primary dark:bg-bg-elevated dark:hover:bg-bg-elevated/80 dark:border-border dark:text-text-secondary"
-                                        onClick={() => onEditSet(set)}
+                                        onClick={() => handleOpenEditModal(set)}
                                     >
                                         <Edit size={14} className="mr-1.5" /> Edit
                                     </Button>

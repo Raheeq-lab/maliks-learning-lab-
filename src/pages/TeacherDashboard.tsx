@@ -676,27 +676,49 @@ const TeacherDashboard: React.FC = () => {
               <TabsContent value="flashcards">
                 <FlashcardsTab
                   flashcardSets={flashcardSets.filter(s => s.subject === selectedSubject)}
-                  onCreateSet={() => setActiveTab("generate")}
-                  onCopyCode={handleCopyCode}
-                  onEditSet={(s) => {
-                    toast({ title: "Edit Flashcards", description: "Edit mode coming soon!" });
+                  onCreateSet={handleCreateFlashcardSet}
+                  onUpdateSet={async (set) => {
+                    try {
+                      // Optimistic Update
+                      setFlashcardSets(prev => prev.map(s => s.id === set.id ? set : s));
+
+                      const { error } = await supabase
+                        .from('flashcards')
+                        .update({
+                          title: set.title,
+                          description: set.description,
+                          cards: set.cards,
+                          grade_level: set.gradeLevel
+                        })
+                        .eq('id', set.id);
+
+                      if (error) throw error;
+                      toast({ title: "Flashcard Set Updated!" });
+                    } catch (error: any) {
+                      toast({ title: "Error", description: error.message, variant: "destructive" });
+                      loadData(); // Revert on error
+                    }
                   }}
+                  onCopyCode={handleCopyCode}
                   onDeleteSet={async (id) => {
+                    // Optimistic Delete
+                    setFlashcardSets(prev => prev.filter(s => s.id !== id));
+
                     try {
                       const { error } = await supabase.from('flashcards').delete().eq('id', id);
                       if (error) throw error;
                       toast({ title: "Flashcard Set Deleted" });
-                      loadData();
                     } catch (err: any) {
                       toast({ title: "Error", description: err.message, variant: "destructive" });
+                      loadData(); // Revert on error
                     }
                   }}
                   onTogglePublic={async (id, isPublic) => {
                     try {
                       const { error } = await supabase.from('flashcards').update({ is_public: isPublic }).eq('id', id);
                       if (error) throw error;
+                      setFlashcardSets(prev => prev.map(s => s.id === id ? { ...s, isPublic } : s));
                       toast({ title: isPublic ? "Set is now Public" : "Set is now Private" });
-                      loadData();
                     } catch (err: any) {
                       toast({ title: "Error", description: err.message, variant: "destructive" });
                     }
