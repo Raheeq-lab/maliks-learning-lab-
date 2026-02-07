@@ -177,7 +177,7 @@ export interface LessonPhaseContent {
   // Specific data for new interactive types
   pollOptions?: string[];
   pollResults?: Record<string, number>;
-  flashcards?: { front: string; back: string }[];
+  flashcards?: Flashcard[];
   steps?: string[];
   categorizationGroups?: { title: string; items: string[] }[];
   scaffoldedLevels?: { level: number; question: string; hint?: string; solution: string; imageUrl?: string }[];

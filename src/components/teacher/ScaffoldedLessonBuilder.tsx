@@ -12,7 +12,7 @@ import {
   Play, PenTool, FileText, Download, Save, Eye, Sparkles, Wand2, Loader2,
   Upload, File, X, Image, BarChart2, Gamepad2, BriefcaseBusiness,
   MessageSquare, Pen, Headphones, Pencil, Search, MousePointer, CheckSquare, FileUp,
-  Lock, Globe, Settings, Zap, AlertCircle
+  Lock, Globe, Settings, Zap, AlertCircle, Layers
 } from "lucide-react";
 import {
   Lesson,
@@ -20,8 +20,10 @@ import {
   LessonPhase,
   LessonPhaseContent,
   QuizQuestion,
-  ActivitySettings
+  ActivitySettings,
+  FlashcardSet
 } from '@/types/quiz';
+import FlashcardModal from '@/components/teacher/FlashcardModal';
 import { getLearningTypes } from "@/utils/lessonUtils";
 import { useNavigate } from 'react-router-dom';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -144,6 +146,19 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
   const [showPreview, setShowPreview] = useState(false);
   const [isPublic, setIsPublic] = useState(initialData?.isPublic ?? true); // Default to public
   const [activitySettings, setActivitySettings] = useState<ActivitySettings>(initialActivitySettings);
+
+  // Flashcard Modal State
+  const [flashcardModalState, setFlashcardModalState] = useState<{
+    isOpen: boolean;
+    phase: keyof LessonStructure | null;
+    contentId: string | null;
+    initialData: FlashcardSet | null;
+  }>({
+    isOpen: false,
+    phase: null,
+    contentId: null,
+    initialData: null
+  });
 
   // Pedagogical Research & Visual Theme State
   const [researchNotes, setResearchNotes] = useState(initialData?.researchNotes || {
@@ -522,6 +537,53 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
     if (fileInputRefs.current[contentId]) fileInputRefs.current[contentId]!.value = '';
   };
 
+  const handleSaveFlashcards = async (set: FlashcardSet) => {
+    if (!flashcardModalState.phase || !flashcardModalState.contentId) return;
+
+    // Save the set data into the content block
+    handleContentChange(flashcardModalState.phase, flashcardModalState.contentId, "flashcards", set.cards);
+
+    // Also save title/description if we want to display them
+    // For now just storing cards array as that's what LessonRunnable expects
+
+    setFlashcardModalState(prev => ({ ...prev, isOpen: false }));
+    toast({ title: "Flashcards Saved", description: `Saved ${set.cards.length} cards to lesson.` });
+  };
+
+  const handleGenerateFlashcardsAI = async (phase: keyof LessonStructure, contentId: string) => {
+    const apiKey = localStorage.getItem('aiApiKey') || import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) {
+      toast({ title: "API Key Required", description: "Configure in Settings first.", variant: "destructive" });
+      return;
+    }
+
+    setGeneratingPhase(contentId);
+
+    const config: AIConfig = { provider: 'gemini', apiKey };
+    const prompt = `Create 8 flashcards about "${topic}" suitable for Grade ${gradeLevel}. Return ONLY a JSON object with a "cards" array containing objects with "front" and "back" strings. Format: { "cards": [{ "front": "...", "back": "..." }] }`;
+
+    try {
+      const response = await generateContent(config, prompt, 'text');
+      if (response.error) throw new Error(response.error);
+
+      // Clean markdown if present
+      let jsonStr = response.content.replace(/```json/g, '').replace(/```/g, '').trim();
+
+      const parsed = JSON.parse(jsonStr);
+      if (parsed.cards && Array.isArray(parsed.cards)) {
+        const cardsWithIds = parsed.cards.map((c: any) => ({ ...c, id: crypto.randomUUID() }));
+        handleContentChange(phase, contentId, "flashcards", cardsWithIds);
+        toast({ title: "Flashcards Generated", description: "Created 8 AI flashcards." });
+      } else {
+        throw new Error("Invalid JSON format");
+      }
+    } catch (e) {
+      toast({ title: "Generation Failed", description: "Could not generate flashcards.", variant: "destructive" });
+    } finally {
+      setGeneratingPhase(null);
+    }
+  };
+
 
   const handleSave = () => {
     if (!title.trim()) {
@@ -597,7 +659,97 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
     index: number
   ) => {
     switch (content.type) {
-      case "text":
+      case "flashcards":
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label className="text-base font-medium">Flashcards Activity</Label>
+              <Button variant="ghost" size="sm" onClick={() => handleRemoveContent(phase, content.id)}>
+                <Trash2 size={16} className="text-destructive" />
+              </Button>
+            </div>
+
+            {!content.flashcards || content.flashcards.length === 0 ? (
+              <div className="border border-dashed border-border rounded-xl p-8 flex flex-col items-center justify-center gap-4 bg-bg-secondary/30">
+                <div className="w-12 h-12 rounded-full bg-math-purple/10 flex items-center justify-center">
+                  <Layers className="text-math-purple" size={24} />
+                </div>
+                <div className="text-center">
+                  <h4 className="font-bold text-lg">Add Flashcards</h4>
+                  <p className="text-sm text-text-secondary">Create manually or generate with AI</p>
+                </div>
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setFlashcardModalState({
+                      isOpen: true,
+                      phase,
+                      contentId: content.id,
+                      initialData: { id: 'new', title: 'New Set', description: '', subject, gradeLevel, cards: [], createdBy: '', createdAt: '', accessCode: '', isPublic: false }
+                    })}
+                  >
+                    <Plus size={16} className="mr-2" /> Create Manually
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    disabled={generatingPhase === content.id}
+                    onClick={() => handleGenerateFlashcardsAI(phase, content.id)}
+                  >
+                    {generatingPhase === content.id ? <Loader2 size={16} className="animate-spin mr-2" /> : <Sparkles size={16} className="mr-2" />}
+                    Generate with AI
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="border border-border rounded-xl p-4 bg-bg-card">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="bg-math-purple/10 text-math-purple border-math-purple/20">
+                      {content.flashcards.length} Cards
+                    </Badge>
+                    <span className="text-sm text-text-secondary">Ready to play</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setFlashcardModalState({
+                      isOpen: true,
+                      phase,
+                      contentId: content.id,
+                      initialData: {
+                        id: 'edit',
+                        title: 'Flashcards',
+                        description: '',
+                        subject,
+                        gradeLevel,
+                        cards: content.flashcards || [],
+                        createdBy: '',
+                        createdAt: '',
+                        accessCode: '',
+                        isPublic: false
+                      }
+                    })}
+                  >
+                    <PenTool size={14} className="mr-2" /> Edit Cards
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  {content.flashcards.slice(0, 4).map((card, i) => (
+                    <div key={i} className="aspect-video bg-bg-secondary rounded-md p-2 text-[10px] flex items-center justify-center text-center border border-border">
+                      {card.front.substring(0, 30)}...
+                    </div>
+                  ))}
+                  {content.flashcards.length > 4 && (
+                    <div className="aspect-video bg-bg-secondary/50 rounded-md flex items-center justify-center text-xs text-text-secondary border border-dashed border-border">
+                      +{content.flashcards.length - 4} more
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        );
         return (
           <div className="space-y-4">
             <div className="flex justify-between items-center">
@@ -1087,51 +1239,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
           </div>
         );
 
-      case "flashcards":
-        return (
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <Label className="text-text-primary">Flashcards</Label>
-              <Button type="button" onClick={() => handleRemoveContent(phase, content.id)} variant="ghost" size="sm" className="h-8 w-8 p-0 text-error-coral">
-                <Trash2 size={16} />
-              </Button>
-            </div>
-            <div className="space-y-4">
-              {(content.flashcards || [{ id: '1', front: '', back: '' }]).map((card, i) => (
-                <div key={card.id} className="p-3 border rounded-lg bg-bg-secondary/50 space-y-2">
-                  <Input
-                    value={card.front}
-                    onChange={(e) => {
-                      const newCards = [...(content.flashcards || [])];
-                      newCards[i] = { ...card, front: e.target.value };
-                      handleContentChange(phase, content.id, "flashcards", newCards);
-                    }}
-                    placeholder="Front (Term)"
-                    className="bg-bg-input border-border"
-                  />
-                  <Input
-                    value={card.back}
-                    onChange={(e) => {
-                      const newCards = [...(content.flashcards || [])];
-                      newCards[i] = { ...card, back: e.target.value };
-                      handleContentChange(phase, content.id, "flashcards", newCards);
-                    }}
-                    placeholder="Back (Definition)"
-                    className="bg-bg-input border-border"
-                  />
-                </div>
-              ))}
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleContentChange(phase, content.id, "flashcards", [...(content.flashcards || []), { id: Date.now().toString(), front: '', back: '' }])}
-                className="w-full border-dashed"
-              >
-                <Plus size={14} className="mr-2" /> Add Card
-              </Button>
-            </div>
-          </div>
-        );
+
 
       case "steps":
         return (
@@ -2135,6 +2243,15 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                       <Plus size={16} />
                       <span>Add File</span>
                     </Button>
+                    <Button
+                      onClick={() => handleAddContent("model", "flashcards")}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-1 hover:bg-math-purple/10 hover:text-math-purple hover:border-math-purple/30"
+                    >
+                      <Layers size={16} />
+                      <span>Add Flashcards</span>
+                    </Button>
                   </div>
                 </TabsContent>
 
@@ -2409,6 +2526,14 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
           </CardFooter>
         </Card >
       )}
+
+      <FlashcardModal
+        isOpen={flashcardModalState.isOpen}
+        onClose={() => setFlashcardModalState(prev => ({ ...prev, isOpen: false }))}
+        initialData={flashcardModalState.initialData || undefined}
+        onSave={handleSaveFlashcards}
+        subject={subject}
+      />
     </div >
   );
 };
