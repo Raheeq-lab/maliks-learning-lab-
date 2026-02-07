@@ -361,7 +361,7 @@ const TeacherDashboard: React.FC = () => {
   }, []);
 
   const handleRunLesson = React.useCallback((lessonId: string) => {
-    navigate(`/lesson/${lessonId}`);
+    navigate(`/teacher/lesson/${lessonId}/run`);
   }, [navigate]);
 
   const handleDeleteQuiz = React.useCallback(async (quizId: string) => {
