@@ -627,13 +627,33 @@ export async function generateFlashcards(
 
     try {
         const result = await callGeminiAPI(prompt, "You are a helpful assistant that outputs only raw JSON arrays. Do not include markdown code blocks.");
-        if (Array.isArray(result)) return result;
-        if (result.flashcards && Array.isArray(result.flashcards)) return result.flashcards;
-        if (result.cards && Array.isArray(result.cards)) return result.cards;
 
-        throw new Error("Invalid format");
+        // Helper to recursively find the first array in the object
+        const findArray = (obj: any): any[] | null => {
+            if (Array.isArray(obj)) return obj;
+            if (typeof obj === 'object' && obj !== null) {
+                for (const key in obj) {
+                    const found = findArray(obj[key]);
+                    if (found) return found;
+                }
+            }
+            return null;
+        };
+
+        const foundArray = findArray(result);
+
+        if (foundArray && foundArray.length > 0 && (foundArray[0].front || foundArray[0].question)) {
+            // Normalize keys just in case
+            return foundArray.map((card: any) => ({
+                front: card.front || card.question || card.term || "Question",
+                back: card.back || card.answer || card.definition || "Answer"
+            }));
+        }
+
+        console.error("Flashcard generation failed. Raw result:", result);
+        throw new Error("Invalid format: Could not find a valid flashcard array in the response.");
     } catch (e) {
         console.error("Failed to generate flashcards", e);
-        throw new Error("AI failed to generate flashcards in a valid format. Please try again.");
+        throw new Error("AI failed to generate flashcards. Please try again.");
     }
 }
