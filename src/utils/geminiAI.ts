@@ -151,12 +151,12 @@ function repairJson(jsonStr: string): any {
 
 // Updated configurations for Preview Access Keys
 // Standard standard configurations for Gemini models
-// Standard configurations for Gemini models - Support both v1 and v1beta
+// Comprehensive configuration for Gemini models - prioritizing v1beta for broader feature support
 const MODELS = [
-    { model: "gemini-1.5-flash", version: "v1" },
+    { model: "gemini-1.5-flash", version: "v1beta" },
+    { model: "gemini-1.5-flash-latest", version: "v1beta" },
     { model: "gemini-2.0-flash", version: "v1beta" },
-    { model: "gemini-1.5-pro", version: "v1" },
-    { model: "gemini-1.5-flash-8b", version: "v1" }
+    { model: "gemini-1.5-pro", version: "v1beta" }
 ];
 
 import { dualAIService } from "@/services/DualAIService";
@@ -262,26 +262,22 @@ async function callGeminiAPI(prompt: string): Promise<any> {
             () => _internalGeminiCall(prompt)
         );
 
-        // Ensure we always return an object if the result is a string (Cloudflare might return string)
+        // Ensure we always return an object if the result is a string
         if (typeof result === 'string') {
             try {
-                // 1. Try regex extraction
-                const jsonMatch = result.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+                // Try regex extraction for array or object
+                const jsonMatch = result.match(/\[[\s\S]*\]|\{[\s\S]*\}/);
                 if (jsonMatch) {
                     return JSON.parse(jsonMatch[0]);
                 }
 
-                // 2. Try JSON Repair (Self-Healing)
-                // This will attempt to fix the string if it's truncated
+                // If it's just raw text that looks like a list, try a simple repair
                 return repairJson(result);
-
             } catch (e) {
-                console.warn("[callGeminiAPI] Cloudflare response invalid/truncated JSON. Manually forcing fallback to Gemini.");
-                // MANUAL FALLBACK: Cloudflare gave garbage/truncated text. Force Gemini.
+                console.warn("[callGeminiAPI] JSON extraction failed. Forcing Gemini fallback.");
                 return await _internalGeminiCall(prompt);
             }
         }
-
         return result;
     } catch (error) {
         console.error("Dual AI Service failed completely:", error);
