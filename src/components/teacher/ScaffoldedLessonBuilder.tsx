@@ -25,6 +25,7 @@ import {
 } from '@/types/quiz';
 import FlashcardModal from '@/components/teacher/FlashcardModal';
 import { getLearningTypes } from "@/utils/lessonUtils";
+import { generateQuizQuestions } from "@/utils/geminiAI";
 import { useNavigate } from 'react-router-dom';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
@@ -607,31 +608,28 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
 
     setGeneratingPhase(contentId);
 
-    const config: AIConfig = { provider: 'gemini', apiKey };
-    const prompt = `Create a 5-question multiple choice quiz about "${topic || title}" for Grade ${gradeLevel}. 
-    Return ONLY a JSON object with a "questions" array. 
-    Each question must have: "text", "options" (array of 4 strings), and "correctOptionIndex" (0-3).
-    
-    CRITICAL: Ensure the JSON is strictly valid. No trailing commas. No text outside the JSON object.
-    Format: { "questions": [{ "text": "...", "options": ["...", "...", "...", "..."], "correctOptionIndex": 0 }] }`;
-
     try {
-      const response = await generateContent(config, prompt, 'quiz');
-      if (response.error) throw new Error(response.error);
+      const generatedQuestions = await generateQuizQuestions(
+        subject,
+        gradeLevel.toString(),
+        topic || title,
+        5 // Default to 5 questions
+      );
 
-      const parsed = JSON.parse(response.content);
+      const questionsWithIds = generatedQuestions.map((q: any) => ({
+        ...q,
+        id: crypto.randomUUID(),
+        // Ensure mapping is correct between Gemini format and App format
+        text: q.question || q.text,
+        correctOptionIndex: q.options.findIndex((o: string) => o === q.correctAnswer || o.includes(q.correctAnswer)) > -1
+          ? q.options.findIndex((o: string) => o === q.correctAnswer || o.includes(q.correctAnswer))
+          : 0,
+        options: q.options
+      }));
 
-      if (parsed.questions && Array.isArray(parsed.questions)) {
-        const questionsWithIds = parsed.questions.map((q: any) => ({
-          ...q,
-          id: crypto.randomUUID(),
-          correctOptionIndex: parseInt(q.correctOptionIndex) || 0
-        }));
-        handleContentChange(phase, contentId, "quizQuestions", questionsWithIds);
-        toast({ title: "Quiz Generated", description: `Created ${questionsWithIds.length} AI questions.` });
-      } else {
-        throw new Error("Invalid JSON format");
-      }
+      handleContentChange(phase, contentId, "quizQuestions", questionsWithIds);
+      toast({ title: "Quiz Generated", description: `Created ${questionsWithIds.length} AI questions.` });
+
     } catch (e) {
       console.error("Quiz generation error:", e);
       toast({
