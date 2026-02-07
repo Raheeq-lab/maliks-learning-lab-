@@ -1,11 +1,19 @@
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, Layers, Copy, Edit, Trash2, Globe, Lock } from "lucide-react";
+import { Search, Plus, Layers, Copy, Edit, Trash2, Globe, Lock, ArrowLeft, ArrowRight, RotateCcw, Play } from "lucide-react";
 import { FlashcardSet } from "@/types/quiz";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter
+} from "@/components/ui/dialog";
 
 interface FlashcardsTabProps {
     flashcardSets: FlashcardSet[];
@@ -31,6 +39,34 @@ const FlashcardsTab: React.FC<FlashcardsTabProps> = ({
     const [searchQuery, setSearchQuery] = useState("");
     const [copiedId, setCopiedId] = useState<string | null>(null);
     const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+    // Viewer State
+    const [viewingSet, setViewingSet] = useState<FlashcardSet | null>(null);
+    const [currentCardIndex, setCurrentCardIndex] = useState(0);
+    const [isFlipped, setIsFlipped] = useState(false);
+
+    // Reset viewer state when opening a new set
+    const handleOpenSet = (set: FlashcardSet) => {
+        setViewingSet(set);
+        setCurrentCardIndex(0);
+        setIsFlipped(false);
+    };
+
+    const handleNextCard = () => {
+        if (!viewingSet) return;
+        setIsFlipped(false);
+        setTimeout(() => {
+            setCurrentCardIndex((prev) => (prev + 1) % viewingSet.cards.length);
+        }, 150); // Small delay for flip reset visual
+    };
+
+    const handlePrevCard = () => {
+        if (!viewingSet) return;
+        setIsFlipped(false);
+        setTimeout(() => {
+            setCurrentCardIndex((prev) => (prev - 1 + viewingSet.cards.length) % viewingSet.cards.length);
+        }, 150);
+    };
 
     const filteredSets = flashcardSets.filter(set =>
         set.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -139,6 +175,13 @@ const FlashcardsTab: React.FC<FlashcardsTabProps> = ({
                                 </p>
                             </CardContent>
                             <CardFooter className="pt-0 flex flex-col gap-2">
+                                <Button
+                                    className={`w-full font-bold shadow-md hover:scale-[1.02] transition-all bg-gradient-to-r ${getSubjectColor().replace('border-l-', 'from-').replace('500', '500').replace('hover:', '').replace(/dark:[\w-]+/g, '')} to-gray-600 bg-opacity-90 text-white`}
+                                    onClick={() => handleOpenSet(set)}
+                                >
+                                    <Play size={16} className="mr-2 fill-current" /> Open Flashcards
+                                </Button>
+
                                 <div className="flex gap-2 w-full">
                                     <Button
                                         variant="outline"
@@ -195,6 +238,104 @@ const FlashcardsTab: React.FC<FlashcardsTabProps> = ({
                     ))}
                 </div>
             )}
+
+            {/* Flashcard Player Dialog */}
+            <Dialog open={!!viewingSet} onOpenChange={(open) => !open && setViewingSet(null)}>
+                <DialogContent className="max-w-4xl h-[80vh] flex flex-col p-0 gap-0 bg-bg-page border-border overflow-hidden">
+                    {viewingSet && (
+                        <>
+                            <DialogHeader className="p-6 pb-2 border-b border-border bg-bg-card">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+                                            {viewingSet.title}
+                                            <Badge variant="outline" className="text-sm font-normal">
+                                                {currentCardIndex + 1} / {viewingSet.cards.length}
+                                            </Badge>
+                                        </DialogTitle>
+                                        <DialogDescription className="mt-1">
+                                            Click the card to flip. Use arrows to navigate.
+                                        </DialogDescription>
+                                    </div>
+                                </div>
+                            </DialogHeader>
+
+                            <div className="flex-1 flex items-center justify-center p-8 bg-bg-secondary/30 relative overflow-hidden">
+                                {/* Navigation Buttons (Desktop) */}
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-bg-card shadow-lg hover:bg-bg-hover hidden md:flex z-10"
+                                    onClick={(e) => { e.stopPropagation(); handlePrevCard(); }}
+                                >
+                                    <ArrowLeft size={24} />
+                                </Button>
+
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-bg-card shadow-lg hover:bg-bg-hover hidden md:flex z-10"
+                                    onClick={(e) => { e.stopPropagation(); handleNextCard(); }}
+                                >
+                                    <ArrowRight size={24} />
+                                </Button>
+
+                                {/* The Card */}
+                                <div
+                                    className="relative w-full max-w-2xl aspect-[3/2] perspective-1000 cursor-pointer group"
+                                    onClick={() => setIsFlipped(!isFlipped)}
+                                >
+                                    <div className={`relative w-full h-full transition-transform duration-500 transform-style-3d ${isFlipped ? "rotate-y-180" : ""}`}>
+                                        {/* Front */}
+                                        <div className="absolute inset-0 w-full h-full backface-hidden">
+                                            <Card className="w-full h-full flex flex-col items-center justify-center p-8 text-center bg-bg-card border-2 border-math-purple/20 shadow-xl rounded-3xl hover:border-math-purple/40 transition-colors">
+                                                <span className="text-xs font-bold text-text-tertiary uppercase tracking-widest mb-4">Front</span>
+                                                <h3 className="text-3xl md:text-4xl font-bold text-text-primary select-none">
+                                                    {viewingSet.cards[currentCardIndex].front}
+                                                </h3>
+                                                <div className="absolute bottom-6 text-text-tertiary text-sm flex items-center gap-2 opacity-60">
+                                                    <RotateCcw size={14} /> Click to flip
+                                                </div>
+                                            </Card>
+                                        </div>
+
+                                        {/* Back */}
+                                        <div className="absolute inset-0 w-full h-full backface-hidden rotate-y-180">
+                                            <Card className="w-full h-full flex flex-col items-center justify-center p-8 text-center bg-gradient-to-br from-math-purple to-purple-800 text-white border-none shadow-xl rounded-3xl">
+                                                <span className="text-xs font-bold text-white/60 uppercase tracking-widest mb-4">Back</span>
+                                                <h3 className="text-3xl md:text-4xl font-bold select-none">
+                                                    {viewingSet.cards[currentCardIndex].back}
+                                                </h3>
+                                            </Card>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Mobile Controls / Footer */}
+                            <div className="p-4 border-t border-border bg-bg-card flex justify-center gap-4 md:hidden">
+                                <Button variant="outline" onClick={handlePrevCard} className="flex-1">
+                                    <ArrowLeft size={16} className="mr-2" /> Previous
+                                </Button>
+                                <Button onClick={() => setIsFlipped(!isFlipped)} className="flex-1">
+                                    Flip
+                                </Button>
+                                <Button variant="outline" onClick={handleNextCard} className="flex-1">
+                                    Next <ArrowRight size={16} className="ml-2" />
+                                </Button>
+                            </div>
+
+                            {/* Progress bar */}
+                            <div className="h-1 bg-bg-secondary w-full">
+                                <div
+                                    className="h-full bg-math-purple transition-all duration-300"
+                                    style={{ width: `${((currentCardIndex + 1) / viewingSet.cards.length) * 100}%` }}
+                                />
+                            </div>
+                        </>
+                    )}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };
