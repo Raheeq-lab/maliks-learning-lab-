@@ -156,6 +156,8 @@ const MODELS = [
     // Standard Stable Models (Try v1beta first as it often has better feature parity for some keys)
     { model: "gemini-1.5-flash", version: "v1beta" },
     { model: "gemini-1.5-flash", version: "v1" },
+    { model: "gemini-1.5-flash-001", version: "v1beta" },
+    { model: "gemini-1.5-flash-002", version: "v1beta" },
 
     // Flash Latest (often aliases to the newest stable)
     { model: "gemini-1.5-flash-latest", version: "v1beta" },
@@ -164,12 +166,16 @@ const MODELS = [
     // Pro Models
     { model: "gemini-1.5-pro", version: "v1beta" },
     { model: "gemini-1.5-pro", version: "v1" },
+    { model: "gemini-1.5-pro-001", version: "v1beta" },
+    { model: "gemini-1.5-pro-002", version: "v1beta" },
 
     // Experimental / Next Gen
+    { model: "gemini-2.0-flash-exp", version: "v1beta" },
     { model: "gemini-2.0-flash", version: "v1beta" },
+    { model: "gemini-1.5-flash-8b", version: "v1beta" },
 
-    // High Throughput / Lower Intelligence Fallback
-    { model: "gemini-1.5-flash-8b", version: "v1" }
+    // Legacy / Just In Case
+    { model: "gemini-pro", version: "v1" }
 ];
 
 import { dualAIService } from "@/services/DualAIService";
@@ -279,7 +285,9 @@ async function callGeminiAPI(prompt: string, systemPrompt?: string): Promise<any
                 // If it's just raw text that looks like a list, try a simple repair
                 return repairJson(result);
             } catch (e) {
-                console.warn("[callGeminiAPI] JSON extraction failed. Forcing Gemini fallback.");
+                console.warn("[callGeminiAPI] JSON extraction failed.");
+                console.log("[callGeminiAPI] Raw Cloudflare response:", result);
+                console.warn("Forcing Gemini fallback.");
                 const fallbackPrompt = systemPrompt ? `${systemPrompt}\n\n${prompt}` : prompt;
                 return await _internalGeminiCall(fallbackPrompt);
             }
