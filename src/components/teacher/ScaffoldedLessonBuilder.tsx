@@ -1427,8 +1427,7 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
       case "scaffolded":
         return (
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <Label className="text-text-primary">Scaffolded Question Set</Label>
+            <div className="flex justify-end items-center">
               <Button type="button" onClick={() => handleRemoveContent(phase, content.id)} variant="ghost" size="sm" className="h-8 w-8 p-0 text-error-coral">
                 <Trash2 size={16} />
               </Button>
