@@ -343,25 +343,32 @@ const LessonRunnable: React.FC = () => {
             const accessCode = Math.random().toString(36).substring(2, 8).toUpperCase();
 
             // Create quiz in database (not in lesson structure)
+            const quizPayload = {
+                title: `${lesson.title} - Try It Yourself Quiz`,
+                description: `Practice quiz for ${lesson.title}`,
+                grade_level: parseInt(lesson.gradeLevel.toString()), // Ensure int
+                subject: lesson.subject,
+                time_limit: 600,
+                access_code: accessCode,
+                created_by: lesson.createdBy,
+                questions: questions,
+                is_public: true,
+                is_live_session: false,
+                lesson_id: lesson.id
+            };
+
+            console.log("Generative Quiz Payload:", JSON.stringify(quizPayload, null, 2));
+
             const { data: quizData, error: quizError } = await supabase
                 .from('quizzes')
-                .insert([{
-                    title: `${lesson.title} - Try It Yourself Quiz`,
-                    description: `Practice quiz for ${lesson.title}`,
-                    grade_level: lesson.gradeLevel,
-                    subject: lesson.subject,
-                    time_limit: 600,
-                    access_code: accessCode,
-                    created_by: lesson.createdBy,
-                    questions: questions,
-                    is_public: true,
-                    is_live_session: false,
-                    lesson_id: lesson.id // Link to lesson
-                }])
+                .insert([quizPayload])
                 .select()
                 .single();
 
-            if (quizError) throw quizError;
+            if (quizError) {
+                console.error("Supabase Quiz Insert Error:", quizError);
+                throw quizError;
+            }
 
             // Add quiz reference to lesson structure
             const currentPhaseKey = PHASES[currentPhaseIndex];
