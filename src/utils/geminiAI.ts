@@ -110,13 +110,36 @@ function repairJson(jsonStr: string): any {
     try {
         return JSON.parse(jsonStr);
     } catch (e) {
-        // Simple repair: Close open braces/brackets
-        let repaired = jsonStr.trim();
-        const quoteCount = (repaired.match(/"/g) || []).length;
-        if (quoteCount % 2 !== 0) {
-            repaired += '"';
+        // Aggressive Cleanup: Find the first '[' or '{' and the last ']' or '}'
+        const firstBracket = jsonStr.indexOf('[');
+        const firstBrace = jsonStr.indexOf('{');
+        const lastBracket = jsonStr.lastIndexOf(']');
+        const lastBrace = jsonStr.lastIndexOf('}');
+
+        let start = -1;
+        let end = -1;
+
+        // Determine if it's likely an array or object
+        if (firstBracket !== -1 && (firstBrace === -1 || firstBracket < firstBrace)) {
+            start = firstBracket;
+            end = lastBracket;
+        } else if (firstBrace !== -1) {
+            start = firstBrace;
+            end = lastBrace;
         }
 
+        if (start !== -1 && end !== -1 && end > start) {
+            const extracted = jsonStr.substring(start, end + 1);
+            try {
+                return JSON.parse(extracted);
+            } catch (innerE) {
+                // If direct extraction fails, try one more cleanup (remove newlines in strings, etc if needed in future)
+                console.warn("[JSON Repair] Extraction failed, attempting simple brace matching repair...");
+            }
+        }
+
+        // Simple repair: Close open braces/brackets logic (keep existing fallback)
+        let repaired = jsonStr.trim();
         const stack: string[] = [];
         let inString = false;
         let escape = false;
@@ -144,6 +167,13 @@ function repairJson(jsonStr: string): any {
             console.warn("[JSON Repair] Attempting to repair truncated JSON...");
             return JSON.parse(repaired);
         } catch (e2) {
+            // Final Hail Mary: If it looks like an array items list but missing brackets
+            if (repaired.includes('"front"') && repaired.includes('"back"')) {
+                if (!repaired.trim().startsWith('[')) repaired = '[' + repaired;
+                if (!repaired.trim().endsWith(']')) repaired = repaired + ']';
+                try { return JSON.parse(repaired); } catch (e3) { };
+            }
+
             throw new Error("Failed to parse Gemini response even after repair.");
         }
     }
