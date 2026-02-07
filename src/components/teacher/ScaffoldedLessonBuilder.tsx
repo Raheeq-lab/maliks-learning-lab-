@@ -10,9 +10,9 @@ import { useToast } from "@/components/ui/use-toast";
 import {
   ArrowLeft, Plus, Trash2, Clock, BookOpen, Laptop, BookText, Brain, BrainCircuit,
   Play, PenTool, FileText, Download, Save, Eye, Sparkles, Wand2, Loader2,
-  Upload, File, X, Image, BarChart2, Gamepad2, BriefcaseBusiness,
+  Upload, File, X, Image as ImageIcon, BarChart2, Gamepad2, BriefcaseBusiness,
   MessageSquare, Pen, Headphones, Pencil, Search, MousePointer, CheckSquare, FileUp,
-  Lock, Globe, Settings, Zap, AlertCircle, Layers
+  Lock, Globe, Settings, Zap, AlertCircle, Layers, Check
 } from "lucide-react";
 import {
   Lesson,
@@ -584,6 +584,61 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
     }
   };
 
+  const handleAddQuizQuestion = (phase: keyof LessonStructure, contentId: string) => {
+    const content = lessonStructure[phase].content.find(c => c.id === contentId);
+    const existingQuestions = content?.quizQuestions || [];
+
+    const newQuestion: QuizQuestion = {
+      id: `q-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+      text: "",
+      options: ["", "", "", ""],
+      correctOptionIndex: 0
+    };
+
+    handleContentChange(phase, contentId, "quizQuestions", [...existingQuestions, newQuestion]);
+  };
+
+  const handleGenerateQuizAI = async (phase: keyof LessonStructure, contentId: string) => {
+    const apiKey = localStorage.getItem('aiApiKey') || import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) {
+      toast({ title: "API Key Required", description: "Configure in Settings first.", variant: "destructive" });
+      return;
+    }
+
+    setGeneratingPhase(contentId);
+
+    const config: AIConfig = { provider: 'gemini', apiKey };
+    const prompt = `Create a 5-question multiple choice quiz about "${topic || title}" for Grade ${gradeLevel}. 
+    Return ONLY a JSON object with a "questions" array. 
+    Each question must have: "text", "options" (array of 4 strings), and "correctOptionIndex" (0-3).
+    Format: { "questions": [{ "text": "...", "options": ["...", "...", "...", "..."], "correctOptionIndex": 0 }] }`;
+
+    try {
+      const response = await generateContent(config, prompt, 'text');
+      if (response.error) throw new Error(response.error);
+
+      let jsonStr = response.content.replace(/```json/g, '').replace(/```/g, '').trim();
+      const parsed = JSON.parse(jsonStr);
+
+      if (parsed.questions && Array.isArray(parsed.questions)) {
+        const questionsWithIds = parsed.questions.map((q: any) => ({
+          ...q,
+          id: crypto.randomUUID(),
+          correctOptionIndex: parseInt(q.correctOptionIndex) || 0
+        }));
+        handleContentChange(phase, contentId, "quizQuestions", questionsWithIds);
+        toast({ title: "Quiz Generated", description: `Created ${questionsWithIds.length} AI questions.` });
+      } else {
+        throw new Error("Invalid JSON format");
+      }
+    } catch (e) {
+      console.error("Quiz generation error:", e);
+      toast({ title: "Generation Failed", description: "Could not generate quiz. Check console for details.", variant: "destructive" });
+    } finally {
+      setGeneratingPhase(null);
+    }
+  };
+
 
   const handleSave = () => {
     if (!title.trim()) {
@@ -933,99 +988,166 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
         );
 
       case "quiz":
+        const questions = content.quizQuestions || [];
         return (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <Label className="text-text-primary">Quick Quiz Question</Label>
-              <Button
-                type="button"
-                onClick={() => handleRemoveContent(phase, content.id)}
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 text-error-coral hover:text-error-coral-dark hover:bg-error-coral/10"
-              >
-                <Trash2 size={16} />
-              </Button>
-            </div>
-
-            {/* Image Upload for Quiz Question */}
-            <div className="flex items-center gap-2">
-              <input
-                type="file"
-                accept="image/*"
-                ref={(el) => (imageInputRefs.current[content.id] = el)}
-                onChange={(e) => handleImageUpload(phase, content.id, e)}
-                className="hidden"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => imageInputRefs.current[content.id]?.click()}
-                className="flex items-center gap-2 border-border text-text-primary hover:bg-bg-secondary"
-              >
-                <Upload size={16} />
-                Add Photo
-              </Button>
-              {content.imageUrl && (
+              <div className="flex items-center gap-2">
+                <CheckSquare className="text- ICT-orange" size={20} />
+                <Label className="text-base font-bold text-text-primary">Interactive Quiz Questions</Label>
+              </div>
+              <div className="flex gap-2">
                 <Button
                   type="button"
-                  variant="ghost"
-                  onClick={() => removeImage(phase, content.id)}
-                  className="text-error-coral hover:text-error-coral-dark"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleAddQuizQuestion(phase, content.id)}
+                  className="h-8 gap-1"
                 >
-                  <X size={16} className="mr-1" /> Remove Photo
+                  <Plus size={14} /> Add Question
                 </Button>
-              )}
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  disabled={generatingPhase === content.id}
+                  onClick={() => handleGenerateQuizAI(phase, content.id)}
+                  className="h-8 gap-1 bg-math-purple/10 text-math-purple hover:bg-math-purple/20 border-none"
+                >
+                  {generatingPhase === content.id ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                  AI Generate
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => handleRemoveContent(phase, content.id)}
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 text-error-coral hover:text-error-coral-dark hover:bg-error-coral/10"
+                >
+                  <Trash2 size={16} />
+                </Button>
+              </div>
             </div>
 
-            {content.imageUrl && (
-              <div className="mt-2">
-                <img
-                  src={content.imageUrl}
-                  alt={content.content || "Question image"}
-                  className="max-h-40 rounded border border-border"
-                />
+            {questions.length === 0 ? (
+              <div className="border border-dashed border-border rounded-xl p-8 flex flex-col items-center justify-center gap-3 bg-bg-secondary/20">
+                <CheckSquare size={32} className="text-text-tertiary opacity-30" />
+                <p className="text-sm text-text-secondary">No questions added yet. Use AI or add manually.</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {questions.map((q, qIndex) => (
+                  <Card key={q.id || qIndex} className="border border-border shadow-none overflow-hidden">
+                    <div className="bg-bg-secondary/50 px-4 py-2 border-b border-border flex justify-between items-center">
+                      <span className="text-xs font-bold text-text-tertiary uppercase tracking-wider">Question {qIndex + 1}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 text-error-coral"
+                        onClick={() => {
+                          const newQs = questions.filter((_, i) => i !== qIndex);
+                          handleContentChange(phase, content.id, "quizQuestions", newQs);
+                        }}
+                      >
+                        <X size={14} />
+                      </Button>
+                    </div>
+                    <CardContent className="p-4 space-y-4">
+                      {/* Question Text */}
+                      <Textarea
+                        value={q.text}
+                        onChange={(e) => {
+                          const newQs = [...questions];
+                          newQs[qIndex] = { ...newQs[qIndex], text: e.target.value };
+                          handleContentChange(phase, content.id, "quizQuestions", newQs);
+                        }}
+                        placeholder="Type your question here..."
+                        rows={2}
+                        className="bg-bg-input border-border text-text-primary"
+                      />
+
+                      {/* Image Upload for Question */}
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          id={`quiz-img-${content.id}-${qIndex}`}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                              const newQs = [...questions];
+                              newQs[qIndex] = { ...newQs[qIndex], imageUrl: event.target?.result as string };
+                              handleContentChange(phase, content.id, "quizQuestions", newQs);
+                            };
+                            reader.readAsDataURL(file);
+                          }}
+                          className="hidden"
+                        />
+                        {q.imageUrl ? (
+                          <div className="relative w-20 h-20 rounded border border-border overflow-hidden">
+                            <img src={q.imageUrl} className="w-full h-full object-cover" />
+                            <button
+                              className="absolute top-0 right-0 bg-black/60 text-white p-0.5"
+                              onClick={() => {
+                                const newQs = [...questions];
+                                delete newQs[qIndex].imageUrl;
+                                handleContentChange(phase, content.id, "quizQuestions", newQs);
+                              }}
+                            >
+                              <X size={10} />
+                            </button>
+                          </div>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 gap-1 text-xs"
+                            onClick={() => document.getElementById(`quiz-img-${content.id}-${qIndex}`)?.click()}
+                          >
+                            <ImageIcon size={14} /> Add Image
+                          </Button>
+                        )}
+                      </div>
+
+                      {/* Options */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {q.options.map((opt, optIdx) => (
+                          <div key={optIdx} className="flex gap-2 items-center">
+                            <button
+                              onClick={() => {
+                                const newQs = [...questions];
+                                newQs[qIndex] = { ...newQs[qIndex], correctOptionIndex: optIdx };
+                                handleContentChange(phase, content.id, "quizQuestions", newQs);
+                              }}
+                              className={`w-6 h-6 shrink-0 rounded-full border-2 flex items-center justify-center text-[10px] font-bold transition-all ${q.correctOptionIndex === optIdx
+                                ? 'bg-success-green border-success-green text-white'
+                                : 'border-border text-text-tertiary hover:border-math-purple'
+                                }`}
+                            >
+                              {q.correctOptionIndex === optIdx ? <Check size={12} /> : String.fromCharCode(65 + optIdx)}
+                            </button>
+                            <Input
+                              value={opt}
+                              onChange={(e) => {
+                                const newQs = [...questions];
+                                const newOptions = [...newQs[qIndex].options];
+                                newOptions[optIdx] = e.target.value;
+                                newQs[qIndex] = { ...newQs[qIndex], options: newOptions };
+                                handleContentChange(phase, content.id, "quizQuestions", newQs);
+                              }}
+                              placeholder={`Option ${String.fromCharCode(65 + optIdx)}`}
+                              className="h-8 bg-bg-input border-border text-sm"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             )}
-
-            <Textarea
-              value={content.content}
-              onChange={(e) => handleContentChange(phase, content.id, "content", e.target.value)}
-              placeholder="Enter quiz question"
-              rows={2}
-              className="bg-bg-input border-border text-text-primary placeholder:text-text-tertiary focus-visible:ring-focus-blue"
-            />
-
-            {/* Simple quiz options - could be expanded for more complex quizzes */}
-            <div className="space-y-2">
-              <Label className="text-text-secondary">Options (first one will be correct)</Label>
-              {["A", "B", "C", "D"].map((option, idx) => (
-                <div key={idx} className="flex gap-2 items-center">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-bg-secondary border border-border flex items-center justify-center font-bold text-text-primary">
-                    {option}
-                  </div>
-                  <Input
-                    placeholder={`Option ${option}`}
-                    value={content.quizQuestions?.[0]?.options?.[idx] || ""}
-                    onChange={(e) => {
-                      const currentOptions = content.quizQuestions?.[0]?.options || ["", "", "", ""];
-                      const newOptions = [...currentOptions];
-                      newOptions[idx] = e.target.value;
-
-                      const quizQuestions: QuizQuestion[] = [{
-                        id: content.id + "-quiz",
-                        text: content.content,
-                        options: newOptions,
-                        correctOptionIndex: 0, // First option is correct by default
-                      }];
-
-                      handleContentChange(phase, content.id, "quizQuestions", quizQuestions);
-                    }}
-                    className="bg-bg-input border-border text-text-primary placeholder:text-text-tertiary focus-visible:ring-focus-blue"
-                  />
-                </div>
-              ))}
-            </div>
           </div>
         );
 

@@ -8,7 +8,7 @@ import {
     Play, Pause, SkipForward, ArrowLeft, RotateCcw, Clock,
     BookOpen, PenTool, FileText, Brain, Check, Lock, Globe, File, Layout,
     Sparkles, Zap, AlertCircle, BrainCircuit, Download,
-    Plus, Star, Image as ImageIcon, MoreHorizontal
+    Plus, Star, Image as ImageIcon, MoreHorizontal, CheckSquare, Loader2
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/lib/supabase';
@@ -66,6 +66,10 @@ const LessonRunnable: React.FC = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const scaffoldedImageInputRef = useRef<HTMLInputElement>(null);
     const [targetLevelForUpload, setTargetLevelForUpload] = useState<number | null>(null);
+
+    // Live Quiz Session State
+    const [liveQuizSession, setLiveQuizSession] = useState<{ id: string, accessCode: string } | null>(null);
+    const [isLaunchingQuiz, setIsLaunchingQuiz] = useState(false);
 
     const carouselStationsFromContent = React.useMemo(() => {
         if (!lesson?.lessonStructure) return [];
@@ -197,6 +201,56 @@ const LessonRunnable: React.FC = () => {
             if (intervalId) clearInterval(intervalId);
         };
     }, [isRunning]);
+
+    const handleLaunchLiveQuiz = async (questions: any[]) => {
+        if (!lesson || isLaunchingQuiz) return;
+
+        setIsLaunchingQuiz(true);
+        try {
+            const accessCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+            // 1. Create a new Quiz entry in 'quizzes' table
+            const { data: quizData, error: quizError } = await supabase
+                .from('quizzes')
+                .insert([{
+                    title: `${lesson.title} - Live`,
+                    description: `Live session from lesson: ${lesson.title}`,
+                    grade_level: lesson.gradeLevel,
+                    subject: lesson.subject,
+                    time_limit: 600,
+                    access_code: accessCode,
+                    created_by: lesson.createdBy,
+                    questions: questions,
+                    is_public: true,
+                    is_live_session: true,
+                    live_status: 'waiting'
+                }])
+                .select()
+                .single();
+
+            if (quizError) throw quizError;
+
+            setLiveQuizSession({
+                id: quizData.id,
+                accessCode: quizData.access_code
+            });
+
+            toast({
+                title: "Quiz Live!",
+                description: `Students can join with code: ${quizData.access_code}`,
+            });
+
+        } catch (error) {
+            console.error("Failed to launch live quiz:", error);
+            toast({
+                title: "Launch Failed",
+                description: "Could not start the live session.",
+                variant: "destructive"
+            });
+        } finally {
+            setIsLaunchingQuiz(false);
+        }
+    };
 
     // When phase changes, set the new time
     useEffect(() => {
@@ -1139,41 +1193,90 @@ const LessonRunnable: React.FC = () => {
 
                                                 {/* QUIZ CONTENT */}
                                                 {content.type === "quiz" && (
-                                                    <div className="space-y-6">
-                                                        {content.imageUrl && (
-                                                            <div className="rounded-xl overflow-hidden border border-gray-100 bg-bg-secondary/50 p-2">
-                                                                <img
-                                                                    src={content.imageUrl}
-                                                                    alt="Question visual"
-                                                                    className="max-h-[300px] w-auto mx-auto object-contain rounded-lg"
-                                                                />
+                                                    <div className="space-y-8">
+                                                        {liveQuizSession ? (
+                                                            <div className="bg-bg-card rounded-3xl border-4 border-math-purple p-10 flex flex-col items-center justify-center text-center shadow-2xl animate-in zoom-in duration-500">
+                                                                <div className="w-20 h-20 bg-math-purple/10 rounded-full flex items-center justify-center mb-6">
+                                                                    <Sparkles className="text-math-purple w-12 h-12 animate-pulse" />
+                                                                </div>
+                                                                <h3 className="text-3xl font-black text-text-primary mb-2">Live Quiz Active!</h3>
+                                                                <p className="text-text-secondary text-lg mb-8">Tell your students to join at <span className="font-bold text-math-purple">Raheeq's Learning Lab</span></p>
+
+                                                                <div className="bg-bg-secondary p-8 rounded-2xl border-2 border-dashed border-math-purple/30 mb-8 w-full max-w-md">
+                                                                    <p className="text-sm font-bold text-text-tertiary uppercase tracking-widest mb-4">Access Code</p>
+                                                                    <div className="text-6xl md:text-8xl font-black text-math-purple tracking-tighter">
+                                                                        {liveQuizSession.accessCode}
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="flex gap-4">
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        onClick={() => setLiveQuizSession(null)}
+                                                                        className="rounded-full px-8 h-12"
+                                                                    >
+                                                                        End Session
+                                                                    </Button>
+                                                                    <Button
+                                                                        className="bg-math-purple hover:bg-math-purple/90 text-white rounded-full px-8 h-12 shadow-lg"
+                                                                        onClick={() => window.open(`/teacher-dashboard`, '_blank')}
+                                                                    >
+                                                                        Monitor Results
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="space-y-6">
+                                                                <div className="flex justify-between items-center">
+                                                                    <div className="flex items-center gap-3">
+                                                                        <div className="bg-math-purple/10 p-2 rounded-lg">
+                                                                            <CheckSquare className="text-math-purple" size={24} />
+                                                                        </div>
+                                                                        <h4 className="font-bold text-2xl text-text-primary">Interactive Quiz</h4>
+                                                                    </div>
+                                                                    <Button
+                                                                        onClick={() => handleLaunchLiveQuiz(content.quizQuestions || [])}
+                                                                        disabled={isLaunchingQuiz || !content.quizQuestions?.length}
+                                                                        className="bg-math-purple hover:bg-math-purple/90 text-white font-bold h-12 px-6 rounded-xl shadow-lg transform hover:scale-105 transition-all"
+                                                                    >
+                                                                        {isLaunchingQuiz ? <Loader2 className="animate-spin mr-2" /> : <Play className="mr-2" />}
+                                                                        Launch Live Quiz
+                                                                    </Button>
+                                                                </div>
+
+                                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                                                    {(content.quizQuestions || []).map((q, qIndex) => (
+                                                                        <Card key={q.id || qIndex} className="bg-bg-secondary/30 border-none shadow-sm h-full flex flex-col overflow-hidden group hover:shadow-md transition-shadow">
+                                                                            {q.imageUrl && (
+                                                                                <div className="h-40 overflow-hidden bg-white/50">
+                                                                                    <img src={q.imageUrl} alt="Question" className="w-full h-full object-contain" />
+                                                                                </div>
+                                                                            )}
+                                                                            <CardContent className="p-5 flex-1 flex flex-col">
+                                                                                <div className="flex items-start gap-3 mb-4">
+                                                                                    <span className="bg-math-purple/10 text-math-purple text-[10px] font-black uppercase px-2 py-0.5 rounded shrink-0 mt-0.5">Q{qIndex + 1}</span>
+                                                                                    <p className="font-bold text-text-primary leading-snug line-clamp-3">{q.text}</p>
+                                                                                </div>
+                                                                                <div className="space-y-2 mt-auto">
+                                                                                    {q.options.map((opt, optIndex) => (
+                                                                                        <div key={optIndex} className={`text-xs p-2 rounded border ${q.correctOptionIndex === optIndex ? 'bg-success-green/10 border-success-green/20 text-success-green font-bold' : 'bg-white/50 border-border text-text-secondary'}`}>
+                                                                                            {opt}
+                                                                                        </div>
+                                                                                    ))}
+                                                                                </div>
+                                                                            </CardContent>
+                                                                        </Card>
+                                                                    ))}
+
+                                                                    {(!content.quizQuestions || content.quizQuestions.length === 0) && (
+                                                                        <div className="col-span-full border-2 border-dashed border-border rounded-2xl p-12 text-center text-text-tertiary">
+                                                                            <CheckSquare size={48} className="mx-auto mb-4 opacity-20" />
+                                                                            <p className="text-lg">No questions in this quiz block.</p>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
                                                             </div>
                                                         )}
-                                                        <div className="flex items-start gap-4">
-                                                            <span className={`bg-focus-blue-light text-focus-blue-darker px-3 py-1 rounded-md text-sm font-bold uppercase mt-1 tracking-wide`}>
-                                                                Question
-                                                            </span>
-                                                            <p className="font-semibold text-xl text-text-primary">{content.content}</p>
-                                                        </div>
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                            {(content.quizQuestions?.[0]?.options || ["Option A", "Option B", "Option C", "Option D"]).map((option, i) => (
-                                                                <div
-                                                                    key={i}
-                                                                    className={`
-                                                                    flex items-center gap-4 p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 group
-                                                                    hover:border-focus-blue hover:bg-focus-blue-light/50 border-gray-200
-                                                                `}
-                                                                >
-                                                                    <div className={`
-                                                                    h-10 w-10 rounded-full flex items-center justify-center border-2 text-lg font-bold transition-colors
-                                                                    bg-white border-gray-300 text-gray-500 group-hover:border-focus-blue group-hover:text-focus-blue
-                                                                `}>
-                                                                        {String.fromCharCode(65 + i)}
-                                                                    </div>
-                                                                    <span className="text-text-primary text-lg font-medium group-hover:text-focus-blue-darker">{option}</span>
-                                                                </div>
-                                                            ))}
-                                                        </div>
                                                     </div>
                                                 )}
 
