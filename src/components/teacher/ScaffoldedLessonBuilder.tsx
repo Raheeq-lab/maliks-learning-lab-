@@ -27,6 +27,7 @@ import FlashcardModal from '@/components/teacher/FlashcardModal';
 import { getLearningTypes } from "@/utils/lessonUtils";
 import { generateQuizQuestions } from "@/utils/geminiAI";
 import { useNavigate } from 'react-router-dom';
+import { stripLabels } from "@/utils/contentUtils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -1489,6 +1490,15 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                       const newLvls = [...(content.scaffoldedLevels || [])];
                       newLvls[i] = { ...lvl, question: e.target.value };
                       handleContentChange(phase, content.id, "scaffoldedLevels", newLvls);
+                    }}
+                    onBlur={(e) => {
+                      // Optional: Clean up labels on blur
+                      const cleaned = stripLabels(e.target.value);
+                      if (cleaned !== e.target.value) {
+                        const newLvls = [...(content.scaffoldedLevels || [])];
+                        newLvls[i] = { ...lvl, question: cleaned };
+                        handleContentChange(phase, content.id, "scaffoldedLevels", newLvls);
+                      }
                     }}
                     placeholder="Question..."
                     className="bg-bg-input border-border"

@@ -23,6 +23,7 @@ import { CollaborativeMap } from '@/components/teacher/CollaborativeMap';
 import { PresentationActivity } from '@/components/teacher/PresentationActivity';
 import ThemeToggle from '@/components/ThemeToggle';
 import { InstructionalActivity } from '@/components/teacher/InstructionalActivity';
+import { stripLabels } from '@/utils/contentUtils';
 import { useAuth } from '@/context/AuthContext';
 import AccessCodeCard from '@/components/AccessCodeCard';
 
@@ -69,6 +70,7 @@ const LessonRunnable: React.FC = () => {
     const [generatingImage, setGeneratingImage] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const scaffoldedImageInputRef = useRef<HTMLInputElement>(null);
+    const engageImageInputRef = useRef<HTMLInputElement>(null);
     const [targetLevelForUpload, setTargetLevelForUpload] = useState<number | null>(null);
 
     // Live Quiz Session State
@@ -412,7 +414,7 @@ const LessonRunnable: React.FC = () => {
             updatedStructure[currentPhaseKey] = {
                 ...currentPhaseData,
                 content: phaseContent
-            };
+            } as any;
 
             // Update lesson structure
             const { error } = await supabase
@@ -471,7 +473,7 @@ const LessonRunnable: React.FC = () => {
             updatedStructure[currentPhaseKey] = {
                 ...currentPhaseData,
                 content: phaseContent
-            };
+            } as any;
 
             // Update lesson
             await supabase
@@ -496,6 +498,65 @@ const LessonRunnable: React.FC = () => {
                 description: "Could not delete quiz.",
                 variant: "destructive"
             });
+        }
+    };
+
+    const handleForgeVisuals = async (phase: string) => {
+        setGeneratingImage(true);
+        try {
+            toast({
+                title: "AI Forge Started",
+                description: "We're crafting a custom visual for your lesson hook...",
+            });
+
+            const config: AIConfig = {
+                provider: 'gemini',
+                apiKey: (import.meta as any).env.VITE_GEMINI_API_KEY || '',
+                model: "gemini-1.5-pro"
+            };
+
+            const currentPhaseData = lesson?.lessonStructure[phase as keyof LessonStructure];
+            const hookQuestion = (currentPhaseData as any)?.universalEngage?.hookQuestion || lesson?.topic || "Learning hook";
+
+            const prompt = `Highly engaging, cinematic, education-focused illustration for the topic: ${lesson?.subject} - ${hookQuestion}. Style: Modern, vibrant, professional educational graphic. No text. 16:9 aspect ratio.`;
+
+            const response = await generateContent(config, prompt, 'text');
+
+            if (response.content && response.content.startsWith('http')) {
+                const updatedStructure = { ...lesson!.lessonStructure };
+                const phaseData = { ...updatedStructure[phase as keyof LessonStructure] };
+
+                if ((phaseData as any).universalEngage) {
+                    (phaseData as any).universalEngage.imageUrl = response.content;
+                }
+
+                updatedStructure[phase as keyof LessonStructure] = phaseData as any;
+
+                const { error } = await supabase
+                    .from('lessons')
+                    .update({ lesson_structure: updatedStructure })
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                setLesson({ ...lesson!, lessonStructure: updatedStructure });
+
+                toast({
+                    title: "Image Forged!",
+                    description: "A custom visual has been added to your lesson.",
+                });
+            } else {
+                throw new Error("Invalid image response from AI");
+            }
+        } catch (error) {
+            console.error("Forge failed:", error);
+            toast({
+                title: "Forge Failed",
+                description: "Could not generate creative visual at this time.",
+                variant: "destructive"
+            });
+        } finally {
+            setGeneratingImage(false);
         }
     };
 
@@ -1217,12 +1278,12 @@ const LessonRunnable: React.FC = () => {
                                                             </div>
                                                         )}
 
-                                                        <h5 className="text-2xl font-bold text-text-primary leading-tight">{levelData.question}</h5>
+                                                        <h5 className="text-2xl font-bold text-text-primary leading-tight">{stripLabels(levelData.question)}</h5>
 
                                                         {levelFeedback[currentLevel]?.showHint && levelData.hint && (
                                                             <div className="p-4 bg-warning-amber-light/20 border border-warning-amber/30 rounded-xl flex items-start gap-3 animate-in slide-in-from-top-2">
                                                                 <Zap size={20} className="text-warning-amber mt-1" />
-                                                                <p className="text-text-primary italic"><span className="font-bold">Hint:</span> {levelData.hint}</p>
+                                                                <p className="text-text-primary italic"><span className="font-bold">Hint:</span> {stripLabels(levelData.hint)}</p>
                                                             </div>
                                                         )}
 
@@ -1385,7 +1446,7 @@ const LessonRunnable: React.FC = () => {
                                                     <div key={i} className="space-y-3 p-6 bg-bg-card rounded-xl border border-border shadow-sm group hover:border-math-purple/30 transition-all">
                                                         <h5 className="font-bold text-lg text-text-primary">
                                                             <span className="text-math-purple mr-2">{i + 1}.</span>
-                                                            {item.prompt}
+                                                            {stripLabels(item.prompt)}
                                                         </h5>
                                                         <textarea
                                                             placeholder={item.response}
@@ -1709,7 +1770,7 @@ const LessonRunnable: React.FC = () => {
                                                                 <h4 className="font-bold text-xl text-text-primary">Classroom Activity</h4>
                                                             </div>
                                                             <div className="bg-orange-50/50 p-6 rounded-xl border border-orange-100 text-text-primary text-lg leading-relaxed">
-                                                                {content.content}
+                                                                {stripLabels(content.content)}
                                                             </div>
                                                             {content.aiToolUsed && (
                                                                 <div className="flex items-center gap-2 text-sm text-focus-blue-dark bg-focus-blue-light/50 px-4 py-2 rounded-full w-fit">

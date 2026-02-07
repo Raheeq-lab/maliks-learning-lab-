@@ -403,6 +403,7 @@ export const generateLessonPlan = async (
     - DO NOT use generic sci-fi, futuristic, or "cinematic" themes unless they are the direct subject of the lesson. 
     - For Primary/Elementary (Grades K-5), use concrete, real-world examples (e.g., for addition, use toys, fruits, or physical groups).
     - For Middle/High School, use relevant academic or professional contexts.
+    - STRATEGIC CONTENT: DO NOT include labels like "Scaffolded Question 1:", "Instructional Breakdown:", "Worked Example:", or "Step 1:" inside the content strings. The UI provides these labels visually. Just start with the actual educational content.
 
     ## PHASE 1: 🎯 ENGAGE (5 mins)
     - Primary Goal: Activate prior knowledge & spark curiosity.

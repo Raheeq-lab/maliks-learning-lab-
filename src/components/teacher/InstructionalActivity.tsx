@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Check, ChevronRight, BookOpen, Upload, Image as ImageIcon, FileText, Info, Layers, Plus, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Flashcard } from '@/types/quiz';
+import { stripLabels } from '@/utils/contentUtils';
 
 interface InstructionalContent {
     title?: string;
@@ -115,7 +116,7 @@ export const InstructionalActivity: React.FC<InstructionalActivityProps> = ({
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="text-amber-900/80 dark:text-amber-200/90 leading-relaxed text-sm md:text-base">
-                                    {data.history}
+                                    {stripLabels(data.history)}
                                 </CardContent>
                             </Card>
                         )}
@@ -130,8 +131,8 @@ export const InstructionalActivity: React.FC<InstructionalActivityProps> = ({
                                 <CardContent className="grid grid-cols-1 gap-3">
                                     {data.vocabulary.map((vocab, i) => (
                                         <div key={i} className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3 p-3 rounded-lg bg-slate-50 border border-slate-100 dark:bg-slate-800/50 dark:border-slate-700">
-                                            <span className="font-bold text-focus-blue dark:text-blue-400 whitespace-nowrap">{vocab.term}</span>
-                                            <span className="text-sm text-slate-600 dark:text-slate-300 italic leading-snug">{vocab.definition}</span>
+                                            <span className="font-bold text-focus-blue dark:text-blue-400 whitespace-nowrap">{stripLabels(vocab.term)}</span>
+                                            <span className="text-sm text-slate-600 dark:text-slate-300 italic leading-snug">{stripLabels(vocab.definition)}</span>
                                         </div>
                                     ))}
                                 </CardContent>
@@ -144,7 +145,7 @@ export const InstructionalActivity: React.FC<InstructionalActivityProps> = ({
                         <Card className="h-full flex flex-col border-focus-blue/20 shadow-md dark:bg-slate-900/50 dark:border-blue-900/30">
                             <CardHeader className="bg-focus-blue/5 border-b border-focus-blue/10 pb-4 dark:bg-blue-900/10 dark:border-blue-900/20">
                                 <Badge variant="secondary" className="w-fit mb-2 bg-white text-focus-blue hover:bg-white dark:bg-blue-900 dark:text-blue-200 dark:hover:bg-blue-900">Worked Example</Badge>
-                                <CardTitle className="text-xl text-slate-800 dark:text-slate-100">{data.workedExample.problem}</CardTitle>
+                                <CardTitle className="text-xl text-slate-800 dark:text-slate-100">{stripLabels(data.workedExample.problem)}</CardTitle>
                             </CardHeader>
                             <CardContent className="flex-1 p-6 relative">
                                 <div className="absolute left-6 top-6 bottom-6 w-0.5 bg-slate-200 dark:bg-slate-700" />
@@ -161,11 +162,11 @@ export const InstructionalActivity: React.FC<InstructionalActivityProps> = ({
                                                     {index + 1}
                                                 </div>
                                                 <div className="space-y-2 pt-1">
-                                                    <h4 className={`font-semibold text-lg ${index <= activeStep ? 'text-slate-800 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500'}`}>{step.label}</h4>
-                                                    <p className={`text-slate-600 dark:text-slate-300 ${index <= activeStep ? 'block' : 'hidden'}`}>{step.explanation}</p>
+                                                    <h4 className={`font-semibold text-lg ${index <= activeStep ? 'text-slate-800 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500'}`}>{stripLabels(step.label)}</h4>
+                                                    <p className={`text-slate-600 dark:text-slate-300 ${index <= activeStep ? 'block' : 'hidden'}`}>{stripLabels(step.explanation)}</p>
                                                     {step.visual && index <= activeStep && (
                                                         <div className="mt-3 p-3 bg-blue-50/50 rounded-md border border-blue-100 text-sm font-mono text-blue-800 dark:bg-blue-900/20 dark:border-blue-900/30 dark:text-blue-200">
-                                                            {step.visual}
+                                                            {stripLabels(step.visual)}
                                                         </div>
                                                     )}
                                                 </div>
