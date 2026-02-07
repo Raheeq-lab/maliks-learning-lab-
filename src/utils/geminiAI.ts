@@ -567,26 +567,28 @@ export async function generateFlashcards(
     topic: string,
     count: number = 10
 ): Promise<{ front: string; back: string }[]> {
-    const prompt = `
-Generate a set of ${count} high-quality educational flashcards for Grade ${grade} ${subject} on the topic: "${topic}".
-Each flashcard must have a "front" (question/term) and a "back" (answer/definition).
+    const prompt = `ACT AS AN EXPERT TEACHER.
+Generate a JSON array of exactly ${count} educational flashcards for Grade ${grade} ${subject} on the topic: "${topic}".
 
-Return ONLY a JSON array of objects with "front" and "back" keys.
-Example format:
+Format:
 [
-  {"front": "What is 2+2?", "back": "4"},
-  {"front": "Definition of photosynthesis", "back": "The process by which plants use sunlight to synthesize food from carbon dioxide and water."}
+  {"front": "Question or Term", "back": "Answer or Definition"}
 ]
-`;
 
-    const responseText = await generateTextContent(prompt);
+Constraints:
+- Return ONLY the JSON array.
+- No conversational text before or after.
+- Ensure content is age-appropriate.`;
+
     try {
-        // Attempt to extract JSON if it's wrapped in markers
-        const jsonMatch = responseText.match(/\[[\s\S]*\]/);
-        const jsonStr = jsonMatch ? jsonMatch[0] : responseText;
-        return JSON.parse(jsonStr);
+        const result = await callGeminiAPI(prompt);
+        if (Array.isArray(result)) return result;
+        if (result.flashcards && Array.isArray(result.flashcards)) return result.flashcards;
+        if (result.cards && Array.isArray(result.cards)) return result.cards;
+
+        throw new Error("Invalid format");
     } catch (e) {
-        console.error("Failed to parse flashcards JSON", e, responseText);
+        console.error("Failed to generate flashcards", e);
         throw new Error("AI failed to generate flashcards in a valid format. Please try again.");
     }
 }
