@@ -151,12 +151,12 @@ function repairJson(jsonStr: string): any {
 
 // Updated configurations for Preview Access Keys
 // Standard standard configurations for Gemini models
-// Comprehensive configuration for Gemini models - prioritizing v1beta for broader feature support
+// Comprehensive configuration for Gemini models
 const MODELS = [
-    { model: "gemini-1.5-flash", version: "v1beta" },
-    { model: "gemini-1.5-flash-latest", version: "v1beta" },
+    { model: "gemini-1.5-flash", version: "v1" },
+    { model: "gemini-1.5-flash-latest", version: "v1" },
     { model: "gemini-2.0-flash", version: "v1beta" },
-    { model: "gemini-1.5-pro", version: "v1beta" }
+    { model: "gemini-1.5-pro", version: "v1" }
 ];
 
 import { dualAIService } from "@/services/DualAIService";
@@ -250,16 +250,14 @@ async function _internalGeminiCall(prompt: string): Promise<any> {
 }
 
 /**
- * Main entry point for AI calls - Routes through DualAIService (Cloudflare -> Gemini)
+ * Core wrapper for AI calls using DualAIService
  */
-/**
- * Main entry point for AI calls - Routes through DualAIService (Cloudflare -> Gemini)
- */
-async function callGeminiAPI(prompt: string): Promise<any> {
+async function callGeminiAPI(prompt: string, systemPrompt?: string): Promise<any> {
     try {
         const result = await dualAIService.generateContent(
             prompt,
-            () => _internalGeminiCall(prompt)
+            () => _internalGeminiCall(systemPrompt ? `${systemPrompt}\n\n${prompt}` : prompt),
+            systemPrompt
         );
 
         // Ensure we always return an object if the result is a string
@@ -578,7 +576,8 @@ Constraints:
 - Ensure content is age-appropriate.`;
 
     try {
-        const result = await callGeminiAPI(prompt);
+        const systemPrompt = "You are an EXPERT TEACHER. Generate an array of flashcards in JSON format. Do not include markdown or conversational text.";
+        const result = await callGeminiAPI(prompt, systemPrompt);
         if (Array.isArray(result)) return result;
         if (result.flashcards && Array.isArray(result.flashcards)) return result.flashcards;
         if (result.cards && Array.isArray(result.cards)) return result.cards;
