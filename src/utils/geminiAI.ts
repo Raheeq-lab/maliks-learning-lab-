@@ -151,11 +151,12 @@ function repairJson(jsonStr: string): any {
 
 // Updated configurations for Preview Access Keys
 // Standard standard configurations for Gemini models
+// Standard configurations for Gemini models - Support both v1 and v1beta
 const MODELS = [
-    { model: "gemini-2.0-flash-exp", version: "v1beta" },
-    { model: "gemini-1.5-flash", version: "v1beta" },
-    { model: "gemini-1.5-pro", version: "v1beta" },
-    { model: "gemini-2.0-flash", version: "v1beta" }
+    { model: "gemini-1.5-flash", version: "v1" },
+    { model: "gemini-2.0-flash", version: "v1beta" },
+    { model: "gemini-1.5-pro", version: "v1" },
+    { model: "gemini-1.5-flash-8b", version: "v1" }
 ];
 
 import { dualAIService } from "@/services/DualAIService";

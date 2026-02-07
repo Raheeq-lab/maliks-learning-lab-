@@ -81,7 +81,7 @@ const TeacherDashboard: React.FC = () => {
         try {
           const { data, error } = await supabase
             .from('quizzes')
-            .select('id, title, description, grade_level, subject, time_limit, access_code, created_by, created_at, is_public, is_live_session, live_status')
+            .select('*')
             .eq('created_by', user.id)
             .order('created_at', { ascending: false });
 
@@ -103,7 +103,7 @@ const TeacherDashboard: React.FC = () => {
         try {
           const { data, error } = await supabase
             .from('lessons')
-            .select('id, title, description, grade_level, gradelevel, subject, time_limit, learning_type, learningtype, research_notes, researchnotes, visual_theme, visualtheme, assessment_settings, assessmentsettings, required_resources, requiredresources, access_code, accesscode, created_by, createdby, created_at, createdat, is_public')
+            .select('*')
             .eq('created_by', user.id)
             .order('createdat', { ascending: false });
 
