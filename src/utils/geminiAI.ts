@@ -175,27 +175,16 @@ async function _internalGeminiCall(prompt: string): Promise<any> {
         try {
             console.log(`[Gemini Fallback] Attempting model: ${model} (${version})`);
 
-            const isV1 = version === 'v1';
-            const generationConfig: any = {
-                temperature: 0.7,
-                maxOutputTokens: 8192
-            };
-
-            if (!isV1) {
-                generationConfig.response_mime_type = "application/json";
-            }
-
             const response = await fetch(`https://generativelanguage.googleapis.com/${version}/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: generationConfig,
                     safetySettings: [
-                        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-                        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-                        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-                        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+                        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_ONLY_HIGH" },
+                        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_ONLY_HIGH" },
+                        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_ONLY_HIGH" },
+                        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_ONLY_HIGH" }
                     ]
                 })
             });
@@ -567,18 +556,15 @@ export async function generateFlashcards(
     topic: string,
     count: number = 10
 ): Promise<{ front: string; back: string }[]> {
-    const prompt = `ACT AS AN EXPERT TEACHER.
-Generate a JSON array of exactly ${count} educational flashcards for Grade ${grade} ${subject} on the topic: "${topic}".
+    const prompt = `Generate exactly ${count} educational flashcards for Grade ${grade} students studying ${subject}. The topic is: "${topic}".
+Output as a raw JSON array. Each object in the array MUST have a "front" key and a "back" key.
 
-Format:
+Example:
 [
-  {"front": "Question or Term", "back": "Answer or Definition"}
+  {"front": "Question", "back": "Answer"}
 ]
 
-Constraints:
-- Return ONLY the JSON array.
-- No conversational text before or after.
-- Ensure content is age-appropriate.`;
+Constraint: Output ONLY the JSON array. No preamble or conversational filler.`;
 
     try {
         const systemPrompt = "You are an EXPERT TEACHER. Generate an array of flashcards in JSON format. Do not include markdown or conversational text.";
