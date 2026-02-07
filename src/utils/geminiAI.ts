@@ -610,13 +610,15 @@ export async function generateFlashcards(
     count: number = 10
 ): Promise<{ front: string; back: string }[]> {
     const prompt = `
-    You are an expert teacher. Generate exactly ${count} educational flashcards for students in Grade ${grade} studying ${subject}.
+    You are an expert teacher. Create exactly ${count} educational flashcards for students in Grade ${grade} studying ${subject}.
     Topic: "${topic}"
 
-    FORMAT RULES:
-    1. Output a raw JSON array of objects.
-    2. Each object MUST have "front" and "back" keys.
-    3. NO preamble, NO conversational filler, NO markdown formatting.
+    IMPORTANT Formatting Rules:
+    - Do NOT use LaTeX or Markdown math syntax (e.g., avoid $\\frac{1}{2}$ or **bold**).
+    - Use clear plain text for math (e.g., use "1/2", "x^2", "sqrt(9)").
+    - The output must be raw JSON compatible strings.
+
+    Strictly follow this JSON format for the output. Return ONLY the JSON array.
 
     EXAMPLE:
     [
@@ -626,7 +628,8 @@ export async function generateFlashcards(
     `;
 
     try {
-        const result = await callGeminiAPI(prompt, "You are a helpful assistant that outputs only raw JSON arrays. Do not include markdown code blocks.");
+        // Use single-argument call just like generateQuizQuestions
+        const result = await callGeminiAPI(prompt);
 
         // Helper to recursively find the first array in the object
         const findArray = (obj: any): any[] | null => {
