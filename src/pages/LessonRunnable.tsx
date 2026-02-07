@@ -353,8 +353,8 @@ const LessonRunnable: React.FC = () => {
                 created_by: lesson.createdBy,
                 questions: questions,
                 is_public: true,
-                is_live_session: false,
-                lesson_id: lesson.id
+                is_live_session: false
+                // lesson_id: lesson.id // Removed: column does not exist in quizzes table
             };
 
             console.log("Generative Quiz Payload:", JSON.stringify(quizPayload, null, 2));
