@@ -1,3 +1,4 @@
+import { dualAIService } from "@/services/DualAIService";
 
 export interface AIConfig {
     provider: 'gemini' | 'openai' | 'deepseek';
@@ -70,11 +71,22 @@ export const generateContent = async (
         else if (type === 'phase-visuals') systemPrompt = SYSTEM_PROMPT_PHASE_VISUALS;
         else systemPrompt = "You are a helpful assistant for teachers. Generate clear, educational content that is pedagogically accurate and age-appropriate for the students' grade level. All suggestions must be strictly related to the requested subject and topic. Do not wrap in JSON. Just provide the text content directly.";
 
-        const fullPrompt = `${systemPrompt}\n\nUser Request: ${prompt}`;
-
         if (config.provider === 'gemini') {
-            return await callGemini(config.apiKey, fullPrompt);
+            // Use DualAIService to attempt Cloudflare first, then fall back to the optimized callGemini
+            const result = await dualAIService.generateContent(
+                prompt,
+                async () => {
+                    const resp = await callGemini(config.apiKey, `${systemPrompt}\n\nUser Request: ${prompt}`);
+                    return resp.content;
+                },
+                systemPrompt
+            );
+
+            // Handle both object and string results from DualAIService
+            const content = typeof result === 'string' ? result : JSON.stringify(result);
+            return { content };
         } else {
+            const fullPrompt = `${systemPrompt}\n\nUser Request: ${prompt}`;
             return await callOpenAICompatible(config, fullPrompt);
         }
     } catch (error: any) {
