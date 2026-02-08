@@ -165,6 +165,9 @@ const QuestionGeneratorTab: React.FC<QuestionGeneratorTabProps> = React.memo(({
                   type: 'universal-engage',
                   content: 'Universal Engagement Phase',
                   universalEngage: {
+                    hookQuestion: (lessonPlan.phases.engage || (lessonPlan.phases as any).hook)?.researchHook || lessonPlan.topic || customTopic,
+                    imagePrompt: (lessonPlan.phases.engage || (lessonPlan.phases as any).hook)?.imagePrompt || `Educational image for ${customTopic}`,
+                    predictionPrompt: "Based on the image, what do you notice and what do you wonder?",
                     pollQuestion: "How does this relate to your experience?",
                     pollOptions: ["I've seen something like this before", "This reminds me of...", "This is completely new to me"]
                   }

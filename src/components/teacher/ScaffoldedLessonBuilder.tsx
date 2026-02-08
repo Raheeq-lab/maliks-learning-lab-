@@ -12,7 +12,7 @@ import {
   Play, PenTool, FileText, Download, Save, Eye, Sparkles, Wand2, Loader2,
   Upload, File, X, Image as ImageIcon, BarChart2, Gamepad2, BriefcaseBusiness,
   MessageSquare, Pen, Headphones, Pencil, Search, MousePointer, CheckSquare, FileUp,
-  Lock, Globe, Settings, Zap, AlertCircle, Layers, Check
+  Lock, Globe, Settings, Zap, AlertCircle, Layers, Check, Lightbulb
 } from "lucide-react";
 import {
   Lesson,
@@ -264,7 +264,14 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
     const newContent: LessonPhaseContent = {
       id: `${phase}-${Date.now()}-${Math.random().toString(36).substring(7)}`,
       type,
-      content: ""
+      content: type === 'universal-engage' ? 'Universal Engagement Hook' : "",
+      ...(type === 'universal-engage' ? {
+        universalEngage: {
+          hookQuestion: "",
+          imagePrompt: "",
+          predictionPrompt: "Based on the image, what do you notice and what do you wonder?"
+        }
+      } : {})
     };
 
     setLessonStructure(prev => ({
@@ -1377,6 +1384,208 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
         );
 
 
+      case "universal-engage":
+        return (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <Sparkles className="text-[#FF6B35]" size={20} />
+                <Label className="text-base font-bold text-text-primary">Universal Engage Hook</Label>
+              </div>
+              <Button
+                type="button"
+                onClick={() => handleRemoveContent(phase, content.id)}
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 text-error-coral hover:text-error-coral-dark hover:bg-error-coral/10"
+              >
+                <Trash2 size={16} />
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* The Big Question */}
+              <div className="space-y-3">
+                <Label className="text-sm font-bold flex items-center gap-2 text-math-purple">
+                  <Lightbulb size={16} />
+                  The Big Question
+                </Label>
+                <Textarea
+                  value={content.universalEngage?.hookQuestion || ""}
+                  onChange={(e) => {
+                    const ue = { ...(content.universalEngage || {}), hookQuestion: e.target.value };
+                    handleContentChange(phase, content.id, "universalEngage", ue);
+                  }}
+                  onBlur={(e) => {
+                    const cleaned = stripLabels(e.target.value);
+                    if (cleaned !== e.target.value) {
+                      const ue = { ...(content.universalEngage || {}), hookQuestion: cleaned };
+                      handleContentChange(phase, content.id, "universalEngage", ue);
+                    }
+                  }}
+                  placeholder="The hook question to spark curiosity..."
+                  rows={3}
+                  className="bg-bg-input border-border text-text-primary text-lg font-black italic"
+                />
+              </div>
+
+              {/* Visual Hook */}
+              <div className="space-y-3">
+                <Label className="text-sm font-bold flex items-center gap-2 text-[#FF6B35]">
+                  <ImageIcon size={16} />
+                  Visual Hook
+                </Label>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      ref={(el) => (imageInputRefs.current[`ue-${content.id}`] = el)}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (event) => {
+                            const ue = { ...(content.universalEngage || {}), imageUrl: event.target?.result as string };
+                            handleContentChange(phase, content.id, "universalEngage", ue);
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => imageInputRefs.current[`ue-${content.id}`]?.click()}
+                      className="h-9 gap-2 border-border text-text-primary hover:bg-bg-secondary"
+                    >
+                      <Upload size={14} /> Upload
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      disabled={generatingPhase === content.id}
+                      onClick={async () => {
+                        const apiKey = localStorage.getItem('aiApiKey') || import.meta.env.VITE_GEMINI_API_KEY;
+                        if (!apiKey) {
+                          toast({ title: "API Key Required", description: "Please configure your API key.", variant: "destructive" });
+                          return;
+                        }
+                        setGeneratingPhase(content.id);
+                        const config: AIConfig = { provider: 'gemini', apiKey };
+                        const prompt = content.universalEngage?.imagePrompt || `Educational illustration for a ${subject} lesson on "${topic || title}". Focus on: ${content.universalEngage?.hookQuestion || topic || title}`;
+
+                        try {
+                          const response = await generateContent(config, `Provide a high-quality, professional educational image URL link related to this prompt: "${prompt}". Return ONLY the URL. Use Unsplash high-res search URL if needed.`, 'text');
+
+                          if (response.content.trim().startsWith('http')) {
+                            const ue = { ...(content.universalEngage || {}), imageUrl: response.content.trim() };
+                            handleContentChange(phase, content.id, "universalEngage", ue);
+                            toast({ title: "Visual Hook Forge Complete!", description: "Synced visual asset." });
+                          } else {
+                            toast({ title: "Forge Failed", description: "AI could not provide a valid image link.", variant: "destructive" });
+                          }
+                        } catch (err) {
+                          toast({ title: "Forge Error", description: "Failed to generate image.", variant: "destructive" });
+                        } finally {
+                          setGeneratingPhase(null);
+                        }
+                      }}
+                      className="h-9 gap-2 bg-[#FF6B35] text-white hover:bg-orange-600 border-none"
+                    >
+                      {generatingPhase === content.id ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                      AI Forge
+                    </Button>
+                  </div>
+
+                  {content.universalEngage?.imageUrl && (
+                    <div className="relative group rounded-xl overflow-hidden border border-border aspect-video bg-bg-secondary flex items-center justify-center">
+                      <img
+                        src={content.universalEngage.imageUrl}
+                        className="max-h-full max-w-full object-contain"
+                        alt="Visual Hook"
+                      />
+                      <button
+                        className="absolute top-2 right-2 bg-black/60 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => {
+                          const ue = { ...(content.universalEngage || {}), imageUrl: undefined };
+                          handleContentChange(phase, content.id, "universalEngage", ue);
+                        }}
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* AI Image Prompt */}
+            <div className="space-y-3 bg-bg-secondary/30 p-4 rounded-xl border border-dashed border-border">
+              <div className="flex justify-between items-center">
+                <Label className="text-xs font-bold uppercase tracking-wider text-text-tertiary">AI Visual Prompt Suggestions</Label>
+                <Button
+                  variant="ghost"
+                  type="button"
+                  size="sm"
+                  className="h-7 text-[10px] gap-1 text-math-purple hover:bg-math-purple/5"
+                  onClick={async () => {
+                    const apiKey = localStorage.getItem('aiApiKey') || import.meta.env.VITE_GEMINI_API_KEY;
+                    if (!apiKey) {
+                      toast({ title: "API Key Required", description: "Configure API key for suggestions.", variant: "destructive" });
+                      return;
+                    }
+                    setGeneratingPhase(`prompt-${content.id}`);
+                    const config: AIConfig = { provider: 'gemini', apiKey };
+                    const prompt = `Develop a highly detailed, cinematic DALL-E style image prompt for a ${gradeLevel}th Grade ${subject} lesson on "${topic || title}". The hook is: "${content.universalEngage?.hookQuestion || topic || title}". Focus on creating a puzzling, curiosity-sparking visual without any text. Format: A professional prompt only.`;
+
+                    try {
+                      const response = await generateContent(config, prompt, 'text');
+                      const ue = { ...(content.universalEngage || {}), imagePrompt: response.content.replace(/^["']|["']$/g, '').trim() };
+                      handleContentChange(phase, content.id, "universalEngage", ue);
+                    } catch (err) {
+                      toast({ title: "Error", description: "Failed to generate prompt suggestion.", variant: "destructive" });
+                    } finally {
+                      setGeneratingPhase(null);
+                    }
+                  }}
+                  disabled={generatingPhase === `prompt-${content.id}`}
+                >
+                  {generatingPhase === `prompt-${content.id}` ? <Loader2 size={10} className="animate-spin" /> : <Wand2 size={10} />}
+                  Suggest Prompt
+                </Button>
+              </div>
+              <Textarea
+                value={content.universalEngage?.imagePrompt || ""}
+                onChange={(e) => {
+                  const ue = { ...(content.universalEngage || {}), imagePrompt: e.target.value };
+                  handleContentChange(phase, content.id, "universalEngage", ue);
+                }}
+                placeholder="Detail exactly what the AI should visualize..."
+                rows={2}
+                className="bg-transparent border-none text-xs text-text-secondary focus-visible:ring-0 resize-none p-0 h-auto min-h-[40px] shadow-none"
+              />
+            </div>
+
+            {/* Prediction Prompt */}
+            <div className="space-y-3">
+              <Label className="text-sm font-bold">Prediction Step (Step 4 Prompt)</Label>
+              <Input
+                value={content.universalEngage?.predictionPrompt || ""}
+                onChange={(e) => {
+                  const ue = { ...(content.universalEngage || {}), predictionPrompt: e.target.value };
+                  handleContentChange(phase, content.id, "universalEngage", ue);
+                }}
+                placeholder="e.g., Based on the image, what do you think happened next?"
+                className="bg-bg-input border-border"
+              />
+            </div>
+          </div>
+        );
+
 
       case "steps":
         return (
@@ -2255,6 +2464,15 @@ const ScaffoldedLessonBuilder: React.FC<ScaffoldedLessonBuilderProps> = ({ grade
                   ))}
 
                   <div className="flex gap-2">
+                    <Button
+                      onClick={() => handleAddContent("engage", "universal-engage")}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-1 border-border text-text-primary hover:bg-bg-secondary"
+                    >
+                      <Sparkles size={16} className="text-[#FF6B35]" />
+                      <span>Add Universal Hook</span>
+                    </Button>
                     <Button
                       onClick={() => handleAddContent("engage", "text")}
                       variant="outline"

@@ -183,6 +183,10 @@ export interface LessonPhaseContent {
   scaffoldedLevels?: { level: number; question: string; hint?: string; solution: string; imageUrl?: string }[];
   // Universal Engage Specifics
   universalEngage?: {
+    hookQuestion?: string;
+    imageUrl?: string;
+    imagePrompt?: string;
+    predictionPrompt?: string;
     pollQuestion?: string;
     pollOptions?: string[];
   };
